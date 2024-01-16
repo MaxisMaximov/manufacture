@@ -148,6 +148,9 @@ impl SYS_GAME {
                     KeyCode::Char('g') =>{
                         self.GAME_interact(GAME_interactions::i_printDebug)
                     }
+                    KeyCode::Char('h') =>{
+                        self.GAME_interact(GAME_interactions::i_changeWorldTile)
+                    }
                     _ => {}
                 }
             } 
@@ -160,7 +163,7 @@ impl SYS_GAME {
     fn GAME_interact(&mut self, interactCode: GAME_interactions){
         match interactCode {
             GAME_interactions::i_changeWorldTile =>{
-
+                self.GAME_world.w_setCell(self.GAME_player.x, self.GAME_player.y, 'c')
             }
             GAME_interactions::i_printHello =>{
                 self.RENDER_text.push(RENDER_textItem {
@@ -255,6 +258,10 @@ impl SYS_GAME {
         }
 
         self.RENDER_text.retain(|RTEXT| RTEXT.lifetime > 0)
+    }
+
+    fn RENDER_UTIL_world(&mut self){
+        
     }
 }
 
