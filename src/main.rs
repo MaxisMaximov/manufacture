@@ -1,4 +1,3 @@
-use std::cell;
 use std::time::{Duration, Instant};
 use std::thread::sleep;
 use clearscreen::clear;
