@@ -1,3 +1,4 @@
+use std::process::exit;
 use std::time::{Duration, Instant};
 use std::thread::sleep;
 use clearscreen::clear;
@@ -92,7 +93,12 @@ impl Default for SYS_GAME{
             GAME_player: (TEMPLATE_player { x: 2, y: 2 }),
             GAME_world: (TEMPLATE_world{..Default::default()}),
             RENDER_bufferGrid: [' '; SYS_REND_X * SYS_REND_Y],
-            RENDER_text: vec![RENDER_textItem{text:"Welcome!".to_string(), position: [0,0] ,lifetime: 32}],
+            RENDER_text: vec![
+                RENDER_textItem{
+                    text:"Welcome!".to_string(),
+                    position: [0,0],
+                    lifetime: 32}
+            ],
             RENDER_debug: "".to_string()
         }
     }
@@ -105,21 +111,23 @@ impl SYS_GAME {
             
             self.SYS_HANDLER_input();
     
-            self.SYS_HANDLER_render();
+            self.SYS_HANDLER_renderGame();
 
-            self.RENDER_debug.push_str(&format!("X: {}, Y: {}\nLocation in World array: {}", 
+            self.RENDER_debug.push_str(&format!("X: {}, Y: {}\nLocation in World array: {}\n", 
                 self.GAME_player.x, 
                 self.GAME_player.y, 
                 self.GAME_player.x +(self.GAME_player.y * SYS_GRID_Y as u16)
             ));
-    
+            
+            println!("{}", self.RENDER_debug);
+
             let loop_elapsedTime: Duration = loopStart.elapsed();
             if loop_elapsedTime < SYS_TICKTIME{
-                self.RENDER_debug.push_str(&format!("Too Fast! | {:?}\n Target speed: {:?}", loop_elapsedTime, SYS_TICKTIME));
+                self.RENDER_debug.push_str(&format!("Too Fast! | {:?}\n Target speed: {:?}\n", loop_elapsedTime, SYS_TICKTIME));
              sleep(SYS_TICKTIME - loop_elapsedTime)
             }
             else {
-                self.RENDER_debug.push_str(&format!("Too slow! | {:?}", loop_elapsedTime))
+                self.RENDER_debug.push_str(&format!("Too slow! | {:?}\n", loop_elapsedTime))
             }
         }
     }
@@ -151,12 +159,15 @@ impl SYS_GAME {
                     KeyCode::Char('h') =>{
                         self.GAME_interact(GAME_interactions::i_changeWorldTile)
                     }
-                    _ => {}
+                    KeyCode::Esc =>{
+                        exit(1)
+                    }
+                    _ =>{}
                 }
             } 
         }
         else {
-            self.RENDER_debug.push_str("No input, skipping");
+            self.RENDER_debug.push_str("No input, skipping\n");
         }
     }
 
@@ -179,11 +190,12 @@ impl SYS_GAME {
                     lifetime: 16
                 })
             }
-            _ =>{}
         }
     }
 
-    fn SYS_HANDLER_render(&mut self){
+    fn SYS_HANDLER_renderGame(&mut self){
+
+        let RENDER_start = Instant::now();
 
         // Reset screen and buffers
         clear();
@@ -193,6 +205,8 @@ impl SYS_GAME {
         self.RENDER_UTIL_border([1,1], [SYS_GRID_X+1, SYS_GRID_Y+1]);
 
         self.RENDER_UTIL_border([1,20], [5, 8]);
+
+        self.RENDER_UTIL_world();
 
         self.RENDER_bufferGrid[self.RENDER_UTIL_calcPos([self.GAME_player.x as usize, self.GAME_player.y as usize], [2,2])] = 'P';
 
@@ -207,7 +221,9 @@ impl SYS_GAME {
             RENDER_bufferstring.push('\n')
         }
         println!("{}", RENDER_bufferstring);
-        println!("{}", self.RENDER_debug)
+
+        self.RENDER_debug.push_str(&format!("Finished frame rendering in {:?}\n", RENDER_start.elapsed()));
+        
     }
 
     fn RENDER_UTIL_calcPos(&self, localPos:[usize;2], offsetPos:[usize;2]) -> usize{
@@ -245,7 +261,7 @@ impl SYS_GAME {
                    continue;
                 }
                 if RTEXT_charIndex > 255 {
-                    self.RENDER_debug.push_str(&format!("STRING ERROR: Out of Bounds\nString: --{}--\nLocation: X: {} Y: {}", 
+                    self.RENDER_debug.push_str(&format!("STRING ERROR: Out of Bounds\nString: --{}--\nLocation: X: {} Y: {}\n", 
                     self.RENDER_text[RTEXT_index].text, 
                     self.RENDER_text[RTEXT_index].position[0], 
                     self.RENDER_text[RTEXT_index].position[1]));
@@ -261,7 +277,13 @@ impl SYS_GAME {
     }
 
     fn RENDER_UTIL_world(&mut self){
-        
+        let mut RWORLD_startIndex = self.RENDER_UTIL_calcPos([2,2], [0,0]);
+        for WORLD_column in 0..SYS_GRID_Y{
+            for WORLD_row in 0..SYS_GRID_X{
+                self.RENDER_bufferGrid[RWORLD_startIndex + WORLD_row] = self.GAME_world.cells[WORLD_row + WORLD_column * SYS_GRID_Y];
+            }
+            RWORLD_startIndex += SYS_REND_Y;
+        }
     }
 }
 
