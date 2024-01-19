@@ -1,9 +1,6 @@
 use clearscreen::clear;
-use crossterm::style::{Color, Stylize};
-use crossterm::{event::*, style, terminal::enable_raw_mode};
-use std::process::exit;
-use std::thread::sleep;
-use std::time::{Duration, Instant};
+use crossterm::{event::*, style, terminal::enable_raw_mode, style::{Color, Stylize}, terminal, execute};
+use std::{io::stdout, process::exit, thread::sleep, time::{Duration, Instant}};
 
 // SYS - essentials
 // TEMPLATE -- templates for stuff
@@ -15,12 +12,15 @@ const SYS_TICKRATE: u8 = 8;
 const SYS_TICKTIME: Duration = Duration::from_millis(1000 / SYS_TICKRATE as u64);
 const SYS_GRID_X: usize = 16;
 const SYS_GRID_Y: usize = 16;
-const SYS_REND_X: usize = 32;
+const SYS_REND_X: usize = 48;
 const SYS_REND_Y: usize = 32;
 
 struct TEMPLATE_player {
     p_x: u16,
     p_y: u16,
+    p_colorChar: Color,
+    p_colorBg: Color,
+    p_colorIndex: usize
 }
 impl TEMPLATE_player {
     fn p_move(&mut self, dir: u8) {
@@ -55,6 +55,10 @@ impl TEMPLATE_player {
             }
             _ => {}
         }
+    }
+    fn p_changeColor(&mut self, newColorChar: Color, newColorBg: Color){
+        self.p_colorChar = newColorChar;
+        self.p_colorBg = newColorBg;
     }
 }
 
@@ -96,8 +100,8 @@ impl Default for TEMPLATE_world {
     }
 }
 impl TEMPLATE_world {
-    fn w_setCell(&mut self, x: u16, y: u16, character: char) {
-        self.cells[(x + y * SYS_GRID_Y as u16) as usize].c_char = character;
+    fn w_setCell(&mut self, x: u16, y: u16, character: char, colorChar: Color, colorBg: Color) {
+        self.cells[(x + y * SYS_GRID_Y as u16) as usize] = TEMPLATE_wrCell{c_char: character, c_colChr: colorChar, c_colBg: colorBg};
     }
     fn w_clearWorld(&mut self) {
         self.cells.fill(TEMPLATE_wrCell {
@@ -106,18 +110,25 @@ impl TEMPLATE_world {
     }
 }
 
-enum GAME_interactions {
-    i_changeWorldTile,
-    i_printHello,
-    i_printDebug,
-    i_clearWorld,
-}
-
 struct RENDER_textItem {
     text: String,
     position: [usize; 2],
     lifetime: u16,
 }
+
+enum GAME_interactions {
+    i_changeWorldTile,
+    i_printHello,
+    i_printDebug,
+    i_clearWorld,
+    i_changePlayerColor
+}
+const GAME_playerColors: [Color;4] = [
+    Color::Cyan,
+    Color::Green,
+    Color::Yellow,
+    Color::Rgb {r: 255, g: 153, b: 0}
+];
 
 struct SYS_GAME {
     GAME_player: TEMPLATE_player,
@@ -126,11 +137,10 @@ struct SYS_GAME {
     RENDER_text: Vec<RENDER_textItem>,
     RENDER_debug: String,
 }
-
 impl Default for SYS_GAME {
     fn default() -> Self {
         SYS_GAME {
-            GAME_player: (TEMPLATE_player { p_x: 2, p_y: 2 }),
+            GAME_player: (TEMPLATE_player { p_x: 2, p_y: 2 , p_colorChar: Color::White, p_colorBg: GAME_playerColors[0], p_colorIndex: 0}),
             GAME_world: (TEMPLATE_world {
                 ..Default::default()
             }),
@@ -141,7 +151,13 @@ impl Default for SYS_GAME {
                 text: "Welcome!".to_string(),
                 position: [0, 0],
                 lifetime: 32,
-            }],
+                },
+                RENDER_textItem {
+                    text: "F - Print Hello\nG - Print debug string\nH - Change world tile under player\nJ - Clear world\nK - Change player color".to_string(),
+                    position: [2, 21],
+                    lifetime: 255
+                }
+            ],
             RENDER_debug: "".to_string(),
         }
     }
@@ -206,6 +222,7 @@ impl SYS_GAME {
                     KeyCode::Char('g') => self.GAME_interact(GAME_interactions::i_printDebug),
                     KeyCode::Char('h') => self.GAME_interact(GAME_interactions::i_changeWorldTile),
                     KeyCode::Char('j') => self.GAME_interact(GAME_interactions::i_clearWorld),
+                    KeyCode::Char('k') => self.GAME_interact(GAME_interactions::i_changePlayerColor),
                     KeyCode::Esc => exit(1),
                     _ => {}
                 }
@@ -219,7 +236,7 @@ impl SYS_GAME {
         match interactCode {
             GAME_interactions::i_changeWorldTile => {
                 self.GAME_world
-                    .w_setCell(self.GAME_player.p_x, self.GAME_player.p_y, 'c')
+                    .w_setCell(self.GAME_player.p_x, self.GAME_player.p_y, 'c', Color::Black, Color::Red)
             }
             GAME_interactions::i_printHello => self.RENDER_text.push(RENDER_textItem {
                 text: "Hello!\nHello!".to_string(),
@@ -232,6 +249,15 @@ impl SYS_GAME {
                 lifetime: 16,
             }),
             GAME_interactions::i_clearWorld => self.GAME_world.w_clearWorld(),
+            GAME_interactions::i_changePlayerColor => {
+                if self.GAME_player.p_colorIndex == GAME_playerColors.len() - 1{
+                    self.GAME_player.p_colorIndex = 0
+                }
+                else {
+                    self.GAME_player.p_colorIndex += 1
+                };
+                self.GAME_player.p_changeColor(Color::White, GAME_playerColors[self.GAME_player.p_colorIndex])
+            }
         }
     }
 
@@ -245,24 +271,29 @@ impl SYS_GAME {
         });
         self.RENDER_debug.clear();
 
-        self.RENDER_UTIL_border([1, 1], [SYS_GRID_X + 1, SYS_GRID_Y + 1]);
-
-        self.RENDER_UTIL_border([1, 20], [5, 8]);
-
-        self.RENDER_UTIL_world();
-
-        self.RENDER_bufferGrid[self.RENDER_UTIL_calcPos(
-            [self.GAME_player.p_x as usize, self.GAME_player.p_y as usize],
-            [2, 2],
-        )];
+        // Set cell for the player
+        self.RENDER_UTIL_setBufferCell(
+            self.RENDER_UTIL_calcPos(
+                [self.GAME_player.p_x as usize, self.GAME_player.p_y as usize], 
+                [2,2]
+            ), 
+            'P', 
+            self.GAME_player.p_colorChar, 
+            self.GAME_player.p_colorBg);
 
         self.RENDER_UTIL_text();
+
+        self.RENDER_UTIL_border([1, 1], [SYS_GRID_X + 1, SYS_GRID_Y + 1]);
+
+        self.RENDER_UTIL_border([1, 20], [36, 6]);
+
+        self.RENDER_UTIL_world();
 
         // Convert buffer into string
         let mut RENDER_bufferstring = String::new();
         for YPOS in 0..SYS_REND_Y - 1 {
             for XPOS in 0..SYS_REND_X - 1 {
-                let RENDER_cell = self.RENDER_bufferGrid[XPOS + YPOS * SYS_REND_Y];
+                let RENDER_cell = self.RENDER_bufferGrid[XPOS + YPOS * SYS_REND_X];
                 RENDER_bufferstring.push_str(
                     &RENDER_cell
                         .c_char
@@ -281,13 +312,10 @@ impl SYS_GAME {
         ));
     }
 
-    fn RENDER_UTIL_setBufferCell(
-        &mut self,
-        cPosition: usize,
-        cChar: char,
-        cColChr: Color,
-        cColBg: Color,
-    ) {
+    fn RENDER_UTIL_setBufferCell(&mut self, cPosition: usize, cChar: char, cColChr: Color, cColBg: Color,) {
+        if self.RENDER_bufferGrid[cPosition].c_char != ' '{
+            return;
+        }
         self.RENDER_bufferGrid[cPosition] = TEMPLATE_wrCell {
             c_char: cChar,
             c_colChr: cColChr,
@@ -296,36 +324,73 @@ impl SYS_GAME {
     }
 
     fn RENDER_UTIL_calcPos(&self, localPos: [usize; 2], offsetPos: [usize; 2]) -> usize {
-        return ((localPos[0] + offsetPos[0]) + (localPos[1] + offsetPos[1]) * SYS_REND_Y);
+        return ((localPos[0] + offsetPos[0]) + (localPos[1] + offsetPos[1]) * SYS_REND_X);
     }
 
     fn RENDER_UTIL_border(&mut self, borderPos: [usize; 2], borderSizeInner: [usize; 2]) {
         // Corners first
-        self.RENDER_bufferGrid[self.RENDER_UTIL_calcPos(borderPos, [0, 0])] = '╔';
-        self.RENDER_bufferGrid
-            [self.RENDER_UTIL_calcPos([borderPos[0] + borderSizeInner[0], borderPos[1]], [0, 0])] =
-            '╗';
-        self.RENDER_bufferGrid
-            [self.RENDER_UTIL_calcPos([borderPos[0], borderPos[1] + borderSizeInner[1]], [0, 0])] =
-            '╚';
-        self.RENDER_bufferGrid[self.RENDER_UTIL_calcPos(
-            [
-                borderPos[0] + borderSizeInner[0],
-                borderPos[1] + borderSizeInner[1],
-            ],
-            [0, 0],
-        )] = '╝';
+
+        self.RENDER_UTIL_setBufferCell(
+            self.RENDER_UTIL_calcPos(
+                    borderPos, 
+                    [0, 0]
+                    ),
+            '╔', 
+            Color::White, 
+            Color::Black
+        );
+        self.RENDER_UTIL_setBufferCell(
+            self.RENDER_UTIL_calcPos(
+                [borderPos[0] + borderSizeInner[0], borderPos[1]], 
+                [0, 0]
+                ), 
+            '╗', 
+            Color::White, 
+            Color::Black
+        );
+        self.RENDER_UTIL_setBufferCell(
+            self.RENDER_UTIL_calcPos(
+                [borderPos[0], borderPos[1] + borderSizeInner[1]], 
+                [0, 0]
+                ), 
+            '╚', 
+            Color::White, 
+            Color::Black
+        );
+        self.RENDER_UTIL_setBufferCell(
+            self.RENDER_UTIL_calcPos(
+                [borderPos[0] + borderSizeInner[0], borderPos[1] + borderSizeInner[1],], 
+                [0, 0]
+                ), 
+            '╝', 
+            Color::White, 
+            Color::Black
+        );
 
         // Top and bottom border
         for YPOS in [borderPos[1], borderPos[1] + borderSizeInner[1]] {
             for XPOS in borderPos[0] + 1..borderSizeInner[0] + 1 {
-                self.RENDER_bufferGrid[self.RENDER_UTIL_calcPos([XPOS, YPOS], [0, 0])] = '=';
+                self.RENDER_UTIL_setBufferCell(
+                    self.RENDER_UTIL_calcPos(
+                        [XPOS, YPOS], 
+                        [0, 0]
+                    ), 
+                '=', 
+                Color::White,
+                Color::Black)
             }
         }
         // Left and right border
         for XPOS in [borderPos[0], borderPos[0] + borderSizeInner[0]] {
             for YPOS in borderPos[1] + 1..borderPos[1] + borderSizeInner[1] {
-                self.RENDER_bufferGrid[self.RENDER_UTIL_calcPos([XPOS, YPOS], [0, 0])] = '‖';
+                self.RENDER_UTIL_setBufferCell(
+                    self.RENDER_UTIL_calcPos(
+                        [XPOS, YPOS],
+                        [0, 0]
+                ),
+                '‖',
+                Color::White,
+                Color::Black)
             }
         }
     }
@@ -340,12 +405,13 @@ impl SYS_GAME {
                 [0, 0],
             );
             let mut RTEXT_charIndex = RTEXT_charStartIndex;
-            'RENDER_textBlocks: for RTEXT_char in self.RENDER_text[RTEXT_index].text.chars() {
+            'RENDER_textBlocks: for RTEXT_char in self.RENDER_text[RTEXT_index].text.clone().chars() {
                 if RTEXT_char == '\n' {
-                    RTEXT_charIndex = RTEXT_charStartIndex + SYS_REND_Y;
+                    RTEXT_charIndex = RTEXT_charStartIndex + SYS_REND_X;
+                    RTEXT_charStartIndex = RTEXT_charIndex;
                     continue;
                 }
-                if RTEXT_charIndex > 255 {
+                if RTEXT_charIndex > self.RENDER_bufferGrid.len()-1 {
                     self.RENDER_debug.push_str(&format!(
                         "STRING ERROR: Out of Bounds\nString: --{}--\nLocation: X: {} Y: {}\n",
                         self.RENDER_text[RTEXT_index].text,
@@ -354,8 +420,11 @@ impl SYS_GAME {
                     ));
                     break 'RENDER_textBlocks;
                 }
-                self.RENDER_bufferGrid[RTEXT_charIndex] = RTEXT_char;
+                self.RENDER_UTIL_setBufferCell(RTEXT_charIndex, RTEXT_char, Color::White, Color::Black);
                 RTEXT_charIndex += 1
+            }
+            if self.RENDER_text[RTEXT_index].lifetime == 255{
+                continue;
             }
             self.RENDER_text[RTEXT_index].lifetime -= 1;
         }
@@ -364,21 +433,26 @@ impl SYS_GAME {
     }
 
     fn RENDER_UTIL_world(&mut self) {
-        let mut RWORLD_startIndex = self.RENDER_UTIL_calcPos([2, 2], [0, 0]);
-        for WORLD_column in 0..SYS_GRID_Y {
-            for WORLD_row in 0..SYS_GRID_X {
-                self.RENDER_bufferGrid[RWORLD_startIndex + WORLD_row] =
-                    self.GAME_world.cells[WORLD_row + WORLD_column * SYS_GRID_Y];
+        for WORLD_row in 0..SYS_GRID_Y {
+            for WORLD_column in 0..SYS_GRID_X {
+                let RWORLD_cell = self.GAME_world.cells[WORLD_row + WORLD_column* SYS_GRID_Y];
+                self.RENDER_UTIL_setBufferCell(
+                    self.RENDER_UTIL_calcPos(
+                        [WORLD_row, WORLD_column], 
+                        [2,2]
+                    ), 
+                    RWORLD_cell.c_char, 
+                    RWORLD_cell.c_colChr, 
+                    RWORLD_cell.c_colBg
+                );
             }
-            RWORLD_startIndex += SYS_REND_Y;
         }
     }
 }
 
 fn main() {
     enable_raw_mode().unwrap();
-    let mut SYS_GAME_START: SYS_GAME = SYS_GAME {
-        ..Default::default()
-    };
+    execute!(stdout(), terminal::SetSize(SYS_REND_X as u16, (SYS_REND_Y+8) as u16)).unwrap();
+    let mut SYS_GAME_START: SYS_GAME = SYS_GAME {..Default::default()};
     SYS_GAME_START.GAME_loop()
 }
