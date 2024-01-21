@@ -5,6 +5,11 @@ use std::time::Instant;
 use crate::index;
 use crate::system;
 
+/// # Text renderer
+/// ## Disclaimer
+/// It will be replaced should I move onto Pixel renderer
+/// 
+/// Although hopefully the new one will be <<compatible
 pub struct SYS_RENDERER{
     RENDER_bufferGrid: [index::TEMPLATE_wrCell; system::SYS_REND_X * system::SYS_REND_Y],
     RENDER_text: Vec<index::RENDER_textItem>,
@@ -19,23 +24,41 @@ impl SYS_RENDERER{
         }
     }
 
+    /// # Push debug string for render
+    /// 
+    /// ### Disclaimer?
+    /// If you push too many debug strings the terminal might get aneurysm
     pub fn r_pushDebugStr(&mut self, INr_string: &str){
         self.RENDER_debug.push_str(INr_string)
     }
 
+    /// # Push text for rendering
+    /// 
+    /// # DO NOT RELY ON THIS
+    /// WIll also be rewritten in favor of Window system
     pub fn r_pushText(&mut self, INr_textItem: index::RENDER_textItem){
         self.RENDER_text.push(INr_textItem)
     }
 
+    /// # Render game
+    /// The renderer handles in this order:
+    /// - Clear buffer
+    /// - Render Player
+    /// - Render text
+    /// - Render any borders you've inputted << DO NOT RELY
+    /// - Render world
+    /// - Convert buffer into printable string
+    /// - Display frame
+    /// - Display debug string
     pub fn SYS_HANDLER_renderGame(&mut self, INr_player: &index::TEMPLATE_player, INr_world: &index::TEMPLATE_world) {
         let RENDER_start = Instant::now();
 
-        // Reset screen and buffers
-        clear();
+        // Reset buffers
         self.RENDER_bufferGrid.fill(index::TEMPLATE_wrCell::new());
         self.RENDER_debug.clear();
 
         // Set cell for the player
+        // TODO: Clean up
         self.r_util_setBufferCell(
             self.r_util_calcPos(
                 [INr_player.p_x as usize, INr_player.p_y as usize], 
@@ -68,14 +91,21 @@ impl SYS_RENDERER{
             }
             RENDER_bufferstring.push('\n')
         }
+
+        // Clear and print new frame
+        clear();
         println!("{}", RENDER_bufferstring);
 
+        // DEBUG
         self.RENDER_debug.push_str(&format!(
             "Finished frame rendering in {:?}\n",
             RENDER_start.elapsed()
         ));
+        println!("{}", self.RENDER_debug)
     }
 
+    /// # Set buffer cell
+    /// If the cell is already occupied it will not update the cell
     fn r_util_setBufferCell(&mut self, cPosition: usize, cChar: char, cColChr: Color, cColBg: Color,) {
         if self.RENDER_bufferGrid[cPosition].c_char != ' '{
             return;
@@ -87,10 +117,20 @@ impl SYS_RENDERER{
         }
     }
 
+    /// # Calculate position with offset
+    /// ## Disclaimer
+    /// It will be moved elsewhere once other systems will rely on it
     fn r_util_calcPos(&self, localPos: [usize; 2], offsetPos: [usize; 2]) -> usize {
         return ((localPos[0] + offsetPos[0]) + (localPos[1] + offsetPos[1]) * system::SYS_REND_X);
     }
 
+    /// # Render border
+    /// Lets you render a border at specific coords with specific size
+    /// 
+    /// # DO NOT RELY ON CURRENT VERSION OF THIS
+    /// It'll be rewritten/deleted in favor of Window system
+    /// 
+    /// TODO: make this cleaner
     fn r_util_border(&mut self, borderPos: [usize; 2], borderSizeInner: [usize; 2]) {
         // Corners first
 
@@ -159,6 +199,12 @@ impl SYS_RENDERER{
         }
     }
 
+
+    /// # Render text
+    /// Renders text in `RENDER_text` vector
+    /// 
+    /// # DO NOT RELY ON THIS
+    /// It'll be most likely removed in favor of Window system
     fn r_util_text(&mut self) {
         for RTEXT_index in 0..self.RENDER_text.len() {
             let mut RTEXT_charStartIndex = self.r_util_calcPos(
@@ -196,6 +242,8 @@ impl SYS_RENDERER{
         self.RENDER_text.retain(|RTEXT| RTEXT.t_lifetime > 0)
     }
 
+    /// # Render the world
+    /// TODO: Rewrite to support chunks scrolling
     fn r_util_world(&mut self, INr_world: &index::TEMPLATE_world) {
         for WORLD_row in 0..system::SYS_GRID_Y {
             for WORLD_column in 0..system::SYS_GRID_X {

@@ -2,6 +2,8 @@ use crossterm::style::Color;
 
 use crate::system;
 
+// region: Structs
+
 /// # Player struct
 /// Use 1-4 in `fp_playerNum` when initializing to change the color
 /// 
@@ -64,7 +66,13 @@ impl TEMPLATE_player {
     }
 }
 
-
+/// # World/Render Buffer Cell
+/// 
+/// Values:
+/// 
+/// * Character
+/// * Color for character
+/// * Color for background
 pub struct TEMPLATE_wrCell {
     pub c_char: char,
     pub c_colChr: Color,
@@ -86,12 +94,26 @@ impl Clone for TEMPLATE_wrCell {
     }
 }
 
+/// # "Textbox" struct
+/// Lets you paste a text somewhere in the game screen
+/// 
+/// # Warning
+/// The Renderer doesn't check if the text overflows the X position yet, only if it's outside the buffer
+/// 
+/// So be careful where and what you write
 pub struct RENDER_textItem{
     pub t_position: [usize; 2],
     pub t_text: String,
     pub t_lifetime: u16
 }
 
+
+/// # Game world
+/// For now relies on `SYS_GRID` values in `system.rs`
+/// 
+/// TODO: Make it handle buildings and chunks
+/// 
+/// `w_clearWorld` function is for debug purposes for now
 pub struct TEMPLATE_world {
     pub cells: [TEMPLATE_wrCell; (system::SYS_GRID_X * system::SYS_GRID_Y)],
 }
@@ -109,6 +131,13 @@ impl TEMPLATE_world {
     }
 }
 
+// endregion: Structs
+
+// region: Enums
+
+/// # Interactions enum
+/// # DON'T RELY ON THIS
+/// It will be replaced with introduction of Window system
 pub enum GAME_interactions {
     i_changeWorldTile,
     i_printHello,
@@ -116,9 +145,14 @@ pub enum GAME_interactions {
     i_clearWorld,
 }
 
+/// # Player color "enum"
+/// ## Disclaimer:
+/// Is only for Player 1-4 colors
 pub const GAME_playerColors: [Color;4] = [
     Color::Cyan,
     Color::Green,
     Color::Yellow,
     Color::Rgb {r: 255, g: 153, b: 0}
 ];
+
+// endregion: Enums

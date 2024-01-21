@@ -5,6 +5,10 @@ use crate::index;
 use crate::renderer;
 use crate::system;
 
+/// # Game struct
+/// Contains the player and World and does all the logic
+/// 
+/// Renderer is a field so it can be replaced with a pixel one later on should I decide so
 pub struct SYS_GAME {
     GAME_player: index::TEMPLATE_player,
     GAME_world: index::TEMPLATE_world,
@@ -12,6 +16,12 @@ pub struct SYS_GAME {
 
 }
 impl SYS_GAME {
+
+    /// # New game
+    /// ## Disclaimer
+    /// By default it sets the player as Player 1, change the number and `INp_color` if you wanna change it
+    /// 
+    /// Multiplayer will be added in the future
     pub fn new() -> Self{
         SYS_GAME { 
             GAME_player: index::TEMPLATE_player::new(0, None), 
@@ -19,13 +29,17 @@ impl SYS_GAME {
             GAME_renderer: renderer::SYS_RENDERER::new() }
     }
 
+    /// # Game loop
+    /// Processes the whole game sequentially
+    /// 
+    /// Speed is dependent on `SYS_TICKRATE` value in `system.rs`
+    /// 
+    /// I do not recommend going above 32 ticks/s
     pub fn GAME_loop(&mut self) {
         loop {
             let loopStart: Instant = Instant::now();
 
             self.SYS_HANDLER_input();
-
-            self.GAME_renderer.SYS_HANDLER_renderGame(&self.GAME_player, &self.GAME_world);
 
             self.GAME_renderer.r_pushDebugStr(&format!(
                 "X: {}, Y: {}\nLocation in World array: {}\n",
@@ -33,6 +47,8 @@ impl SYS_GAME {
                 self.GAME_player.p_y,
                 self.GAME_player.p_x + (self.GAME_player.p_y * system::SYS_GRID_Y as u16)
             ));
+
+            self.GAME_renderer.SYS_HANDLER_renderGame(&self.GAME_player, &self.GAME_world);
 
             let loop_elapsedTime: Duration = loopStart.elapsed();
             if loop_elapsedTime < system::SYS_TICKTIME {
@@ -46,14 +62,13 @@ impl SYS_GAME {
             }
         }
     }
+
+    /// # Input handler
+    /// # DO NOT RELY ON CURRENT VERSION OF THIS
+    /// It will get updated with Window system and will read from a config file instead of single layout
     fn SYS_HANDLER_input(&mut self) {
         if poll(Duration::from_millis(25)).unwrap() {
-            if let Event::Key(KeyEvent {
-                code,
-                modifiers,
-                state,
-                kind,
-            }) = read().unwrap()
+            if let Event::Key(KeyEvent {code, modifiers: _, state: _, kind,}) = read().unwrap()
             {
                 if kind != KeyEventKind::Press {
                     return;
@@ -84,6 +99,11 @@ impl SYS_GAME {
         }
     }
 
+    /// # Interaction manager
+    /// # DO NOT RELY ON CURRENT VERSION OF THIS
+    /// While I'm not sure how it will change exactly it does "global" interactions for now
+    /// 
+    /// Window system will have different way of managing those
     fn GAME_interact(&mut self, interactCode: index::GAME_interactions) {
         match interactCode {
             index::GAME_interactions::i_changeWorldTile => {
