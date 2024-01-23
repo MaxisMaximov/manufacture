@@ -61,7 +61,7 @@ impl SYS_RENDERER{
         // TODO: Clean up
         self.r_util_setBufferCell(
             self.r_util_calcPos(
-                [INr_player.p_x as usize, INr_player.p_y as usize], 
+                [(INr_player.p_x as usize % system::SYS_CHUNK_X), (INr_player.p_y as usize % system::SYS_CHUNK_Y)], 
                 [2,2]
             ), 
             'P', 
@@ -70,11 +70,11 @@ impl SYS_RENDERER{
 
         self.r_util_text();
 
-        self.r_util_border([1, 1], [system::SYS_GRID_X + 1, system::SYS_GRID_Y + 1]);
+        self.r_util_border([1, 1], [system::SYS_CHUNK_X + 1, system::SYS_CHUNK_Y + 1]);
 
         self.r_util_border([1, 20], [36, 6]);
 
-        self.r_util_world(INr_world);
+        self.r_util_world(INr_world, INr_player);
 
         // Convert buffer into string
         let mut RENDER_bufferstring = String::new();
@@ -244,18 +244,19 @@ impl SYS_RENDERER{
 
     /// # Render the world
     /// TODO: Rewrite to support chunks scrolling
-    fn r_util_world(&mut self, INr_world: &index::TEMPLATE_world) {
-        for WORLD_row in 0..system::SYS_GRID_Y {
-            for WORLD_column in 0..system::SYS_GRID_X {
-                let RWORLD_cell = INr_world.cells[WORLD_row + WORLD_column* system::SYS_GRID_Y];
+    fn r_util_world(&mut self, INr_world: &index::TEMPLATE_world, INr_player: &index::TEMPLATE_player) {
+        let mut r_workingChunk = INr_world.w_returnChunk([INr_player.p_x as usize, INr_player.p_y as usize]);
+        for CHUNK_COLUMN in 0..system::SYS_CHUNK_Y {
+            for CHUNK_ROW in 0..system::SYS_CHUNK_X {
+                let CHUNK_CELL = r_workingChunk.ch_cells[CHUNK_ROW + CHUNK_COLUMN * system::SYS_CHUNK_Y];
                 self.r_util_setBufferCell(
                     self.r_util_calcPos(
-                        [WORLD_row, WORLD_column], 
+                        [CHUNK_ROW, CHUNK_COLUMN], 
                         [2,2]
                     ), 
-                    RWORLD_cell.c_char, 
-                    RWORLD_cell.c_colChr, 
-                    RWORLD_cell.c_colBg
+                    CHUNK_CELL.c_char, 
+                    CHUNK_CELL.c_colChr, 
+                    CHUNK_CELL.c_colBg
                 );
             }
         }

@@ -94,6 +94,27 @@ impl Clone for TEMPLATE_wrCell {
     }
 }
 
+/// # World Chunk struct
+/// For now holds only cells, dunno what else to add to it
+/// 
+/// But I'll be able to nest them later should I need to
+/// 
+/// TODO: Clean up most likely
+pub struct TEMPLATE_wChunk {
+    pub ch_cells: [TEMPLATE_wrCell; system::SYS_CHUNK_X * system::SYS_CHUNK_Y]
+}
+impl TEMPLATE_wChunk {
+    pub fn new() -> Self {
+        TEMPLATE_wChunk { ch_cells: [TEMPLATE_wrCell::new(); system::SYS_CHUNK_X * system:: SYS_CHUNK_Y] }
+    }
+}
+impl Copy for TEMPLATE_wChunk {}
+impl Clone for TEMPLATE_wChunk {
+    fn clone(&self) -> Self {
+        TEMPLATE_wChunk { ch_cells: self.ch_cells }
+    }
+}
+
 /// # "Textbox" struct
 /// Lets you paste a text somewhere in the game screen
 /// 
@@ -115,19 +136,32 @@ pub struct RENDER_textItem{
 /// 
 /// `w_clearWorld` function is for debug purposes for now
 pub struct TEMPLATE_world {
-    pub cells: [TEMPLATE_wrCell; (system::SYS_GRID_X * system::SYS_GRID_Y)],
+    pub w_chunks: [TEMPLATE_wChunk; (system::SYS_WORLD_X * system::SYS_WORLD_Y)],
 }
 impl TEMPLATE_world {
     pub fn new() -> Self{
         TEMPLATE_world { 
-            cells: [TEMPLATE_wrCell::new(); system::SYS_GRID_X*system::SYS_GRID_Y]
+            w_chunks: [TEMPLATE_wChunk::new(); system::SYS_WORLD_X*system::SYS_WORLD_Y]
          }
     }
-    pub fn w_setCell(&mut self, x: u16, y: u16, character: char, colorChar: Color, colorBg: Color) {
-        self.cells[(x + y * system::SYS_GRID_X as u16) as usize] = TEMPLATE_wrCell{c_char: character, c_colChr: colorChar, c_colBg: colorBg};
+    pub fn w_calcPos(&self, INw_position: [usize;2]) -> [usize;2]{
+        return [
+            ((INw_position[0] / system::SYS_CHUNK_X) + 1) + ((INw_position[1] / system::SYS_CHUNK_Y) + 1),
+            (INw_position[0] % system::SYS_CHUNK_X) + (INw_position[1] % system::SYS_CHUNK_Y) * system::SYS_CHUNK_X
+        ];
     }
+
+    pub fn w_returnChunk(&self, INw_position: [usize;2]) -> &TEMPLATE_wChunk {
+        return &self.w_chunks[self.w_calcPos(INw_position)[0]];
+    }
+
+    pub fn w_setCell(&mut self, INx: u16, INy: u16, INcharacter: char, INcolorChar: Color, INcolorBg: Color) {
+        let w_workingPosition = self.w_calcPos([INx as usize, INy as usize]);
+        self.w_chunks[w_workingPosition[0]].ch_cells[w_workingPosition[1]] = TEMPLATE_wrCell{c_char: INcharacter, c_colChr: INcolorChar, c_colBg: INcolorBg};
+    }
+
     pub fn w_clearWorld(&mut self) {
-        self.cells.fill(TEMPLATE_wrCell::new())
+        self.w_chunks.fill(TEMPLATE_wChunk::new())
     }
 }
 

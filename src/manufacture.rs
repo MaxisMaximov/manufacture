@@ -24,7 +24,7 @@ impl SYS_GAME {
     /// Multiplayer will be added in the future
     pub fn new() -> Self{
         SYS_GAME { 
-            GAME_player: index::TEMPLATE_player::new(0, None), 
+            GAME_player: index::TEMPLATE_player::new(1, None), 
             GAME_world: index::TEMPLATE_world::new(), 
             GAME_renderer: renderer::SYS_RENDERER::new() }
     }
