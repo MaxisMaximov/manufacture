@@ -16,8 +16,10 @@ use crate::system;
 /// # Custom colors
 /// To instead use custom colors set `fp_playerNum` to 0 and `fp_color` to [`Color::Rgb`]
 pub struct TEMPLATE_player {
-    pub p_x: u16,
-    pub p_y: u16,
+    pub p_x: usize,
+    pub p_y: usize,
+    pub p_chunkX: usize,
+    pub p_chunkY: usize,
     pub p_colorChar: Color,
     pub p_colorBg: Color,
 }
@@ -29,7 +31,13 @@ impl TEMPLATE_player {
         else {
             GAME_playerColors[INp_playerNum]
         };
-        TEMPLATE_player { p_x: 0, p_y: 0, p_colorChar: Color::White, p_colorBg: Fp_playerColor }
+        TEMPLATE_player {
+            p_x: 8,
+            p_y: 8,
+            p_chunkX: 0,
+            p_chunkY: 0,
+            p_colorChar: Color::White,
+            p_colorBg: Fp_playerColor }
     }
     pub fn p_move(&mut self, dir: u8) {
         match dir {
@@ -42,7 +50,7 @@ impl TEMPLATE_player {
             }
             1 => {
                 //Down
-                if self.p_y == (system::SYS_GRID_Y as u16 - 1) {
+                if self.p_y == (system::SYS_GRID_Y - 1) {
                     return;
                 }
                 self.p_y += 1
@@ -56,13 +64,17 @@ impl TEMPLATE_player {
             }
             3 => {
                 //Right
-                if self.p_x == (system::SYS_GRID_X as u16 - 1) {
+                if self.p_x == (system::SYS_GRID_X - 1) {
                     return;
                 }
                 self.p_x += 1
             }
             _ => {}
         }
+    }
+    pub fn p_updateChunkPos(&mut self){
+        self.p_chunkX = (self.p_x / system::SYS_CHUNK_X);
+        self.p_chunkY = (self.p_y / system::SYS_CHUNK_Y);
     }
 }
 
@@ -144,19 +156,31 @@ impl TEMPLATE_world {
             w_chunks: [TEMPLATE_wChunk::new(); system::SYS_WORLD_X*system::SYS_WORLD_Y]
          }
     }
-    pub fn w_calcPos(&self, INw_position: [usize;2]) -> [usize;2]{
+    pub fn w_calcPosIndex(&self, INw_position: [usize;2]) -> [usize;2]{
         return [
-            ((INw_position[0] / system::SYS_CHUNK_X) + 1) + ((INw_position[1] / system::SYS_CHUNK_Y) + 1),
+            ((INw_position[0] / system::SYS_CHUNK_X)) + ((INw_position[1] / system::SYS_CHUNK_Y)) * system::SYS_WORLD_X,
             (INw_position[0] % system::SYS_CHUNK_X) + (INw_position[1] % system::SYS_CHUNK_Y) * system::SYS_CHUNK_X
         ];
     }
 
     pub fn w_returnChunk(&self, INw_position: [usize;2]) -> &TEMPLATE_wChunk {
-        return &self.w_chunks[self.w_calcPos(INw_position)[0]];
+        return &self.w_chunks[self.w_calcPosIndex(INw_position)[0]];
     }
 
-    pub fn w_setCell(&mut self, INx: u16, INy: u16, INcharacter: char, INcolorChar: Color, INcolorBg: Color) {
-        let w_workingPosition = self.w_calcPos([INx as usize, INy as usize]);
+    pub fn w_returnChunkArray(&self, INw_centerPos: [usize;2]) -> [&TEMPLATE_wChunk; system::SYS_REND_CHUNK_X * system::SYS_REND_CHUNK_Y]{
+        let mut w_chunkIndexStart = (INw_centerPos[0] + INw_centerPos[1] * system::SYS_WORLD_X) - (system::SYS_REND_CHUNK_X / 2) - (system::SYS_REND_CHUNK_Y / 2) * system::SYS_WORLD_X;
+        let mut OUTw_chunkArray: [&TEMPLATE_wChunk; system::SYS_REND_CHUNK_X * system::SYS_REND_CHUNK_Y] = [&self.w_chunks[0]; system::SYS_REND_CHUNK_X * system::SYS_REND_CHUNK_Y];
+        for YPOS in 0..system::SYS_REND_CHUNK_Y{
+            for XPOS in 0..system::SYS_REND_CHUNK_Y{
+                OUTw_chunkArray[XPOS + YPOS * system::SYS_REND_CHUNK_X] = &self.w_chunks[w_chunkIndexStart + XPOS];
+            }
+            w_chunkIndexStart += system::SYS_WORLD_X;
+        }
+        return OUTw_chunkArray;
+    }
+
+    pub fn w_setCell(&mut self, INx: usize, INy: usize, INcharacter: char, INcolorChar: Color, INcolorBg: Color) {
+        let w_workingPosition = self.w_calcPosIndex([INx, INy]);
         self.w_chunks[w_workingPosition[0]].ch_cells[w_workingPosition[1]] = TEMPLATE_wrCell{c_char: INcharacter, c_colChr: INcolorChar, c_colBg: INcolorBg};
     }
 
