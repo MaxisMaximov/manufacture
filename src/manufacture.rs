@@ -24,7 +24,7 @@ impl SYS_GAME {
     /// Multiplayer will be added in the future
     pub fn new() -> Self{
         SYS_GAME { 
-            GAME_player: index::TEMPLATE_player::new(0, None), 
+            GAME_player: index::TEMPLATE_player::new(1, None), 
             GAME_world: index::TEMPLATE_world::new(), 
             GAME_renderer: renderer::SYS_RENDERER::new() }
     }
@@ -41,11 +41,14 @@ impl SYS_GAME {
 
             self.SYS_HANDLER_input();
 
+            self.GAME_player.p_updateChunkPos();
+
             self.GAME_renderer.r_pushDebugStr(&format!(
-                "X: {}, Y: {}\nLocation in World array: {}\n",
+                "X: {}, Y: {}\nChunk X:{} Chunk Y:{}\n",
                 self.GAME_player.p_x,
                 self.GAME_player.p_y,
-                self.GAME_player.p_x + (self.GAME_player.p_y * system::SYS_GRID_Y as u16)
+                self.GAME_player.p_chunkX,
+                self.GAME_player.p_chunkY
             ));
 
             self.GAME_renderer.SYS_HANDLER_renderGame(&self.GAME_player, &self.GAME_world);
@@ -108,7 +111,7 @@ impl SYS_GAME {
         match interactCode {
             index::GAME_interactions::i_changeWorldTile => {
                 self.GAME_world
-                    .w_setCell(self.GAME_player.p_x, self.GAME_player.p_y, 'c', Color::Black, Color::Red)
+                    .w_setCell([self.GAME_player.p_x, self.GAME_player.p_y], 'c', Color::Black, self.GAME_player.p_colorBg)
             }
             index::GAME_interactions::i_printHello => self.GAME_renderer.r_pushText(index::RENDER_textItem {
                 t_text: "Hello!\nHello!".to_string(),

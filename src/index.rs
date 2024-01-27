@@ -16,8 +16,10 @@ use crate::system;
 /// # Custom colors
 /// To instead use custom colors set `fp_playerNum` to 0 and `fp_color` to [`Color::Rgb`]
 pub struct TEMPLATE_player {
-    pub p_x: u16,
-    pub p_y: u16,
+    pub p_x: usize,
+    pub p_y: usize,
+    pub p_chunkX: usize,
+    pub p_chunkY: usize,
     pub p_colorChar: Color,
     pub p_colorBg: Color,
 }
@@ -29,7 +31,13 @@ impl TEMPLATE_player {
         else {
             GAME_playerColors[INp_playerNum]
         };
-        TEMPLATE_player { p_x: 0, p_y: 0, p_colorChar: Color::White, p_colorBg: Fp_playerColor }
+        TEMPLATE_player {
+            p_x: 8,
+            p_y: 8,
+            p_chunkX: 0,
+            p_chunkY: 0,
+            p_colorChar: Color::White,
+            p_colorBg: Fp_playerColor }
     }
     pub fn p_move(&mut self, dir: u8) {
         match dir {
@@ -42,7 +50,7 @@ impl TEMPLATE_player {
             }
             1 => {
                 //Down
-                if self.p_y == (system::SYS_GRID_Y as u16 - 1) {
+                if self.p_y == (system::SYS_GRID_Y - 1) {
                     return;
                 }
                 self.p_y += 1
@@ -56,13 +64,17 @@ impl TEMPLATE_player {
             }
             3 => {
                 //Right
-                if self.p_x == (system::SYS_GRID_X as u16 - 1) {
+                if self.p_x == (system::SYS_GRID_X - 1) {
                     return;
                 }
                 self.p_x += 1
             }
             _ => {}
         }
+    }
+    pub fn p_updateChunkPos(&mut self){
+        self.p_chunkX = (self.p_x / system::SYS_CHUNK_X);
+        self.p_chunkY = (self.p_y / system::SYS_CHUNK_Y);
     }
 }
 
@@ -94,8 +106,28 @@ impl Clone for TEMPLATE_wrCell {
     }
 }
 
+/// # World Chunk struct
+/// For now holds only cells, dunno what else to add to it
+pub struct TEMPLATE_wChunk {
+    pub ch_cells: [TEMPLATE_wrCell; system::SYS_CHUNK_X * system::SYS_CHUNK_Y]
+}
+impl TEMPLATE_wChunk {
+    pub fn new() -> Self {
+        TEMPLATE_wChunk { ch_cells: [TEMPLATE_wrCell::new(); system::SYS_CHUNK_X * system:: SYS_CHUNK_Y] }
+    }
+}
+impl Copy for TEMPLATE_wChunk {}
+impl Clone for TEMPLATE_wChunk {
+    fn clone(&self) -> Self {
+        TEMPLATE_wChunk { ch_cells: self.ch_cells }
+    }
+}
+
 /// # "Textbox" struct
 /// Lets you paste a text somewhere in the game screen
+/// 
+/// # DO NOT RELY ON THIS
+/// It'll be replaced in favor of Window system
 /// 
 /// # Warning
 /// The Renderer doesn't check if the text overflows the X position yet, only if it's outside the buffer
@@ -115,19 +147,61 @@ pub struct RENDER_textItem{
 /// 
 /// `w_clearWorld` function is for debug purposes for now
 pub struct TEMPLATE_world {
-    pub cells: [TEMPLATE_wrCell; (system::SYS_GRID_X * system::SYS_GRID_Y)],
+    pub w_chunks: [TEMPLATE_wChunk; (system::SYS_WORLD_X * system::SYS_WORLD_Y)],
 }
 impl TEMPLATE_world {
     pub fn new() -> Self{
         TEMPLATE_world { 
-            cells: [TEMPLATE_wrCell::new(); system::SYS_GRID_X*system::SYS_GRID_Y]
+            w_chunks: [TEMPLATE_wChunk::new(); system::SYS_WORLD_X*system::SYS_WORLD_Y],
          }
     }
-    pub fn w_setCell(&mut self, x: u16, y: u16, character: char, colorChar: Color, colorBg: Color) {
-        self.cells[(x + y * system::SYS_GRID_X as u16) as usize] = TEMPLATE_wrCell{c_char: character, c_colChr: colorChar, c_colBg: colorBg};
+    /// # Calculate position in the world
+    /// Takes `[X, Y]` coords as input and outputs `[ChunkIndex, CellIndex]`
+    pub fn w_calcPosIndex(&self, INw_position: [usize;2]) -> [usize;2]{
+        return [
+            ((INw_position[0] / system::SYS_CHUNK_X)) + ((INw_position[1] / system::SYS_CHUNK_Y)) * system::SYS_WORLD_X,
+            (INw_position[0] % system::SYS_CHUNK_X) + (INw_position[1] % system::SYS_CHUNK_Y) * system::SYS_CHUNK_X
+        ];
     }
+
+    /// # Get a slice of the world of `[X, Y]` size centered on chunk
+    /// Returns array of chunk references
+    /// 
+    /// Auto shifts the origin if the size exceeds bounds
+    pub fn w_returnChunkArray(&self, INw_centerPos: [usize;2], INw_size: [usize; 2]) -> Vec<&TEMPLATE_wChunk>{
+        let mut w_actualPos = INw_centerPos;
+
+        while w_actualPos[0].checked_sub(INw_size[0] / 2).is_none() {
+            w_actualPos[0] += 1;
+        }
+        while w_actualPos[0] + w_actualPos[0] / 2 > system::SYS_WORLD_X {
+            w_actualPos[0] -= 1;
+        }
+        while w_actualPos[1].checked_sub(INw_size[1] / 2).is_none() {
+            w_actualPos[1] += 1;
+        }
+        while w_actualPos[1] + w_actualPos[1] / 2 > system::SYS_WORLD_Y {
+            w_actualPos[1] -= 1;
+        }
+
+        let mut w_chunkIndexStart = (w_actualPos[0] + w_actualPos[1] * system::SYS_WORLD_X) - (INw_size[0] / 2) - (INw_size[1] / 2) * system::SYS_WORLD_X;
+        let mut OUTw_chunkVec: Vec<&TEMPLATE_wChunk> = vec![&self.w_chunks[0]; INw_size[0] * INw_size[1]];
+        for YPOS in 0..INw_size[1]{
+            for XPOS in 0..INw_size[0]{
+                OUTw_chunkVec[XPOS + YPOS * INw_size[0]] = &self.w_chunks[w_chunkIndexStart + XPOS];
+            }
+            w_chunkIndexStart += system::SYS_WORLD_X;
+        }
+        return OUTw_chunkVec;
+    }
+
+    pub fn w_setCell(&mut self, INw_position: [usize;2], INw_character: char, INw_colorChar: Color, INw_colorBg: Color) {
+        let w_workingPosition = self.w_calcPosIndex(INw_position);
+        self.w_chunks[w_workingPosition[0]].ch_cells[w_workingPosition[1]] = TEMPLATE_wrCell{c_char: INw_character, c_colChr: INw_colorChar, c_colBg: INw_colorBg};
+    }
+
     pub fn w_clearWorld(&mut self) {
-        self.cells.fill(TEMPLATE_wrCell::new())
+        self.w_chunks.fill(TEMPLATE_wChunk::new())
     }
 }
 
