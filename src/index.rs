@@ -108,10 +108,6 @@ impl Clone for TEMPLATE_wrCell {
 
 /// # World Chunk struct
 /// For now holds only cells, dunno what else to add to it
-/// 
-/// But I'll be able to nest them later should I need to
-/// 
-/// TODO: Clean up most likely
 pub struct TEMPLATE_wChunk {
     pub ch_cells: [TEMPLATE_wrCell; system::SYS_CHUNK_X * system::SYS_CHUNK_Y]
 }
@@ -129,6 +125,9 @@ impl Clone for TEMPLATE_wChunk {
 
 /// # "Textbox" struct
 /// Lets you paste a text somewhere in the game screen
+/// 
+/// # DO NOT RELY ON THIS
+/// It'll be replaced in favor of Window system
 /// 
 /// # Warning
 /// The Renderer doesn't check if the text overflows the X position yet, only if it's outside the buffer
@@ -153,9 +152,11 @@ pub struct TEMPLATE_world {
 impl TEMPLATE_world {
     pub fn new() -> Self{
         TEMPLATE_world { 
-            w_chunks: [TEMPLATE_wChunk::new(); system::SYS_WORLD_X*system::SYS_WORLD_Y]
+            w_chunks: [TEMPLATE_wChunk::new(); system::SYS_WORLD_X*system::SYS_WORLD_Y],
          }
     }
+    /// # Calculate position in the world
+    /// Takes `[X, Y]` coords as input and outputs `[ChunkIndex, CellIndex]`
     pub fn w_calcPosIndex(&self, INw_position: [usize;2]) -> [usize;2]{
         return [
             ((INw_position[0] / system::SYS_CHUNK_X)) + ((INw_position[1] / system::SYS_CHUNK_Y)) * system::SYS_WORLD_X,
@@ -163,25 +164,40 @@ impl TEMPLATE_world {
         ];
     }
 
-    pub fn w_returnChunk(&self, INw_position: [usize;2]) -> &TEMPLATE_wChunk {
-        return &self.w_chunks[self.w_calcPosIndex(INw_position)[0]];
-    }
+    /// # Get a slice of the world of `[X, Y]` size centered on chunk
+    /// Returns array of chunk references
+    /// 
+    /// Auto shifts the origin if the size exceeds bounds
+    pub fn w_returnChunkArray(&self, INw_centerPos: [usize;2], INw_size: [usize; 2]) -> Vec<&TEMPLATE_wChunk>{
+        let mut w_actualPos = INw_centerPos;
 
-    pub fn w_returnChunkArray(&self, INw_centerPos: [usize;2]) -> [&TEMPLATE_wChunk; system::SYS_REND_CHUNK_X * system::SYS_REND_CHUNK_Y]{
-        let mut w_chunkIndexStart = (INw_centerPos[0] + INw_centerPos[1] * system::SYS_WORLD_X) - (system::SYS_REND_CHUNK_X / 2) - (system::SYS_REND_CHUNK_Y / 2) * system::SYS_WORLD_X;
-        let mut OUTw_chunkArray: [&TEMPLATE_wChunk; system::SYS_REND_CHUNK_X * system::SYS_REND_CHUNK_Y] = [&self.w_chunks[0]; system::SYS_REND_CHUNK_X * system::SYS_REND_CHUNK_Y];
-        for YPOS in 0..system::SYS_REND_CHUNK_Y{
-            for XPOS in 0..system::SYS_REND_CHUNK_Y{
-                OUTw_chunkArray[XPOS + YPOS * system::SYS_REND_CHUNK_X] = &self.w_chunks[w_chunkIndexStart + XPOS];
+        while w_actualPos[0].checked_sub(INw_size[0] / 2).is_none() {
+            w_actualPos[0] += 1;
+        }
+        while w_actualPos[0] + w_actualPos[0] / 2 > system::SYS_WORLD_X {
+            w_actualPos[0] -= 1;
+        }
+        while w_actualPos[1].checked_sub(INw_size[1] / 2).is_none() {
+            w_actualPos[1] += 1;
+        }
+        while w_actualPos[1] + w_actualPos[1] / 2 > system::SYS_WORLD_Y {
+            w_actualPos[1] -= 1;
+        }
+
+        let mut w_chunkIndexStart = (w_actualPos[0] + w_actualPos[1] * system::SYS_WORLD_X) - (INw_size[0] / 2) - (INw_size[1] / 2) * system::SYS_WORLD_X;
+        let mut OUTw_chunkVec: Vec<&TEMPLATE_wChunk> = vec![&self.w_chunks[0]; INw_size[0] * INw_size[1]];
+        for YPOS in 0..INw_size[1]{
+            for XPOS in 0..INw_size[0]{
+                OUTw_chunkVec[XPOS + YPOS * INw_size[0]] = &self.w_chunks[w_chunkIndexStart + XPOS];
             }
             w_chunkIndexStart += system::SYS_WORLD_X;
         }
-        return OUTw_chunkArray;
+        return OUTw_chunkVec;
     }
 
-    pub fn w_setCell(&mut self, INx: usize, INy: usize, INcharacter: char, INcolorChar: Color, INcolorBg: Color) {
-        let w_workingPosition = self.w_calcPosIndex([INx, INy]);
-        self.w_chunks[w_workingPosition[0]].ch_cells[w_workingPosition[1]] = TEMPLATE_wrCell{c_char: INcharacter, c_colChr: INcolorChar, c_colBg: INcolorBg};
+    pub fn w_setCell(&mut self, INw_position: [usize;2], INw_character: char, INw_colorChar: Color, INw_colorBg: Color) {
+        let w_workingPosition = self.w_calcPosIndex(INw_position);
+        self.w_chunks[w_workingPosition[0]].ch_cells[w_workingPosition[1]] = TEMPLATE_wrCell{c_char: INw_character, c_colChr: INw_colorChar, c_colBg: INw_colorBg};
     }
 
     pub fn w_clearWorld(&mut self) {

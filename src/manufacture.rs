@@ -111,7 +111,7 @@ impl SYS_GAME {
         match interactCode {
             index::GAME_interactions::i_changeWorldTile => {
                 self.GAME_world
-                    .w_setCell(self.GAME_player.p_x, self.GAME_player.p_y, 'c', Color::Black, self.GAME_player.p_colorBg)
+                    .w_setCell([self.GAME_player.p_x, self.GAME_player.p_y], 'c', Color::Black, self.GAME_player.p_colorBg)
             }
             index::GAME_interactions::i_printHello => self.GAME_renderer.r_pushText(index::RENDER_textItem {
                 t_text: "Hello!\nHello!".to_string(),

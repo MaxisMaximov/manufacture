@@ -53,13 +53,13 @@ impl SYS_RENDERER{
     pub fn SYS_HANDLER_renderGame(&mut self, INr_player: &index::TEMPLATE_player, INr_world: &index::TEMPLATE_world) {
         let RENDER_start = Instant::now();
 
-        let r_offsets = self.r_util_screenOffsetsBCP(INr_player);
+        let r_offsets = self.r_util_screenOffsetsSP(INr_player);
 
         // Set cell for the player
         // TODO: Clean up
         self.r_util_setBufferCell(
             self.r_util_calcPos(
-                r_offsets[2], 
+                r_offsets[1], 
                 [2,2]
             ), 
             'P', 
@@ -72,7 +72,7 @@ impl SYS_RENDERER{
 
         self.r_util_border([1, 20], [36, 6]);
 
-        self.r_util_world(INr_world, [r_offsets[0], r_offsets[1]]);
+        self.r_util_world(INr_world, [r_offsets[0], [INr_player.p_chunkX, INr_player.p_chunkY]]);
 
         // Convert buffer into string
         let mut RENDER_bufferstring = String::new();
@@ -90,16 +90,20 @@ impl SYS_RENDERER{
             RENDER_bufferstring.push('\n')
         }
 
+        // DEBUG
+        let r_frameTime =  RENDER_start.elapsed();
+        self.RENDER_debug.push_str(&format!(
+            "Finished frame rendering in {:?}\nApproximate FPS: {}",
+            r_frameTime,
+            1000 / r_frameTime.as_millis()
+        ));
+
         // Clear and print new frame
         clear();
         println!("{}", RENDER_bufferstring);
 
-        // DEBUG
-        self.RENDER_debug.push_str(&format!(
-            "Finished frame rendering in {:?}\n",
-            RENDER_start.elapsed()
-        ));
         println!("{}", self.RENDER_debug);
+
         // Reset buffers
         self.RENDER_bufferGrid.fill(index::TEMPLATE_wrCell::new());
         self.RENDER_debug.clear();
@@ -118,7 +122,7 @@ impl SYS_RENDERER{
         }
     }
 
-    /// # Calculate position with offset
+    /// # Calculate Buffer position with offset
     /// ## Disclaimer
     /// It will be moved elsewhere once other systems will rely on it
     fn r_util_calcPos(&self, localPos: [usize; 2], offsetPos: [usize; 2]) -> usize {
@@ -244,17 +248,18 @@ impl SYS_RENDERER{
     }
 
     /// # Render the world
-    /// TODO: Rewrite to support chunks scrolling
     fn r_util_world(&mut self, INr_world: &index::TEMPLATE_world, INr_offsets: [[usize;2];2]) {
-        let r_workingChunkArray = INr_world.w_returnChunkArray(INr_offsets[1]);
+        let r_workingChunkArray = INr_world.w_returnChunkArray(INr_offsets[1], [system::SYS_REND_CHUNK_X, system::SYS_REND_CHUNK_Y]);
         let r_workingBorderOffset = INr_offsets[0];
         for YPOS in 0..system::SYS_REND_WORLD_Y{
             for XPOS in 0..system::SYS_REND_WORLD_X{
-                let XCHUNK = (r_workingBorderOffset[0]+ XPOS)/system::SYS_CHUNK_X;
-                let YCHUNK = (r_workingBorderOffset[1] + YPOS) /system::SYS_CHUNK_Y;
-                let XCELL = (r_workingBorderOffset[0] + XPOS) % system::SYS_CHUNK_X;
-                let YCELL = (r_workingBorderOffset[1] + YPOS) % system::SYS_CHUNK_Y;
-                let r_workingChunkCell = &r_workingChunkArray[XCHUNK + YCHUNK * system::SYS_REND_CHUNK_Y].ch_cells[ XCELL + YCELL * system::SYS_CHUNK_Y];
+                let r_workingChunkCell = &r_workingChunkArray[
+                    (r_workingBorderOffset[0]+ XPOS)/system::SYS_CHUNK_X + 
+                    (r_workingBorderOffset[1] + YPOS) /system::SYS_CHUNK_Y * system::SYS_REND_CHUNK_Y
+                    ].ch_cells[
+                        (r_workingBorderOffset[0] + XPOS) % system::SYS_CHUNK_X + 
+                        (r_workingBorderOffset[1] + YPOS) % system::SYS_CHUNK_Y * system::SYS_CHUNK_Y
+                        ];
                 self.r_util_setBufferCell(self.r_util_calcPos([XPOS, YPOS], [2,2]), 
                     r_workingChunkCell.c_char, 
                     r_workingChunkCell.c_colChr, 
@@ -263,11 +268,13 @@ impl SYS_RENDERER{
             }
         }
     }
-    fn r_util_screenOffsetsBCP(&mut self, INr_player: &index::TEMPLATE_player) -> [[usize;2];3]{
+    /// # Calculate offsets for world rendering
+    /// Returns `[X, Y]` offset for screen and Player offset in Chunk buffer
+    fn r_util_screenOffsetsSP(&mut self, INr_player: &index::TEMPLATE_player) -> [[usize;2];2]{
         let mut r_screenCoords = [INr_player.p_x, INr_player.p_y];
-        let mut r_screenChunkCoords = [INr_player.p_chunkX, INr_player.p_chunkY];
         let mut r_playerOffset = [system::SYS_REND_WORLD_X / 2, system::SYS_REND_WORLD_Y / 2];
 
+        // Push border away until it doesn't go out of bounds
         while r_screenCoords[0].checked_sub(system::SYS_REND_WORLD_X / 2).is_none() {
             r_screenCoords[0] += 1;
             r_playerOffset[0] -= 1
@@ -284,25 +291,14 @@ impl SYS_RENDERER{
             r_screenCoords[1] -= 1;
             r_playerOffset[1] += 1
         }
-        
-        while r_screenChunkCoords[0].checked_sub(system::SYS_REND_CHUNK_X / 2).is_none() {
-            r_screenChunkCoords[0] += 1
-        }
-        while r_screenChunkCoords[0] + system::SYS_REND_CHUNK_X / 2 > system::SYS_WORLD_X {
-            r_screenChunkCoords[0] -= 1
-        }
-        while r_screenChunkCoords[1].checked_sub(system::SYS_REND_CHUNK_Y / 2).is_none() {
-            r_screenChunkCoords[1] += 1
-        }
-        while r_screenChunkCoords[1] + system::SYS_REND_CHUNK_Y / 2 > system::SYS_WORLD_Y {
-            r_screenChunkCoords[1] -= 1
-        }
 
+        // Find the top left corner in global coords and subtract player chunk to get offset relative to Chunk Buffer
         r_screenCoords = [(r_screenCoords[0] - system::SYS_REND_WORLD_X / 2) - ((INr_player.p_chunkX.checked_sub(1).unwrap_or(0)) * system::SYS_CHUNK_X),
         (r_screenCoords[1] - system::SYS_REND_WORLD_Y / 2) - ((INr_player.p_chunkY.checked_sub(1).unwrap_or(0)) * system::SYS_CHUNK_Y)];
 
+        // DEBUG
         self.r_pushDebugStr(&format!("Screen border offset: {:?}\nPlayer offset: {:?}", r_screenCoords, r_playerOffset));
 
-        return [r_screenCoords, r_screenChunkCoords, r_playerOffset];
+        return [r_screenCoords, r_playerOffset];
     }
 }
