@@ -1,4 +1,5 @@
 use crossterm::style::Color;
+use rand::{thread_rng, Rng};
 
 use crate::system;
 
@@ -154,6 +155,48 @@ impl TEMPLATE_world {
         TEMPLATE_world { 
             w_chunks: [TEMPLATE_wChunk::new(); system::SYS_WORLD_X*system::SYS_WORLD_Y],
          }
+    }
+
+    pub fn w_generateRandom(&mut self){
+        let mut w_RNG = thread_rng();
+        // # PIPELINE:
+        // 1. Generate Lakes
+        // - Pick random sparse points
+        // - Circle fill random distance
+        // - Remove random exposed points
+        // 2. Generate Cliffs/walls
+        // - Pick random sparse points
+        // - If point is on water, abort
+        // - Pick random axis
+        // - Extrude by said axis
+        // 3. Generate Forests
+        // - Same thing as lakes, except don't overlap any Cliff or Water tiles
+
+        // Ponds
+
+        // Vector with final coordinates for water tiles
+        let mut w_lakeTilesFinal: Vec<[usize; 2]> = Vec::new();
+        for _ in 0..w_RNG.gen_range(2..=8){
+            // Set values for given lake
+            let w_lakeRandomX:usize = w_RNG.gen_range(8..system::SYS_GRID_X - 9);
+            let w_lakeRandomY:usize = w_RNG.gen_range(8..system::SYS_GRID_Y - 9);
+            let w_lakeRandomSize:usize = w_RNG.gen_range(3..=6);
+            let w_lakeRadius = w_lakeRandomSize / 2;
+
+            let w_lakeStartingPosition = [w_lakeRandomX - w_lakeRadius, w_lakeRandomY - w_lakeRadius];
+
+            for CELLY in 0..w_lakeRandomSize{
+                for CELLX in 0..w_lakeRandomSize{
+                    let w_cellPos = [w_lakeStartingPosition[0] + CELLX, w_lakeStartingPosition[1] + CELLY];
+                    if w_cellPos[0].abs_diff(w_lakeRandomX).pow(2) + w_cellPos[1].abs_diff(w_lakeRandomY).pow(2) <= w_lakeRandomSize{
+                        w_lakeTilesFinal.push(w_cellPos)
+                    }
+                }
+            }
+        }
+        for COORDS in w_lakeTilesFinal{
+            self.w_setCell(COORDS, 'W', Color::White, Color::Blue)
+        }
     }
     /// # Calculate position in the world
     /// Takes `[X, Y]` coords as input and outputs `[ChunkIndex, CellIndex]`
