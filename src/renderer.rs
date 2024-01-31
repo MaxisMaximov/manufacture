@@ -53,13 +53,11 @@ impl SYS_RENDERER{
     pub fn SYS_HANDLER_renderGame(&mut self, INr_player: &index::TEMPLATE_player, INr_world: &index::TEMPLATE_world) {
         let RENDER_start = Instant::now();
 
-        let r_offsets = self.r_util_screenOffsetsSP(INr_player);
-
         // Set cell for the player
         // TODO: Clean up
         self.r_util_setBufferCell(
             self.r_util_calcPos(
-                r_offsets[1], 
+                [system::SYS_REND_WORLD_X / 2, system::SYS_REND_WORLD_Y / 2], 
                 [2,2]
             ), 
             'P', 
@@ -72,7 +70,7 @@ impl SYS_RENDERER{
 
         self.r_util_border([1, 20], [36, 6]);
 
-        self.r_util_world(INr_world, [r_offsets[0], [INr_player.p_chunkX, INr_player.p_chunkY]]);
+        self.r_util_world(INr_world, INr_player);
 
         // Convert buffer into string
         let mut RENDER_bufferstring = String::new();
@@ -248,13 +246,17 @@ impl SYS_RENDERER{
     }
 
     /// # Render the world
-    fn r_util_world(&mut self, INr_world: &index::TEMPLATE_world, INr_offsets: [[usize;2];2]) {
-        let r_workingChunkArray = INr_world.w_returnChunkArray(INr_offsets[1], [system::SYS_REND_CHUNK_X, system::SYS_REND_CHUNK_Y]);
-        let r_workingBorderOffset = INr_offsets[0];
+    fn r_util_world(&mut self, INr_world: &index::TEMPLATE_world, INr_player: &index::TEMPLATE_player) {
+        let r_workingChunkArray = INr_world.w_returnChunkArray([INr_player.p_chunkX, INr_player. p_chunkY], [system::SYS_REND_CHUNK_X, system::SYS_REND_CHUNK_Y]);
+        let r_workingBorderOffset = [
+            (INr_player.p_x % system::SYS_CHUNK_X + system::SYS_REND_CHUNK_X / 2 * system::SYS_CHUNK_X) - system::SYS_REND_WORLD_X / 2,
+            (INr_player.p_y % system::SYS_CHUNK_Y + system::SYS_REND_CHUNK_Y / 2 * system::SYS_CHUNK_Y) - system::SYS_REND_WORLD_Y / 2
+        ];
+
         for YPOS in 0..system::SYS_REND_WORLD_Y{
             for XPOS in 0..system::SYS_REND_WORLD_X{
                 let r_workingChunkCell = &r_workingChunkArray[
-                    (r_workingBorderOffset[0]+ XPOS)/system::SYS_CHUNK_X + 
+                    (r_workingBorderOffset[0] + XPOS)/system::SYS_CHUNK_X + 
                     (r_workingBorderOffset[1] + YPOS) /system::SYS_CHUNK_Y * system::SYS_REND_CHUNK_Y
                     ].ch_cells[
                         (r_workingBorderOffset[0] + XPOS) % system::SYS_CHUNK_X + 
@@ -267,38 +269,5 @@ impl SYS_RENDERER{
                 );
             }
         }
-    }
-    /// # Calculate offsets for world rendering
-    /// Returns `[X, Y]` offset for screen and Player offset in Chunk buffer
-    fn r_util_screenOffsetsSP(&mut self, INr_player: &index::TEMPLATE_player) -> [[usize;2];2]{
-        let mut r_screenCoords = [INr_player.p_x, INr_player.p_y];
-        let mut r_playerOffset = [system::SYS_REND_WORLD_X / 2, system::SYS_REND_WORLD_Y / 2];
-
-        // Push border away until it doesn't go out of bounds
-        while r_screenCoords[0].checked_sub(system::SYS_REND_WORLD_X / 2).is_none() {
-            r_screenCoords[0] += 1;
-            r_playerOffset[0] -= 1
-        }
-        while r_screenCoords[0] + system::SYS_REND_WORLD_X / 2 > system::SYS_GRID_X {
-            r_screenCoords[0] -= 1;
-            r_playerOffset[0] += 1
-        }
-        while r_screenCoords[1].checked_sub(system::SYS_REND_WORLD_Y / 2).is_none() {
-            r_screenCoords[1] += 1;
-            r_playerOffset[1] -= 1
-        }
-        while r_screenCoords[1] + system::SYS_REND_WORLD_Y / 2 > system::SYS_GRID_Y {
-            r_screenCoords[1] -= 1;
-            r_playerOffset[1] += 1
-        }
-
-        // Find the top left corner in global coords and subtract player chunk to get offset relative to Chunk Buffer
-        r_screenCoords = [(r_screenCoords[0] - system::SYS_REND_WORLD_X / 2) - ((INr_player.p_chunkX.checked_sub(1).unwrap_or(0)) * system::SYS_CHUNK_X),
-        (r_screenCoords[1] - system::SYS_REND_WORLD_Y / 2) - ((INr_player.p_chunkY.checked_sub(1).unwrap_or(0)) * system::SYS_CHUNK_Y)];
-
-        // DEBUG
-        self.r_pushDebugStr(&format!("Screen border offset: {:?}\nPlayer offset: {:?}", r_screenCoords, r_playerOffset));
-
-        return [r_screenCoords, r_playerOffset];
     }
 }
