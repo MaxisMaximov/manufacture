@@ -189,22 +189,23 @@ impl TEMPLATE_world {
                 INw_centerPos[0].saturating_sub(INw_size[0] / 2),
                 INw_centerPos[1].saturating_sub(INw_size[1] / 2)
             ];
-
-        let w_endPosition = [
-            (INw_centerPos[0] + w_radius[0]).clamp(0, system::SYS_WORLD_X - 1),
-            (INw_centerPos[1] + w_radius[1]).clamp(0, system::SYS_WORLD_Y - 1)
-        ];
-
-
         let mut OUTw_chunkVec: Vec<&TEMPLATE_wChunk> = vec![&self.w_dummyChunk; INw_size[0] * INw_size[1]];
         let mut WORLDYPOS = 0;
-        for YPOS in (w_radius[1] - w_startPosition[1].abs_diff(INw_centerPos[1]))..=(w_radius[1] - w_startPosition[1].abs_diff(INw_centerPos[1]) + w_startPosition[1].abs_diff(w_endPosition[1])){
-            let mut WORLDXPOS: usize = 0;
-            for XPOS in (w_radius[0] - w_startPosition[0].abs_diff(INw_centerPos[0]))..=(w_radius[0] - w_startPosition[0].abs_diff(INw_centerPos[0]) + w_startPosition[0].abs_diff(w_endPosition[0])){
-                OUTw_chunkVec[XPOS + YPOS * INw_size[0]] = &self.w_chunks[w_startPosition[0] + WORLDXPOS + (w_startPosition[1] + WORLDYPOS) * system::SYS_WORLD_X];
-                WORLDXPOS += 1
-            }
-            WORLDYPOS += 1
+        for YPOS in (
+                w_radius[1] - w_startPosition[1].abs_diff(INw_centerPos[1])
+                )..=(
+                    w_radius[1] - w_startPosition[1].abs_diff(INw_centerPos[1]) + w_startPosition[1].abs_diff((INw_centerPos[1] + w_radius[1]).clamp(0, system::SYS_WORLD_Y - 1))
+                ){
+                let mut WORLDXPOS: usize = 0;
+                for XPOS in (
+                    w_radius[0] - w_startPosition[0].abs_diff(INw_centerPos[0])
+                    )..=(
+                        w_radius[0] - w_startPosition[0].abs_diff(INw_centerPos[0]) + w_startPosition[0].abs_diff((INw_centerPos[0] + w_radius[0]).clamp(0, system::SYS_WORLD_X - 1))
+                    ){
+                    OUTw_chunkVec[XPOS + YPOS * INw_size[0]] = &self.w_chunks[w_startPosition[0] + WORLDXPOS + (w_startPosition[1] + WORLDYPOS) * system::SYS_WORLD_X];
+                    WORLDXPOS += 1
+                }
+                WORLDYPOS += 1
         }
         return OUTw_chunkVec;
     }
