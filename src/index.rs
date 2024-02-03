@@ -33,8 +33,8 @@ impl TEMPLATE_player {
             GAME_playerColors[INp_playerNum]
         };
         TEMPLATE_player {
-            p_x: 8,
-            p_y: 8,
+            p_x: 11,
+            p_y: 55,
             p_chunkX: 0,
             p_chunkY: 0,
             p_colorChar: Color::White,
@@ -157,42 +157,67 @@ impl TEMPLATE_world {
          }
     }
 
+    fn w_util_gen_circle(&self, INw_centerPos: [usize;2], INw_size: usize) -> Vec<[usize; 2]>{
+        let mut w_lakeTilesFinal: Vec<[usize; 2]> = Vec::new();
+        let w_lakeRadius = INw_size / 2;
+        let w_lakeStartingPosition = [INw_centerPos[0].saturating_sub(w_lakeRadius), INw_centerPos[1].saturating_sub(w_lakeRadius)];
+
+        for CELLY in 0..INw_size{
+            // If cell is out of Y bounds of the world, don't iterate over the rest
+            if w_lakeStartingPosition[1] + CELLY >= system::SYS_GRID_Y{
+                break;
+            }
+            for CELLX in 0..INw_size{
+                // If cell is out of X bounds of the world, don't iterate over the rest
+                if (w_lakeStartingPosition[0] + CELLX) >= system::SYS_GRID_X{
+                    break;
+                }
+
+                let w_cellPos = [w_lakeStartingPosition[0] + CELLX, w_lakeStartingPosition[1] + CELLY];
+                
+                // If it's inside the rhomb inside the circle it's guaranteed to be valid
+                if w_cellPos[0].abs_diff(INw_centerPos[0]) + w_cellPos[1].abs_diff(INw_centerPos[1]) <= w_lakeRadius{
+                    w_lakeTilesFinal.push(w_cellPos);
+                    continue;
+                }
+                // If it's not in rhomb or radius then skip
+                if w_cellPos[0].abs_diff(INw_centerPos[0]).pow(2) + w_cellPos[1].abs_diff(INw_centerPos[1]).pow(2) > INw_size{
+                    continue;
+                }
+                // If all previous checks passed that means it's valid
+                w_lakeTilesFinal.push(w_cellPos)
+            }
+        }
+        return  w_lakeTilesFinal;
+    }
+
     pub fn w_generateRandom(&mut self){
         let mut w_RNG = thread_rng();
-        // # PIPELINE:
+        // # PIPELINE (NOT FINAL):
         // 1. Generate Lakes
         // - Pick random sparse points
         // - Circle fill random distance
-        // - Remove random exposed points
+        // - Inside those circles, repeat random amount of times
         // 2. Generate Cliffs/walls
         // - Pick random sparse points
         // - If point is on water, abort
-        // - Pick random axis
-        // - Extrude by said axis
+        // - Pick random axis, can't be more than 75d if it's at end of a cliff already
+        // - Extrude by said axis by random amount
+        // - Repeat 2-3 times
         // 3. Generate Forests
         // - Same thing as lakes, except don't overlap any Cliff or Water tiles
 
         // Ponds
 
-        // Vector with final coordinates for water tiles
+        // Vector with final coordinates for water tiles to replace them all at once instead of 1 by 1
         let mut w_lakeTilesFinal: Vec<[usize; 2]> = Vec::new();
-        for _ in 0..w_RNG.gen_range(2..=8){
+        for _ in 0..w_RNG.gen_range(system::WORLD_POND_Q){
             // Set values for given lake
             let w_lakeRandomX:usize = w_RNG.gen_range(8..system::SYS_GRID_X - 9);
             let w_lakeRandomY:usize = w_RNG.gen_range(8..system::SYS_GRID_Y - 9);
-            let w_lakeRandomSize:usize = w_RNG.gen_range(3..=6);
-            let w_lakeRadius = w_lakeRandomSize / 2;
-
-            let w_lakeStartingPosition = [w_lakeRandomX - w_lakeRadius, w_lakeRandomY - w_lakeRadius];
-
-            for CELLY in 0..w_lakeRandomSize{
-                for CELLX in 0..w_lakeRandomSize{
-                    let w_cellPos = [w_lakeStartingPosition[0] + CELLX, w_lakeStartingPosition[1] + CELLY];
-                    if w_cellPos[0].abs_diff(w_lakeRandomX).pow(2) + w_cellPos[1].abs_diff(w_lakeRandomY).pow(2) <= w_lakeRandomSize{
-                        w_lakeTilesFinal.push(w_cellPos)
-                    }
-                }
-            }
+            let w_lakeRandomSize:usize = w_RNG.gen_range(system::WORLD_POND_SIZE);
+            
+            w_lakeTilesFinal.extend(self.w_util_gen_circle([w_lakeRandomX, w_lakeRandomY], w_lakeRandomSize));
         }
         for COORDS in w_lakeTilesFinal{
             self.w_setCell(COORDS, 'W', Color::White, Color::Blue)
