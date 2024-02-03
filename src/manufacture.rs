@@ -36,6 +36,7 @@ impl SYS_GAME {
     /// 
     /// I do not recommend going above 32 ticks/s
     pub fn GAME_loop(&mut self) {
+        self.GAME_world.w_generateRandom();
         loop {
             let loopStart: Instant = Instant::now();
 
