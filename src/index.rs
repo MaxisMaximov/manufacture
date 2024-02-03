@@ -1,3 +1,5 @@
+use std::ops::Add;
+
 use crossterm::style::Color;
 use rand::{thread_rng, Rng};
 
@@ -95,6 +97,9 @@ impl TEMPLATE_wrCell{
     pub fn new() -> Self{
         TEMPLATE_wrCell { c_char: ' ', c_colChr: Color::White, c_colBg: Color::Black }
     }
+    pub fn newDummy() -> Self{
+        TEMPLATE_wrCell { c_char: '0', c_colChr: Color::Black, c_colBg: Color::White }
+    }
 }
 impl Copy for TEMPLATE_wrCell {}
 impl Clone for TEMPLATE_wrCell {
@@ -115,6 +120,9 @@ pub struct TEMPLATE_wChunk {
 impl TEMPLATE_wChunk {
     pub fn new() -> Self {
         TEMPLATE_wChunk { ch_cells: [TEMPLATE_wrCell::new(); system::SYS_CHUNK_X * system:: SYS_CHUNK_Y] }
+    }
+    pub fn newDummy() -> Self {
+        TEMPLATE_wChunk { ch_cells: [TEMPLATE_wrCell::newDummy(); system::SYS_CHUNK_X * system:: SYS_CHUNK_Y]}
     }
 }
 impl Copy for TEMPLATE_wChunk {}
@@ -149,11 +157,13 @@ pub struct RENDER_textItem{
 /// `w_clearWorld` function is for debug purposes for now
 pub struct TEMPLATE_world {
     pub w_chunks: [TEMPLATE_wChunk; (system::SYS_WORLD_X * system::SYS_WORLD_Y)],
+    pub w_dummyChunk: TEMPLATE_wChunk
 }
 impl TEMPLATE_world {
     pub fn new() -> Self{
         TEMPLATE_world { 
             w_chunks: [TEMPLATE_wChunk::new(); system::SYS_WORLD_X*system::SYS_WORLD_Y],
+            w_dummyChunk: TEMPLATE_wChunk::newDummy()
          }
     }
 
@@ -235,30 +245,35 @@ impl TEMPLATE_world {
     /// # Get a slice of the world of `[X, Y]` size centered on chunk
     /// Returns array of chunk references
     /// 
-    /// Auto shifts the origin if the size exceeds bounds
+    /// Any area that is out of bounds gets filled with Dummy Chunks
     pub fn w_returnChunkArray(&self, INw_centerPos: [usize;2], INw_size: [usize; 2]) -> Vec<&TEMPLATE_wChunk>{
-        let mut w_actualPos = INw_centerPos;
 
-        while w_actualPos[0].checked_sub(INw_size[0] / 2).is_none() {
-            w_actualPos[0] += 1;
-        }
-        while w_actualPos[0] + w_actualPos[0] / 2 > system::SYS_WORLD_X {
-            w_actualPos[0] -= 1;
-        }
-        while w_actualPos[1].checked_sub(INw_size[1] / 2).is_none() {
-            w_actualPos[1] += 1;
-        }
-        while w_actualPos[1] + w_actualPos[1] / 2 > system::SYS_WORLD_Y {
-            w_actualPos[1] -= 1;
-        }
+        let w_radius = [
+            INw_size[0] / 2,
+            INw_size[1] / 2
+        ];
 
-        let mut w_chunkIndexStart = (w_actualPos[0] + w_actualPos[1] * system::SYS_WORLD_X) - (INw_size[0] / 2) - (INw_size[1] / 2) * system::SYS_WORLD_X;
-        let mut OUTw_chunkVec: Vec<&TEMPLATE_wChunk> = vec![&self.w_chunks[0]; INw_size[0] * INw_size[1]];
-        for YPOS in 0..INw_size[1]{
-            for XPOS in 0..INw_size[0]{
-                OUTw_chunkVec[XPOS + YPOS * INw_size[0]] = &self.w_chunks[w_chunkIndexStart + XPOS];
-            }
-            w_chunkIndexStart += system::SYS_WORLD_X;
+        let w_startPosition = [
+                INw_centerPos[0].saturating_sub(INw_size[0] / 2),
+                INw_centerPos[1].saturating_sub(INw_size[1] / 2)
+            ];
+        let mut OUTw_chunkVec: Vec<&TEMPLATE_wChunk> = vec![&self.w_dummyChunk; INw_size[0] * INw_size[1]];
+        let mut WORLDYPOS = 0;
+        for YPOS in (
+                w_radius[1] - w_startPosition[1].abs_diff(INw_centerPos[1])
+                )..=(
+                    w_radius[1] - w_startPosition[1].abs_diff(INw_centerPos[1]) + w_startPosition[1].abs_diff((INw_centerPos[1] + w_radius[1]).clamp(0, system::SYS_WORLD_Y - 1))
+                ){
+                let mut WORLDXPOS: usize = 0;
+                for XPOS in (
+                    w_radius[0] - w_startPosition[0].abs_diff(INw_centerPos[0])
+                    )..=(
+                        w_radius[0] - w_startPosition[0].abs_diff(INw_centerPos[0]) + w_startPosition[0].abs_diff((INw_centerPos[0] + w_radius[0]).clamp(0, system::SYS_WORLD_X - 1))
+                    ){
+                    OUTw_chunkVec[XPOS + YPOS * INw_size[0]] = &self.w_chunks[w_startPosition[0] + WORLDXPOS + (w_startPosition[1] + WORLDYPOS) * system::SYS_WORLD_X];
+                    WORLDXPOS += 1
+                }
+                WORLDYPOS += 1
         }
         return OUTw_chunkVec;
     }
