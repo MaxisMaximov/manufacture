@@ -1,4 +1,4 @@
-use std::{time::Duration, ops::RangeInclusive};
+use std::{time::Duration, ops::Range};
 
 pub const SYS_TICKRATE: u8 = 8;
 pub const SYS_TICKTIME: Duration = Duration::from_millis(1000 / SYS_TICKRATE as u64);
@@ -25,16 +25,13 @@ pub const SYS_TICKTIME: Duration = Duration::from_millis(1000 / SYS_TICKRATE as 
     // region: Generation
 
         // Amount of ponds/lakes to generate Min-Max
-        pub const WORLD_POND_Q: RangeInclusive<usize> = 4..=12;
+        pub const WORLD_POND_Q: Range<usize> = 4..8;
 
         // Size of ponds/lakes Min-Max
-        pub const WORLD_POND_SIZE: RangeInclusive<usize> = 3..=5;
+        pub const WORLD_POND_SIZE: Range<usize> = 3..8;
 
         // How deep should pond iterations go Min-Max
-        pub const WORLD_PONG_ITERS: RangeInclusive<usize> = 3..=5;
-
-        // How many "leafs" should each iteration have Min-Max
-        pub const WORLD_POND_ITERS_LEAF: RangeInclusive<usize> = 2..=4;
+        pub const WORLD_POND_ITERS: Range<usize> = 3..5;
 
     // endregion: Generation
 

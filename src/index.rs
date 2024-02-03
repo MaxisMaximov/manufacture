@@ -1,7 +1,7 @@
-use std::ops::Add;
+use std::ops::Range;
 
 use crossterm::style::Color;
-use rand::{thread_rng, Rng};
+use rand::{rngs::ThreadRng, thread_rng, Rng};
 
 use crate::system;
 
@@ -150,7 +150,7 @@ pub struct RENDER_textItem{
 
 
 /// # Game world
-/// For now relies on `SYS_GRID` values in `system.rs`
+/// For now relies on `SYS_WORLD` values in `system.rs`
 /// 
 /// TODO: Make it handle buildings and chunks
 /// 
@@ -167,39 +167,106 @@ impl TEMPLATE_world {
          }
     }
 
-    fn w_util_gen_circle(&self, INw_centerPos: [usize;2], INw_size: usize) -> Vec<[usize; 2]>{
-        let mut w_lakeTilesFinal: Vec<[usize; 2]> = Vec::new();
-        let w_lakeRadius = INw_size / 2;
-        let w_lakeStartingPosition = [INw_centerPos[0].saturating_sub(w_lakeRadius), INw_centerPos[1].saturating_sub(w_lakeRadius)];
+    /// # Circlegen iteration
+    /// Each iteration generates it's circle picks coord for next iteration within it's range
+    fn w_util_circleIter(&self, INw_RNG: &mut ThreadRng, INw_initPos: [usize;2], INw_iters: usize, INw_size: Range<usize>) -> Vec<[usize; 2]>{
 
-        for CELLY in 0..INw_size{
-            // If cell is out of Y bounds of the world, don't iterate over the rest
-            if w_lakeStartingPosition[1] + CELLY >= system::SYS_GRID_Y{
-                break;
-            }
-            for CELLX in 0..INw_size{
-                // If cell is out of X bounds of the world, don't iterate over the rest
-                if (w_lakeStartingPosition[0] + CELLX) >= system::SYS_GRID_X{
+        let mut OUTw_iterTiles: Vec<[usize; 2]> = Vec::new();
+
+        // Set variables to be used by iterations
+        let mut w_iterCoords: [usize; 2] = INw_initPos;
+        let mut w_nextIterCoords: [usize; 2];
+        let mut w_iterSize: usize = INw_RNG.gen_range(INw_size.clone());
+        let mut w_iterRadius: usize = w_iterSize / 2;
+
+        let mut w_nextIterAreaX: Range<usize>;
+        let mut w_nextIterAreaY: Range<usize>;
+
+        for _ in 0..INw_iters{
+            // Find coords of tiles where the iteration has influence
+            let w_circleStartingPosition = [w_iterCoords[0].saturating_sub(w_iterRadius), w_iterCoords[1].saturating_sub(w_iterRadius)];
+            for CELLY in 0..w_iterSize{
+                // If iterator is out of Y bounds of the world, don't iterate over the rest
+                if w_circleStartingPosition[1] + CELLY >= system::SYS_GRID_Y{
                     break;
                 }
-
-                let w_cellPos = [w_lakeStartingPosition[0] + CELLX, w_lakeStartingPosition[1] + CELLY];
-                
-                // If it's inside the rhomb inside the circle it's guaranteed to be valid
-                if w_cellPos[0].abs_diff(INw_centerPos[0]) + w_cellPos[1].abs_diff(INw_centerPos[1]) <= w_lakeRadius{
-                    w_lakeTilesFinal.push(w_cellPos);
-                    continue;
+                for CELLX in 0..w_iterSize{
+                    // If iterator is out of X bounds of the world, don't iterate over the rest
+                    if (w_circleStartingPosition[0] + CELLX) >= system::SYS_GRID_X{
+                        break;
+                    }
+                    
+                    // Now checks for the cell itself
+                    let w_cellPos = [w_circleStartingPosition[0] + CELLX, w_circleStartingPosition[1] + CELLY];
+                    
+                    // If it's inside the rhomb inside the circle it's guaranteed to be valid
+                    if w_cellPos[0].abs_diff(w_iterCoords[0]) + w_cellPos[1].abs_diff(w_iterCoords[1]) <= w_iterRadius{
+                        OUTw_iterTiles.push(w_cellPos);
+                        continue;
+                    }
+                    // If it's not in rhomb or radius then skip
+                    if w_cellPos[0].abs_diff(w_iterCoords[0]).pow(2) + w_cellPos[1].abs_diff(w_iterCoords[1]).pow(2) > w_iterRadius.pow(2){
+                        continue;
+                    }
+                    // If all previous checks passed that means it's valid
+                    OUTw_iterTiles.push(w_cellPos)
                 }
-                // If it's not in rhomb or radius then skip
-                if w_cellPos[0].abs_diff(INw_centerPos[0]).pow(2) + w_cellPos[1].abs_diff(INw_centerPos[1]).pow(2) > INw_size{
-                    continue;
-                }
-                // If all previous checks passed that means it's valid
-                w_lakeTilesFinal.push(w_cellPos)
             }
+
+            // Find coords for next iteration
+            w_nextIterAreaX = w_iterCoords[0].saturating_sub(w_iterRadius)..(w_iterCoords[0] + w_iterRadius).clamp(0, system::SYS_GRID_X);
+            w_nextIterAreaY = w_iterCoords[1].saturating_sub(w_iterRadius)..(w_iterCoords[1] + w_iterRadius).clamp(0, system::SYS_GRID_X);
+            loop {
+                w_nextIterCoords = [INw_RNG.gen_range(w_nextIterAreaX.clone()), INw_RNG.gen_range(w_nextIterAreaY.clone())];
+                if w_nextIterCoords[0].abs_diff(w_iterCoords[0]).pow(2) + w_nextIterCoords[1].abs_diff(w_iterCoords[1]).pow(2) > w_iterRadius.pow(2){
+                    continue;
+                }
+                break;
+            }
+
+            // Set variables for next iteration
+            w_iterCoords = w_nextIterCoords;
+            w_iterSize = INw_RNG.gen_range(INw_size.clone());
+            w_iterRadius = w_iterSize / 2;
         }
-        return  w_lakeTilesFinal;
+        
+        return OUTw_iterTiles;
     }
+
+    // IDKFA
+    // fn w_util_gen_circle(&self, w_iterCoords: [usize;2], INw_size: usize) -> Vec<[usize; 2]>{
+    //     let mut OUTw_iterTiles: Vec<[usize; 2]> = Vec::new();
+    //     let w_iterRadius = INw_size / 2;
+    //     let w_circleStartingPosition = [w_iterCoords[0].saturating_sub(w_iterRadius), w_iterCoords[1].saturating_sub(w_iterRadius)];
+
+    //     for CELLY in 0..INw_size{
+    //         // If iterator is out of Y bounds of the world, don't iterate over the rest
+    //         if w_circleStartingPosition[1] + CELLY >= system::SYS_GRID_Y{
+    //             break;
+    //         }
+    //         for CELLX in 0..INw_size{
+    //             // If iterator is out of X bounds of the world, don't iterate over the rest
+    //             if (w_circleStartingPosition[0] + CELLX) >= system::SYS_GRID_X{
+    //                 break;
+    //             }
+
+    //             let w_cellPos = [w_circleStartingPosition[0] + CELLX, w_circleStartingPosition[1] + CELLY];
+                
+    //             // If it's inside the rhomb inside the circle it's guaranteed to be valid
+    //             if w_cellPos[0].abs_diff(w_iterCoords[0]) + w_cellPos[1].abs_diff(w_iterCoords[1]) <= w_iterRadius{
+    //                 OUTw_iterTiles.push(w_cellPos);
+    //                 continue;
+    //             }
+    //             // If it's not in rhomb or radius then skip
+    //             if w_cellPos[0].abs_diff(w_iterCoords[0]).pow(2) + w_cellPos[1].abs_diff(w_iterCoords[1]).pow(2) > w_iterRadius.pow(2){
+    //                 continue;
+    //             }
+    //             // If all previous checks passed that means it's valid
+    //             OUTw_iterTiles.push(w_cellPos)
+    //         }
+    //     }
+    //     return  OUTw_iterTiles;
+    // }
 
     pub fn w_generateRandom(&mut self){
         let mut w_RNG = thread_rng();
@@ -220,16 +287,21 @@ impl TEMPLATE_world {
         // Ponds
 
         // Vector with final coordinates for water tiles to replace them all at once instead of 1 by 1
-        let mut w_lakeTilesFinal: Vec<[usize; 2]> = Vec::new();
+        let mut OUTw_iterTiles: Vec<[usize; 2]> = Vec::new();
+
         for _ in 0..w_RNG.gen_range(system::WORLD_POND_Q){
             // Set values for given lake
             let w_lakeRandomX:usize = w_RNG.gen_range(8..system::SYS_GRID_X - 9);
             let w_lakeRandomY:usize = w_RNG.gen_range(8..system::SYS_GRID_Y - 9);
-            let w_lakeRandomSize:usize = w_RNG.gen_range(system::WORLD_POND_SIZE);
+            let w_lakeIters:usize = w_RNG.gen_range(system::WORLD_POND_ITERS);
             
-            w_lakeTilesFinal.extend(self.w_util_gen_circle([w_lakeRandomX, w_lakeRandomY], w_lakeRandomSize));
+            // Let the iterator handle the rest
+            OUTw_iterTiles.extend(self.w_util_circleIter(&mut w_RNG,
+                [w_lakeRandomX, w_lakeRandomY],
+                w_lakeIters,
+                system::WORLD_POND_SIZE))
         }
-        for COORDS in w_lakeTilesFinal{
+        for COORDS in OUTw_iterTiles{
             self.w_setCell(COORDS, 'W', Color::White, Color::Blue)
         }
     }
@@ -246,7 +318,7 @@ impl TEMPLATE_world {
     /// Returns array of chunk references
     /// 
     /// Any area that is out of bounds gets filled with Dummy Chunks
-    pub fn w_returnChunkArray(&self, INw_centerPos: [usize;2], INw_size: [usize; 2]) -> Vec<&TEMPLATE_wChunk>{
+    pub fn w_returnChunkArray(&self, w_iterCoords: [usize;2], INw_size: [usize; 2]) -> Vec<&TEMPLATE_wChunk>{
 
         let w_radius = [
             INw_size[0] / 2,
@@ -254,21 +326,21 @@ impl TEMPLATE_world {
         ];
 
         let w_startPosition = [
-                INw_centerPos[0].saturating_sub(INw_size[0] / 2),
-                INw_centerPos[1].saturating_sub(INw_size[1] / 2)
+                w_iterCoords[0].saturating_sub(INw_size[0] / 2),
+                w_iterCoords[1].saturating_sub(INw_size[1] / 2)
             ];
         let mut OUTw_chunkVec: Vec<&TEMPLATE_wChunk> = vec![&self.w_dummyChunk; INw_size[0] * INw_size[1]];
         let mut WORLDYPOS = 0;
         for YPOS in (
-                w_radius[1] - w_startPosition[1].abs_diff(INw_centerPos[1])
+                w_radius[1] - w_startPosition[1].abs_diff(w_iterCoords[1])
                 )..=(
-                    w_radius[1] - w_startPosition[1].abs_diff(INw_centerPos[1]) + w_startPosition[1].abs_diff((INw_centerPos[1] + w_radius[1]).clamp(0, system::SYS_WORLD_Y - 1))
+                    w_radius[1] - w_startPosition[1].abs_diff(w_iterCoords[1]) + w_startPosition[1].abs_diff((w_iterCoords[1] + w_radius[1]).clamp(0, system::SYS_WORLD_Y - 1))
                 ){
                 let mut WORLDXPOS: usize = 0;
                 for XPOS in (
-                    w_radius[0] - w_startPosition[0].abs_diff(INw_centerPos[0])
+                    w_radius[0] - w_startPosition[0].abs_diff(w_iterCoords[0])
                     )..=(
-                        w_radius[0] - w_startPosition[0].abs_diff(INw_centerPos[0]) + w_startPosition[0].abs_diff((INw_centerPos[0] + w_radius[0]).clamp(0, system::SYS_WORLD_X - 1))
+                        w_radius[0] - w_startPosition[0].abs_diff(w_iterCoords[0]) + w_startPosition[0].abs_diff((w_iterCoords[0] + w_radius[0]).clamp(0, system::SYS_WORLD_X - 1))
                     ){
                     OUTw_chunkVec[XPOS + YPOS * INw_size[0]] = &self.w_chunks[w_startPosition[0] + WORLDXPOS + (w_startPosition[1] + WORLDYPOS) * system::SYS_WORLD_X];
                     WORLDXPOS += 1
