@@ -171,7 +171,7 @@ impl TEMPLATE_world {
     /// Each iteration generates it's circle picks coord for next iteration within it's range
     fn w_util_circleIter(&self, INw_RNG: &mut ThreadRng, INw_initPos: [usize;2], INw_iters: usize, INw_size: Range<usize>) -> Vec<[usize; 2]>{
 
-        let mut OUTw_iterTiles: Vec<[usize; 2]> = Vec::new();
+        let mut w_genLakeTiles: Vec<[usize; 2]> = Vec::new();
 
         // Set variables to be used by iterations
         let mut w_iterCoords: [usize; 2] = INw_initPos;
@@ -201,7 +201,7 @@ impl TEMPLATE_world {
                     
                     // If it's inside the rhomb inside the circle it's guaranteed to be valid
                     if w_cellPos[0].abs_diff(w_iterCoords[0]) + w_cellPos[1].abs_diff(w_iterCoords[1]) <= w_iterRadius{
-                        OUTw_iterTiles.push(w_cellPos);
+                        w_genLakeTiles.push(w_cellPos);
                         continue;
                     }
                     // If it's not in rhomb or radius then skip
@@ -209,9 +209,13 @@ impl TEMPLATE_world {
                         continue;
                     }
                     // If all previous checks passed that means it's valid
-                    OUTw_iterTiles.push(w_cellPos)
+                    w_genLakeTiles.push(w_cellPos)
                 }
             }
+
+            // Sort and remove duplicate coords to not waste memory
+            w_genLakeTiles.sort();
+            w_genLakeTiles.dedup();
 
             // Find coords for next iteration
             w_nextIterAreaX = w_iterCoords[0].saturating_sub(w_iterRadius)..(w_iterCoords[0] + w_iterRadius).clamp(0, system::SYS_GRID_X);
@@ -230,43 +234,8 @@ impl TEMPLATE_world {
             w_iterRadius = w_iterSize / 2;
         }
         
-        return OUTw_iterTiles;
+        return w_genLakeTiles;
     }
-
-    // IDKFA
-    // fn w_util_gen_circle(&self, w_iterCoords: [usize;2], INw_size: usize) -> Vec<[usize; 2]>{
-    //     let mut OUTw_iterTiles: Vec<[usize; 2]> = Vec::new();
-    //     let w_iterRadius = INw_size / 2;
-    //     let w_circleStartingPosition = [w_iterCoords[0].saturating_sub(w_iterRadius), w_iterCoords[1].saturating_sub(w_iterRadius)];
-
-    //     for CELLY in 0..INw_size{
-    //         // If iterator is out of Y bounds of the world, don't iterate over the rest
-    //         if w_circleStartingPosition[1] + CELLY >= system::SYS_GRID_Y{
-    //             break;
-    //         }
-    //         for CELLX in 0..INw_size{
-    //             // If iterator is out of X bounds of the world, don't iterate over the rest
-    //             if (w_circleStartingPosition[0] + CELLX) >= system::SYS_GRID_X{
-    //                 break;
-    //             }
-
-    //             let w_cellPos = [w_circleStartingPosition[0] + CELLX, w_circleStartingPosition[1] + CELLY];
-                
-    //             // If it's inside the rhomb inside the circle it's guaranteed to be valid
-    //             if w_cellPos[0].abs_diff(w_iterCoords[0]) + w_cellPos[1].abs_diff(w_iterCoords[1]) <= w_iterRadius{
-    //                 OUTw_iterTiles.push(w_cellPos);
-    //                 continue;
-    //             }
-    //             // If it's not in rhomb or radius then skip
-    //             if w_cellPos[0].abs_diff(w_iterCoords[0]).pow(2) + w_cellPos[1].abs_diff(w_iterCoords[1]).pow(2) > w_iterRadius.pow(2){
-    //                 continue;
-    //             }
-    //             // If all previous checks passed that means it's valid
-    //             OUTw_iterTiles.push(w_cellPos)
-    //         }
-    //     }
-    //     return  OUTw_iterTiles;
-    // }
 
     pub fn w_generateRandom(&mut self){
         let mut w_RNG = thread_rng();
@@ -285,25 +254,55 @@ impl TEMPLATE_world {
         // - Same thing as lakes, except don't overlap any Cliff or Water tiles
 
         // Ponds
-
         // Vector with final coordinates for water tiles to replace them all at once instead of 1 by 1
-        let mut OUTw_iterTiles: Vec<[usize; 2]> = Vec::new();
-
+        let mut w_genLakeTiles: Vec<[usize; 2]> = Vec::new();
         for _ in 0..w_RNG.gen_range(system::WORLD_POND_Q){
             // Set values for given lake
-            let w_lakeRandomX:usize = w_RNG.gen_range(8..system::SYS_GRID_X - 9);
-            let w_lakeRandomY:usize = w_RNG.gen_range(8..system::SYS_GRID_Y - 9);
+            let w_lakeRandomX:usize = w_RNG.gen_range(8..system::SYS_GRID_X - 8);
+            let w_lakeRandomY:usize = w_RNG.gen_range(8..system::SYS_GRID_Y - 8);
             let w_lakeIters:usize = w_RNG.gen_range(system::WORLD_POND_ITERS);
             
             // Let the iterator handle the rest
-            OUTw_iterTiles.extend(self.w_util_circleIter(&mut w_RNG,
+            w_genLakeTiles.extend(self.w_util_circleIter(&mut w_RNG,
                 [w_lakeRandomX, w_lakeRandomY],
                 w_lakeIters,
-                system::WORLD_POND_SIZE))
+                system::WORLD_POND_SIZE));
+            
+            // Sort and remove duplicates
+            w_genLakeTiles.sort();
+            w_genLakeTiles.dedup();
         }
-        for COORDS in OUTw_iterTiles{
+        for COORDS in w_genLakeTiles{
             self.w_setCell(COORDS, 'W', Color::White, Color::Blue)
         }
+
+        // Forests
+        let mut w_genForestTiles: Vec<[usize; 2]> = Vec::new();
+        for _ in 0..w_RNG.gen_range(system::WORLD_FOREST_Q){
+            // Set values for given forest
+            let w_forestRandomX:usize = w_RNG.gen_range(8..system::SYS_GRID_X - 8);
+            let w_forestRandomY:usize = w_RNG.gen_range(8..system::SYS_GRID_Y - 8);
+            let w_forestIters:usize = w_RNG.gen_range(system::WORLD_POND_ITERS);
+            
+            // Let the iterator handle the rest
+            w_genForestTiles.extend(self.w_util_circleIter(&mut w_RNG,
+                [w_forestRandomX, w_forestRandomY],
+                w_forestIters,
+                system::WORLD_FOREST_SIZE));
+            
+            // Sort and remove duplicates
+            w_genForestTiles.sort();
+            w_genForestTiles.dedup();
+        }
+        for COORDS in w_genForestTiles{
+            // Skip cells that are already occupied by lakes
+            if self.w_getCell(COORDS).c_char != ' '{
+                continue;
+            }
+            self.w_setCell(COORDS, 'F', Color::White, Color::DarkGreen)
+        }
+
+
     }
     /// # Calculate position in the world
     /// Takes `[X, Y]` coords as input and outputs `[ChunkIndex, CellIndex]`
@@ -353,6 +352,11 @@ impl TEMPLATE_world {
     pub fn w_setCell(&mut self, INw_position: [usize;2], INw_character: char, INw_colorChar: Color, INw_colorBg: Color) {
         let w_workingPosition = self.w_calcPosIndex(INw_position);
         self.w_chunks[w_workingPosition[0]].ch_cells[w_workingPosition[1]] = TEMPLATE_wrCell{c_char: INw_character, c_colChr: INw_colorChar, c_colBg: INw_colorBg};
+    }
+
+    pub fn w_getCell(&self, INw_position: [usize;2]) -> &TEMPLATE_wrCell{
+        let w_workingPos = self.w_calcPosIndex(INw_position);
+        return &self.w_chunks[w_workingPos[0]].ch_cells[w_workingPos[1]];
     }
 
     pub fn w_clearWorld(&mut self) {

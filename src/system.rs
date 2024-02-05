@@ -24,14 +24,33 @@ pub const SYS_TICKTIME: Duration = Duration::from_millis(1000 / SYS_TICKRATE as 
 
     // region: Generation
 
-        // Amount of ponds/lakes to generate Min-Max
-        pub const WORLD_POND_Q: Range<usize> = 4..8;
+        // region: Lakes
 
-        // Size of ponds/lakes Min-Max
-        pub const WORLD_POND_SIZE: Range<usize> = 3..8;
+            // Amount of ponds/lakes to generate Min-Max
+            pub const WORLD_POND_Q: Range<usize> = 4..6;
 
-        // How deep should pond iterations go Min-Max
-        pub const WORLD_POND_ITERS: Range<usize> = 3..5;
+            // Size of pond/lake iterations Min-Max
+            pub const WORLD_POND_SIZE: Range<usize> = 3..10;
+
+            // How deep should pond/lake iterations go Min-Max
+            pub const WORLD_POND_ITERS: Range<usize> = 6..8;
+
+            pub const WORLD_POND_DEEP_THRES: usize = 3;
+
+        // endregion: Lakes
+
+        // region: Forests
+
+            // Amount of forests to generate Min-Max
+            pub const WORLD_FOREST_Q: Range<usize> = 4..8;
+
+            // Size of forest iterations Min-Max
+            pub const WORLD_FOREST_SIZE: Range<usize> = 6..10;
+
+            // How deep should forest iterations go Min-Max
+            pub const WORLD_FOREST_ITERS: Range<usize> = 5..8;
+
+        // endregion: Forests
 
     // endregion: Generation
 
