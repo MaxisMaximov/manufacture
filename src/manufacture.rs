@@ -1,17 +1,15 @@
 use crossterm::{event::*, style::Color};
 use std::{process::exit, thread::sleep, time::{Duration, Instant}};
 
-use crate::index;
-use crate::renderer;
-use crate::system;
+use crate::*;
 
 /// # Game struct
 /// Contains the player and World and does all the logic
 /// 
 /// Renderer is a field so it can be replaced with a pixel one later on should I decide so
 pub struct SYS_GAME {
-    GAME_player: index::TEMPLATE_player,
-    GAME_world: index::TEMPLATE_world,
+    GAME_player: player::TEMPLATE_player,
+    GAME_world: world::TEMPLATE_world,
     GAME_renderer: renderer::SYS_RENDERER
 
 }
@@ -24,8 +22,8 @@ impl SYS_GAME {
     /// Multiplayer will be added in the future
     pub fn new() -> Self{
         SYS_GAME { 
-            GAME_player: index::TEMPLATE_player::new(1, None), 
-            GAME_world: index::TEMPLATE_world::new(), 
+            GAME_player: player::TEMPLATE_player::new(1, None), 
+            GAME_world: world::TEMPLATE_world::new(), 
             GAME_renderer: renderer::SYS_RENDERER::new() }
     }
 

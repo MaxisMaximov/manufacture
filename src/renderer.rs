@@ -2,8 +2,7 @@ use clearscreen::clear;
 use crossterm::style::{Color, Stylize};
 use std::time::Instant;
 
-use crate::index;
-use crate::system;
+use crate::*;
 
 /// # Text renderer
 /// ## Disclaimer
@@ -50,7 +49,7 @@ impl SYS_RENDERER{
     /// - Convert buffer into printable string
     /// - Display frame
     /// - Display debug string
-    pub fn SYS_HANDLER_renderGame(&mut self, INr_player: &index::TEMPLATE_player, INr_world: &index::TEMPLATE_world) {
+    pub fn SYS_HANDLER_renderGame(&mut self, INr_player: &player::TEMPLATE_player, INr_world: &world::TEMPLATE_world) {
         let RENDER_start = Instant::now();
 
         // Set cell for the player
@@ -246,7 +245,7 @@ impl SYS_RENDERER{
     }
 
     /// # Render the world
-    fn r_util_world(&mut self, INr_world: &index::TEMPLATE_world, INr_player: &index::TEMPLATE_player) {
+    fn r_util_world(&mut self, INr_world: &world::TEMPLATE_world, INr_player: &player::TEMPLATE_player) {
         let r_workingChunkArray = INr_world.w_returnChunkArray([INr_player.p_chunkX, INr_player. p_chunkY], [system::SYS_REND_CHUNK_X, system::SYS_REND_CHUNK_Y]);
         let r_workingBorderOffset = [
             (INr_player.p_x % system::SYS_CHUNK_X + system::SYS_REND_CHUNK_X / 2 * system::SYS_CHUNK_X) - system::SYS_REND_WORLD_X / 2,
