@@ -10,14 +10,14 @@ use crate::*;
 /// 
 /// Although hopefully the new one will be <<compatible
 pub struct SYS_RENDERER{
-    RENDER_bufferGrid: [index::TEMPLATE_wrCell; system::SYS_REND_BUFFER_X * system::SYS_REND_BUFFER_Y],
-    RENDER_text: Vec<index::RENDER_textItem>,
+    RENDER_bufferGrid: [TEMPLATE_wrCell; system::SYS_REND_BUFFER_X * system::SYS_REND_BUFFER_Y],
+    RENDER_text: Vec<RENDER_textItem>,
     RENDER_debug: String
 }
 impl SYS_RENDERER{
     pub fn new() -> Self{
         SYS_RENDERER { 
-            RENDER_bufferGrid: [index::TEMPLATE_wrCell::new(); system::SYS_REND_BUFFER_X * system::SYS_REND_BUFFER_Y],
+            RENDER_bufferGrid: [TEMPLATE_wrCell::new(); system::SYS_REND_BUFFER_X * system::SYS_REND_BUFFER_Y],
             RENDER_text: vec![],
             RENDER_debug: String::new()
         }
@@ -35,7 +35,7 @@ impl SYS_RENDERER{
     /// 
     /// # DO NOT RELY ON THIS
     /// Will also be rewritten in favor of Window system
-    pub fn r_pushText(&mut self, INr_textItem: index::RENDER_textItem){
+    pub fn r_pushText(&mut self, INr_textItem: RENDER_textItem){
         self.RENDER_text.push(INr_textItem)
     }
 
@@ -102,7 +102,7 @@ impl SYS_RENDERER{
         println!("{}", self.RENDER_debug);
 
         // Reset buffers
-        self.RENDER_bufferGrid.fill(index::TEMPLATE_wrCell::new());
+        self.RENDER_bufferGrid.fill(TEMPLATE_wrCell::new());
         self.RENDER_debug.clear();
     }
 
@@ -112,7 +112,7 @@ impl SYS_RENDERER{
         if self.RENDER_bufferGrid[cPosition].c_char != ' '{
             return;
         }
-        self.RENDER_bufferGrid[cPosition] = index::TEMPLATE_wrCell {
+        self.RENDER_bufferGrid[cPosition] = TEMPLATE_wrCell {
             c_char: cChar,
             c_colChr: cColChr,
             c_colBg: cColBg,
@@ -267,6 +267,55 @@ impl SYS_RENDERER{
                     r_workingChunkCell.c_colBg
                 );
             }
+        }
+    }
+}
+
+
+/// # "Textbox" struct
+/// Lets you paste a text somewhere in the game screen
+/// 
+/// # DO NOT RELY ON THIS
+/// It'll be replaced in favor of Window system
+/// 
+/// # Warning
+/// The Renderer doesn't check if the text overflows the X position yet, only if it's outside the buffer
+/// 
+/// So be careful where and what you write
+pub struct RENDER_textItem{
+    pub t_position: [usize; 2],
+    pub t_text: String,
+    pub t_lifetime: u16
+}
+
+
+/// # Render Buffer Cell
+/// 
+/// Values:
+/// 
+/// * Character
+/// * Color for character
+/// * Color for background
+pub struct TEMPLATE_wrCell {
+    pub c_char: char,
+    pub c_colChr: Color,
+    pub c_colBg: Color,
+}
+impl TEMPLATE_wrCell{
+    pub fn new() -> Self{
+        TEMPLATE_wrCell { c_char: ' ', c_colChr: Color::White, c_colBg: Color::Black }
+    }
+    pub fn newDummy() -> Self{
+        TEMPLATE_wrCell { c_char: '0', c_colChr: Color::Black, c_colBg: Color::White }
+    }
+}
+impl Copy for TEMPLATE_wrCell {}
+impl Clone for TEMPLATE_wrCell {
+    fn clone(&self) -> Self {
+        TEMPLATE_wrCell {
+            c_char: self.c_char,
+            c_colChr: self.c_colChr,
+            c_colBg: self.c_colBg,
         }
     }
 }

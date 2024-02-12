@@ -88,10 +88,10 @@ impl SYS_GAME {
                     KeyCode::Right => {
                         self.GAME_player.p_move(3);
                     }
-                    KeyCode::Char('f') => self.GAME_interact(index::GAME_interactions::i_printHello),
-                    KeyCode::Char('g') => self.GAME_interact(index::GAME_interactions::i_printDebug),
-                    KeyCode::Char('h') => self.GAME_interact(index::GAME_interactions::i_changeWorldTile),
-                    KeyCode::Char('j') => self.GAME_interact(index::GAME_interactions::i_clearWorld),
+                    KeyCode::Char('f') => self.GAME_interact(GAME_interactions::i_printHello),
+                    KeyCode::Char('g') => self.GAME_interact(GAME_interactions::i_printDebug),
+                    KeyCode::Char('h') => self.GAME_interact(GAME_interactions::i_changeWorldTile),
+                    KeyCode::Char('j') => self.GAME_interact(GAME_interactions::i_clearWorld),
                     KeyCode::Esc => exit(1),
                     _ => {}
                 }
@@ -106,25 +106,35 @@ impl SYS_GAME {
     /// While I'm not sure how it will change exactly it does "global" interactions for now
     /// 
     /// Window system will have different way of managing those
-    fn GAME_interact(&mut self, interactCode: index::GAME_interactions) {
+    fn GAME_interact(&mut self, interactCode: GAME_interactions) {
         match interactCode {
-            index::GAME_interactions::i_changeWorldTile => {
+            GAME_interactions::i_changeWorldTile => {
                 self.GAME_world
                     .w_setCell([self.GAME_player.p_x, self.GAME_player.p_y], 'c', Color::Black, self.GAME_player.p_colorBg)
             }
-            index::GAME_interactions::i_printHello => self.GAME_renderer.r_pushText(index::RENDER_textItem {
+            GAME_interactions::i_printHello => self.GAME_renderer.r_pushText(renderer::RENDER_textItem {
                 t_text: "Hello!\nHello!".to_string(),
                 t_position: [0, 0],
                 t_lifetime: 32,
             }),
-            index::GAME_interactions::i_printDebug => self.GAME_renderer.r_pushText(index::RENDER_textItem {
+            GAME_interactions::i_printDebug => self.GAME_renderer.r_pushText(renderer::RENDER_textItem {
                 t_text: "DEBUG".to_string(),
                 t_position: [32, 32],
                 t_lifetime: 16,
             }),
-            index::GAME_interactions::i_clearWorld => self.GAME_world.w_clearWorld(),
+            GAME_interactions::i_clearWorld => self.GAME_world.w_clearWorld(),
         }
     }
 
 
+}
+
+/// # Interactions enum
+/// # DON'T RELY ON THIS
+/// It will be replaced with introduction of Window system
+enum GAME_interactions {
+    i_changeWorldTile,
+    i_printHello,
+    i_printDebug,
+    i_clearWorld,
 }
