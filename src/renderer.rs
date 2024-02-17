@@ -12,23 +12,13 @@ use crate::*;
 pub struct SYS_RENDERER{
     RENDER_bufferGrid: [TEMPLATE_wrCell; system::SYS_REND_BUFFER_X * system::SYS_REND_BUFFER_Y],
     RENDER_text: Vec<RENDER_textItem>,
-    RENDER_debug: String
 }
 impl SYS_RENDERER{
     pub fn new() -> Self{
         SYS_RENDERER { 
             RENDER_bufferGrid: [TEMPLATE_wrCell::new(); system::SYS_REND_BUFFER_X * system::SYS_REND_BUFFER_Y],
             RENDER_text: vec![],
-            RENDER_debug: String::new()
         }
-    }
-
-    /// # Push debug string for render
-    /// 
-    /// ### Disclaimer?
-    /// If you push too many debug strings the terminal might get aneurysm
-    pub fn r_pushDebugStr(&mut self, INr_string: &str){
-        self.RENDER_debug.push_str(INr_string)
     }
 
     /// # Push text for rendering
@@ -49,7 +39,7 @@ impl SYS_RENDERER{
     /// - Convert buffer into printable string
     /// - Display frame
     /// - Display debug string
-    pub fn SYS_HANDLER_renderGame(&mut self, INr_player: &player::TEMPLATE_player, INr_world: &world::TEMPLATE_world) {
+    pub fn SYS_HANDLER_renderGame(&mut self, INr_data: &mut DATA_master) {
         let RENDER_start = Instant::now();
 
         // Set cell for the player
@@ -60,16 +50,16 @@ impl SYS_RENDERER{
                 [2,2]
             ), 
             'P', 
-            INr_player.p_colorChar, 
-            INr_player.p_colorBg);
+            INr_data.DATA_player.p_colorChar, 
+            INr_data.DATA_player.p_colorBg);
 
-        self.r_util_text();
+        self.r_util_text(INr_data);
 
         self.r_util_border([1, 1], [system::SYS_REND_WORLD_X + 1, system::SYS_REND_WORLD_Y + 1]);
 
         self.r_util_border([1, 20], [36, 6]);
 
-        self.r_util_world(INr_world, INr_player);
+        self.r_util_world(INr_data);
 
         // Convert buffer into string
         let mut RENDER_bufferstring = String::new();
@@ -89,7 +79,7 @@ impl SYS_RENDERER{
 
         // DEBUG
         let r_frameTime =  RENDER_start.elapsed();
-        self.RENDER_debug.push_str(&format!(
+        INr_data.DATA_debug.push_str(&format!(
             "Finished frame rendering in {:?}\nApproximate FPS: {}",
             r_frameTime,
             1000 / r_frameTime.as_millis()
@@ -99,11 +89,11 @@ impl SYS_RENDERER{
         clear();
         println!("{}", RENDER_bufferstring);
 
-        println!("{}", self.RENDER_debug);
+        println!("{}", INr_data.DATA_debug);
 
         // Reset buffers
         self.RENDER_bufferGrid.fill(TEMPLATE_wrCell::new());
-        self.RENDER_debug.clear();
+        INr_data.DATA_debug.clear();
     }
 
     /// # Set buffer cell
@@ -207,7 +197,7 @@ impl SYS_RENDERER{
     /// 
     /// # DO NOT RELY ON THIS
     /// It'll be most likely removed in favor of Window system
-    fn r_util_text(&mut self) {
+    fn r_util_text(&mut self, INr_data: &mut DATA_master) {
         for RTEXT_index in 0..self.RENDER_text.len() {
             let mut RTEXT_charStartIndex = self.r_util_calcPos(
                 [
@@ -224,7 +214,7 @@ impl SYS_RENDERER{
                     continue;
                 }
                 if RTEXT_charIndex > self.RENDER_bufferGrid.len()-1 {
-                    self.RENDER_debug.push_str(&format!(
+                    INr_data.DATA_debug.push_str(&format!(
                         "STRING ERROR: Out of Bounds\nString: --{}--\nLocation: X: {} Y: {}\n",
                         self.RENDER_text[RTEXT_index].t_text,
                         self.RENDER_text[RTEXT_index].t_position[0],
@@ -245,11 +235,11 @@ impl SYS_RENDERER{
     }
 
     /// # Render the world
-    fn r_util_world(&mut self, INr_world: &world::TEMPLATE_world, INr_player: &player::TEMPLATE_player) {
-        let r_workingChunkArray = INr_world.w_returnChunkArray([INr_player.p_chunkX, INr_player. p_chunkY], [system::SYS_REND_CHUNK_X, system::SYS_REND_CHUNK_Y]);
+    fn r_util_world(&mut self, INr_data: &mut DATA_master) {
+        let r_workingChunkArray = INr_data.DATA_world.w_returnChunkArray([INr_data.DATA_player.p_chunkX, INr_data.DATA_player. p_chunkY], [system::SYS_REND_CHUNK_X, system::SYS_REND_CHUNK_Y]);
         let r_workingBorderOffset = [
-            (INr_player.p_x % system::SYS_CHUNK_X + system::SYS_REND_CHUNK_X / 2 * system::SYS_CHUNK_X) - system::SYS_REND_WORLD_X / 2,
-            (INr_player.p_y % system::SYS_CHUNK_Y + system::SYS_REND_CHUNK_Y / 2 * system::SYS_CHUNK_Y) - system::SYS_REND_WORLD_Y / 2
+            (INr_data.DATA_player.p_x % system::SYS_CHUNK_X + system::SYS_REND_CHUNK_X / 2 * system::SYS_CHUNK_X) - system::SYS_REND_WORLD_X / 2,
+            (INr_data.DATA_player.p_y % system::SYS_CHUNK_Y + system::SYS_REND_CHUNK_Y / 2 * system::SYS_CHUNK_Y) - system::SYS_REND_WORLD_Y / 2
         ];
 
         for YPOS in 0..system::SYS_REND_WORLD_Y{

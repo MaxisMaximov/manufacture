@@ -2,6 +2,8 @@
 use crossterm::style::Color;
 
 use crate::*;
+
+/// # Game logic
 pub struct SYS_LOGIC{
 
 }
@@ -11,11 +13,11 @@ impl SYS_LOGIC {
     /// While I'm not sure how it will change exactly it does "global" interactions for now
     /// 
     /// Window system will have different way of managing those
-    pub fn GAME_interact(&mut self, INi_world: &mut world::TEMPLATE_world, INi_player: &mut player::TEMPLATE_player, INi_renderer: &mut renderer::SYS_RENDERER, interactCode: GAME_interactions) {
+    pub fn GAME_interact(&mut self, INi_data: &mut DATA_master, INi_renderer: &mut renderer::SYS_RENDERER, interactCode: GAME_interactions) {
         match interactCode {
             GAME_interactions::i_changeWorldTile => {
-                INi_world
-                    .w_setCell([INi_player.p_x, INi_player.p_y], 'c', Color::Black, INi_player.p_colorBg)
+                INi_data.DATA_world
+                    .w_setCell([INi_data.DATA_player.p_x, INi_data.DATA_player.p_y], 'c', Color::Black, INi_data.DATA_player.p_colorBg)
             }
             GAME_interactions::i_printHello => INi_renderer.r_pushText(renderer::RENDER_textItem {
                 t_text: "Hello!\nHello!".to_string(),
@@ -27,8 +29,8 @@ impl SYS_LOGIC {
                 t_position: [32, 32],
                 t_lifetime: 16,
             }),
-            GAME_interactions::i_clearWorld => INi_world.w_clearWorld(),
-            GAME_interactions::i_movPlayer(dir) => INi_player.p_move(dir),
+            GAME_interactions::i_clearWorld => INi_data.DATA_world.w_clearWorld(),
+            GAME_interactions::i_movPlayer(dir) => INi_data.DATA_player.p_move(dir),
             GAME_interactions::i_NULL => {}
         }
     }
