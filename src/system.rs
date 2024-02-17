@@ -80,7 +80,7 @@ pub const SYS_TICKTIME: Duration = Duration::from_millis(1000 / SYS_TICKRATE as 
     // KEEP IT TO ODD NUMBERS
     // It will crash the game if it's not
     // Also if you'll set it to 0 and report it as a bug I will punch you.
-    pub const SYS_REND_CHUNK_X: usize = 3;
-    pub const SYS_REND_CHUNK_Y: usize = 3;
+    pub const SYS_REND_CHUNK_X: usize = 5;
+    pub const SYS_REND_CHUNK_Y: usize = 5;
 
 // endregion: Renderer data

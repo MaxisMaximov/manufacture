@@ -33,29 +33,39 @@ fn main() {
 
     // # THE GAME LOOP
     'GAME_loop: loop {
+
+        // Clear debug string
+        SYS_data.DATA_debug.clear();
+
+        // Start the timer
         let loopStart: Instant = Instant::now();
 
+        // Set next Player input to process
         let GAME_interaction = SYS_subsystems.SUBSYSTEM_input.SYS_HANDLER_input();
 
+        // Process the input
         SYS_subsystems.SUBSYSTEM_logic.GAME_interact(&mut SYS_data, &mut SYS_subsystems.SUBSYSTEM_renderer, GAME_interaction);
 
+        // Update player position
         SYS_data.DATA_player.p_updateChunkPos();
 
+        // Render everything
         SYS_subsystems.SUBSYSTEM_renderer.SYS_HANDLER_renderGame(&mut SYS_data);
 
         // Log how long it took to process everything
         let loop_elapsedTime: Duration = loopStart.elapsed();
         if loop_elapsedTime < system::SYS_TICKTIME {
             SYS_data.DATA_debug.push_str(&format!(
-                "Too Fast! | {:?}\n Target speed: {:?}\n",
+                "\nToo Fast! | {:?}\n Target speed: {:?}",
                 loop_elapsedTime, system::SYS_TICKTIME
             ));
             println!("{}", SYS_data.DATA_debug);
             sleep(system::SYS_TICKTIME - loop_elapsedTime)
         } else {
-            SYS_data.DATA_debug.push_str(&format!("Too slow! | {:?}\n", loop_elapsedTime));
+            SYS_data.DATA_debug.push_str(&format!("\nToo slow! | {:?}", loop_elapsedTime));
             println!("{}", SYS_data.DATA_debug);
         }
+
     }
 }
 

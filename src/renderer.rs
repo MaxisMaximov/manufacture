@@ -57,8 +57,6 @@ impl SYS_RENDERER{
 
         self.r_util_border([1, 1], [system::SYS_REND_WORLD_X + 1, system::SYS_REND_WORLD_Y + 1]);
 
-        self.r_util_border([1, 20], [36, 6]);
-
         self.r_util_world(INr_data);
 
         // Convert buffer into string
