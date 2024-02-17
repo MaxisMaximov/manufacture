@@ -190,7 +190,7 @@ impl TEMPLATE_world {
             // Set values for given forest
             let w_forestRandomX:usize = w_RNG.gen_range(8..system::SYS_GRID_X - 8);
             let w_forestRandomY:usize = w_RNG.gen_range(8..system::SYS_GRID_Y - 8);
-            let w_forestIters:usize = w_RNG.gen_range(system::WORLD_POND_ITERS);
+            let w_forestIters:usize = w_RNG.gen_range(system::WORLD_FOREST_ITERS);
             
             // Let the iterator handle the rest
             w_genForestTiles.extend(self.w_util_circleIter(&mut w_RNG,

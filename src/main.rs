@@ -9,35 +9,62 @@ mod input;
 mod renderer;
 mod system;
 
-// SYS_[...]        -- essentials
-// TEMPLATE_[...]   -- templates for stuff
-// GAME_[...]       -- actuall objects
-// x_[...]          -- struct functions, x is first letter of struct name
-// [...]_[...]      -- local variables, first [...] is function name in CAPS
-// INx_[...]        -- input variables for functions, x is first letter of struct name
-
+// START HERE
 fn main() {
     enable_raw_mode().unwrap();
-    let mut DATA_player = player::TEMPLATE_player::new(1, None);
-    let mut DATA_world = world::TEMPLATE_world::new();
-    DATA_world.w_generateRandom();
+
+    // Initialize the Data container
     let mut SYS_data = DATA_master{
-        DATA_player: DATA_player,
-        DATA_world: DATA_world,
+        DATA_player: player::TEMPLATE_player::new(1, None),
+        DATA_world: world::TEMPLATE_world::new(),
         DATA_debug: String::new(),
         DATA_cache: HashMap::new()
     };
 
+    // Generate new world
+    SYS_data.DATA_world.w_generateRandom();
 
-    let mut SYS_GAME_START = SYS_GAME{
-        GAME_data: SYS_data,
-        GAME_logic: logic::SYS_LOGIC {},
-        GAME_input: input::SYS_INPUT {},
-        GAME_renderer: renderer::SYS_RENDERER::new()
+    // Initialize the subsystems
+    let mut SYS_subsystems = SUBSYSTEM_master{
+        SUBSYSTEM_logic: logic::SYS_LOGIC{},
+        SUBSYSTEM_renderer: renderer::SYS_RENDERER::new(),
+        SUBSYSTEM_input: input::SYS_INPUT{}
     };
-    SYS_GAME_START.GAME_loop()
+
+    // # THE GAME LOOP
+    'GAME_loop: loop {
+        let loopStart: Instant = Instant::now();
+
+        let GAME_interaction = SYS_subsystems.SUBSYSTEM_input.SYS_HANDLER_input();
+
+        SYS_subsystems.SUBSYSTEM_logic.GAME_interact(&mut SYS_data, &mut SYS_subsystems.SUBSYSTEM_renderer, GAME_interaction);
+
+        SYS_data.DATA_player.p_updateChunkPos();
+
+        SYS_subsystems.SUBSYSTEM_renderer.SYS_HANDLER_renderGame(&mut SYS_data);
+
+        // Log how long it took to process everything
+        let loop_elapsedTime: Duration = loopStart.elapsed();
+        if loop_elapsedTime < system::SYS_TICKTIME {
+            SYS_data.DATA_debug.push_str(&format!(
+                "Too Fast! | {:?}\n Target speed: {:?}\n",
+                loop_elapsedTime, system::SYS_TICKTIME
+            ));
+            println!("{}", SYS_data.DATA_debug);
+            sleep(system::SYS_TICKTIME - loop_elapsedTime)
+        } else {
+            SYS_data.DATA_debug.push_str(&format!("Too slow! | {:?}\n", loop_elapsedTime));
+            println!("{}", SYS_data.DATA_debug);
+        }
+    }
 }
 
+/// # Master Data struct
+/// Holds every required data of the game such as player, world and Debug data
+/// 
+/// Cache must be gotten/added/removed through `DATA_cacheData` functions
+/// 
+/// I do not trust myself to do it correctly every time
 pub struct DATA_master{
     pub DATA_player: player::TEMPLATE_player,
     pub DATA_world: world::TEMPLATE_world,
@@ -45,73 +72,43 @@ pub struct DATA_master{
     DATA_cache: HashMap<String, CACHE_TYPE>
 }
 impl DATA_master {
-    pub fn DATA_getCacheData(&self, IN_dataIndex: String) -> Option<&CACHE_TYPE>{
+    /// # Get cache data
+    /// Supply it with the index you stored the Cache at
+    /// 
+    /// If it doesn't find the cache it'll return `None`
+    pub fn DATA_cacheData_GET(&self, IN_dataIndex: String) -> Option<&CACHE_TYPE>{
         match self.DATA_cache.get(&IN_dataIndex){
             None => return None,
             Some(cacheData) => return Some(cacheData)
         }
     }
-    pub fn DATA_addCacheData(&mut self, IN_dataIndex: String, IN_data: CACHE_TYPE){
+    /// # Add cache data
+    /// Supply it with index to store cache at and type of cache you want to store
+    pub fn DATA_cacheData_ADD(&mut self, IN_dataIndex: String, IN_data: CACHE_TYPE){
         self.DATA_cache.insert(IN_dataIndex, IN_data);
     }
-    pub fn DATA_freeCacheData(&mut self, IN_dataIndex: String){
+    /// # Free cache data
+    /// Supply it with index of cache you don't need anymore
+    pub fn DATA_cacheData_FREE(&mut self, IN_dataIndex: String){
         self.DATA_cache.remove(&IN_dataIndex);
     }
 }
 
-/// # Game struct
-/// Contains the player and World and does all the logic
+/// # Master subsystem struct
+/// Allows for easy addition/replacement of subsystems
+pub struct SUBSYSTEM_master{
+    pub SUBSYSTEM_logic: logic::SYS_LOGIC,
+    pub SUBSYSTEM_renderer: renderer::SYS_RENDERER,
+    pub SUBSYSTEM_input: input::SYS_INPUT
+}
+
+/// # Cache type
+/// Allows you to store a selected type of cache
 /// 
-/// Renderer is a field so it can be replaced with a pixel one later on should I decide so
-struct SYS_GAME {
-    GAME_data: DATA_master,
-    GAME_renderer: renderer::SYS_RENDERER,
-    GAME_logic: logic::SYS_LOGIC,
-    GAME_input: input::SYS_INPUT
-
-}
-impl SYS_GAME {
-
-    /// # Game loop
-    /// Processes the whole game sequentially
-    /// 
-    /// Speed is dependent on `SYS_TICKRATE` value in `system.rs`
-    /// 
-    /// I do not recommend going above 32 ticks/s
-    pub fn GAME_loop(&mut self) {
-        loop {
-            let loopStart: Instant = Instant::now();
-
-            self.GAME_logic.GAME_interact(&mut self.GAME_data, &mut self.GAME_renderer, self.GAME_input.SYS_HANDLER_input());
-
-            self.GAME_data.DATA_player.p_updateChunkPos();
-
-            self.GAME_data.DATA_debug.push_str(&format!(
-                "X: {}, Y: {}\nChunk X:{} Chunk Y:{}\n",
-                self.GAME_data.DATA_player.p_x,
-                self.GAME_data.DATA_player.p_y,
-                self.GAME_data.DATA_player.p_chunkX,
-                self.GAME_data.DATA_player.p_chunkY
-            ));
-
-            self.GAME_renderer.SYS_HANDLER_renderGame(&mut self.GAME_data);
-
-            let loop_elapsedTime: Duration = loopStart.elapsed();
-            if loop_elapsedTime < system::SYS_TICKTIME {
-                self.GAME_data.DATA_debug.push_str(&format!(
-                    "Too Fast! | {:?}\n Target speed: {:?}\n",
-                    loop_elapsedTime, system::SYS_TICKTIME
-                ));
-                sleep(system::SYS_TICKTIME - loop_elapsedTime)
-            } else {
-                self.GAME_data.DATA_debug.push_str(&format!("Too slow! | {:?}\n", loop_elapsedTime))
-            }
-        }
-    }
-}
-
-enum CACHE_TYPE {
+/// Can be extended for any other cache type you want
+pub enum CACHE_TYPE {
     CACHE_usize(usize),
     CACHE_u8(u8),
-    CACHE_doubleCoords([usize; 2])
+    CACHE_coords([usize; 2]),
+    CACHE_interactCode(logic::GAME_interactions)
 }

@@ -31,12 +31,12 @@ impl SYS_RENDERER{
 
     /// # Render game
     /// The renderer handles in this order:
-    /// - Clear buffer
     /// - Render Player
     /// - Render text
     /// - Render any borders you've inputted << DO NOT RELY
     /// - Render world
     /// - Convert buffer into printable string
+    /// - Clear screen for next frame
     /// - Display frame
     /// - Display debug string
     pub fn SYS_HANDLER_renderGame(&mut self, INr_data: &mut DATA_master) {
@@ -78,22 +78,18 @@ impl SYS_RENDERER{
         }
 
         // DEBUG
-        let r_frameTime =  RENDER_start.elapsed();
+        let r_frameTime = RENDER_start.elapsed();
         INr_data.DATA_debug.push_str(&format!(
             "Finished frame rendering in {:?}\nApproximate FPS: {}",
             r_frameTime,
-            1000 / r_frameTime.as_millis()
+            1000000 / r_frameTime.as_micros()
         ));
 
         // Clear and print new frame
         clear();
         println!("{}", RENDER_bufferstring);
-
-        println!("{}", INr_data.DATA_debug);
-
         // Reset buffers
         self.RENDER_bufferGrid.fill(TEMPLATE_wrCell::new());
-        INr_data.DATA_debug.clear();
     }
 
     /// # Set buffer cell

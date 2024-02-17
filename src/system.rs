@@ -1,5 +1,12 @@
 use std::{time::Duration, ops::Range};
 
+// # FULL FILE DISCLAIMER
+// THIS WILL BE MOVED INTO A CUSTOMIZABLE `.json` FILE LATER ON
+// 
+// SO THAT GITHUB WON'T SCREAM ABOUT INCOMPATIBILITY ERRORS
+// 
+// AND SO THAT TESTING CAN BE DONE WITHOUT RECOMPILING
+
 pub const SYS_TICKRATE: u8 = 8;
 pub const SYS_TICKTIME: Duration = Duration::from_millis(1000 / SYS_TICKRATE as u64);
 
@@ -66,13 +73,14 @@ pub const SYS_TICKTIME: Duration = Duration::from_millis(1000 / SYS_TICKRATE as 
     pub const SYS_REND_BUFFER_Y: usize = 32;
 
     // Dimensions of the world screen
-    pub const SYS_REND_WORLD_X: usize = 15;
-    pub const SYS_REND_WORLD_Y: usize = 15;
+    pub const SYS_REND_WORLD_X: usize = 24;
+    pub const SYS_REND_WORLD_Y: usize = 24;
 
-    // DO NOT TOUCH!!!
     // Sets how many chunks should be loaded into Renderer at once
-    // Gets minimal size for given world screen dimensions
-    pub const SYS_REND_CHUNK_X: usize = SYS_REND_WORLD_X / SYS_CHUNK_X + 2;
-    pub const SYS_REND_CHUNK_Y: usize = SYS_REND_WORLD_Y / SYS_CHUNK_Y + 2;
+    // KEEP IT TO ODD NUMBERS
+    // It will crash the game if it's not
+    // Also if you'll set it to 0 and report it as a bug I will punch you.
+    pub const SYS_REND_CHUNK_X: usize = 3;
+    pub const SYS_REND_CHUNK_Y: usize = 3;
 
 // endregion: Renderer data
