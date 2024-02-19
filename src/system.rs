@@ -1,4 +1,4 @@
-use std::{time::Duration, ops::Range};
+use std::{time::Duration, ops::Range, env};
 
 // # FULL FILE DISCLAIMER
 // THIS WILL BE MOVED INTO A CUSTOMIZABLE `.json` FILE LATER ON
@@ -6,6 +6,13 @@ use std::{time::Duration, ops::Range};
 // SO THAT GITHUB WON'T SCREAM ABOUT INCOMPATIBILITY ERRORS
 // 
 // AND SO THAT TESTING CAN BE DONE WITHOUT RECOMPILING
+
+// This block right here is because of Linux.
+#[cfg(target_os = "linux")]
+pub const SYS_NEWLINE: &str = "\r\n";
+
+#[cfg(target_os = "windows")]
+pub const SYS_NEWLINE: &str = "/r/n";
 
 pub const SYS_TICKRATE: u8 = 8;
 pub const SYS_TICKTIME: Duration = Duration::from_millis(1000 / SYS_TICKRATE as u64);

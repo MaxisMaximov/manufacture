@@ -56,13 +56,13 @@ fn main() {
         let loop_elapsedTime: Duration = loopStart.elapsed();
         if loop_elapsedTime < system::SYS_TICKTIME {
             SYS_data.DATA_debug.push_str(&format!(
-                "\nToo Fast! | {:?}\n Target speed: {:?}",
-                loop_elapsedTime, system::SYS_TICKTIME
+                "{NEW}Too Fast! | {:?}{NEW} Target speed: {:?}",
+                loop_elapsedTime, system::SYS_TICKTIME, NEW = system::SYS_NEWLINE
             ));
             println!("{}", SYS_data.DATA_debug);
             sleep(system::SYS_TICKTIME - loop_elapsedTime)
         } else {
-            SYS_data.DATA_debug.push_str(&format!("\nToo slow! | {:?}", loop_elapsedTime));
+            SYS_data.DATA_debug.push_str(&format!("{NEW}Too slow! | {:?}", loop_elapsedTime, NEW = system::SYS_NEWLINE));
             println!("{}", SYS_data.DATA_debug);
         }
 

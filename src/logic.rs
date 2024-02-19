@@ -20,7 +20,7 @@ impl SYS_LOGIC {
                     .w_setCell([INi_data.DATA_player.p_x, INi_data.DATA_player.p_y], 'c', Color::Black, INi_data.DATA_player.p_colorBg)
             }
             GAME_interactions::i_printHello => INi_renderer.r_pushText(renderer::RENDER_textItem {
-                t_text: "Hello!\nHello!".to_string(),
+                t_text: format!("Hello!{NEW}Hello!", NEW = system::SYS_NEWLINE).to_string(),
                 t_position: [0, 0],
                 t_lifetime: 32,
             }),

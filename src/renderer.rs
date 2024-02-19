@@ -72,15 +72,16 @@ impl SYS_RENDERER{
                         .to_string(),
                 )
             }
-            RENDER_bufferstring.push('\n')
+            RENDER_bufferstring.push_str(system::SYS_NEWLINE)
         }
 
         // DEBUG
         let r_frameTime = RENDER_start.elapsed();
         INr_data.DATA_debug.push_str(&format!(
-            "Finished frame rendering in {:?}\nApproximate FPS: {}",
+            "Finished frame rendering in {:?}{NEW}Approximate FPS: {}",
             r_frameTime,
-            1000000 / r_frameTime.as_micros()
+            1000000 / r_frameTime.as_micros(),
+            NEW = system::SYS_NEWLINE
         ));
 
         // Clear and print new frame
@@ -202,17 +203,18 @@ impl SYS_RENDERER{
             );
             let mut RTEXT_charIndex = RTEXT_charStartIndex;
             'RENDER_textBlocks: for RTEXT_char in self.RENDER_text[RTEXT_index].t_text.clone().chars() {
-                if RTEXT_char == '\n' {
+                if RTEXT_char == '\r' || RTEXT_char == '\n' {
                     RTEXT_charIndex = RTEXT_charStartIndex + system::SYS_REND_BUFFER_X;
                     RTEXT_charStartIndex = RTEXT_charIndex;
                     continue;
                 }
                 if RTEXT_charIndex > self.RENDER_bufferGrid.len()-1 {
                     INr_data.DATA_debug.push_str(&format!(
-                        "STRING ERROR: Out of Bounds\nString: --{}--\nLocation: X: {} Y: {}\n",
+                        "STRING ERROR: Out of Bounds{NEW}String: --{}--{NEW}Location: X: {} Y: {}{NEW}",
                         self.RENDER_text[RTEXT_index].t_text,
                         self.RENDER_text[RTEXT_index].t_position[0],
-                        self.RENDER_text[RTEXT_index].t_position[1]
+                        self.RENDER_text[RTEXT_index].t_position[1],
+                        NEW = system::SYS_NEWLINE
                     ));
                     break 'RENDER_textBlocks;
                 }
