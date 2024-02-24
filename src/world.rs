@@ -11,19 +11,19 @@ use crate::*;
 /// Values:
 /// 
 /// * Character
-/// * Color for character
-/// * Color for background
+/// * Colors for character and background
+///
+/// TODO: Make it store buildings as well
 pub struct TEMPLATE_wrCell {
     pub c_char: char,
-    pub c_colChr: Color,
-    pub c_colBg: Color,
+    pub c_color: system::cellColors,
 }
 impl TEMPLATE_wrCell{
     pub fn new() -> Self{
-        TEMPLATE_wrCell { c_char: ' ', c_colChr: Color::White, c_colBg: Color::Black }
+        TEMPLATE_wrCell { c_char: ' ', c_color: [Color::White, Color:: Black] }
     }
     pub fn newDummy() -> Self{
-        TEMPLATE_wrCell { c_char: '0', c_colChr: Color::Black, c_colBg: Color::White }
+        TEMPLATE_wrCell { c_char: '0', c_color: [Color::Black, Color:: White] }
     }
 }
 impl Copy for TEMPLATE_wrCell {}
@@ -31,8 +31,7 @@ impl Clone for TEMPLATE_wrCell {
     fn clone(&self) -> Self {
         TEMPLATE_wrCell {
             c_char: self.c_char,
-            c_colChr: self.c_colChr,
-            c_colBg: self.c_colBg,
+            c_color: self.c_color
         }
     }
 }
@@ -163,7 +162,7 @@ impl TEMPLATE_world {
 
         // Ponds
         // Vector with final coordinates for water tiles to replace them all at once instead of 1 by 1
-        let mut w_genLakeTiles: Vec<[usize; 2]> = Vec::new();
+        let mut w_genLakeTiles: Vec<system::coords> = Vec::new();
         for _ in 0..w_RNG.gen_range(system::WORLD_POND_Q){
             // Set values for given lake
             let w_lakeRandomX:usize = w_RNG.gen_range(8..system::SYS_GRID_X - 8);
@@ -181,7 +180,7 @@ impl TEMPLATE_world {
             w_genLakeTiles.dedup();
         }
         for COORDS in w_genLakeTiles{
-            self.w_setCell(COORDS, 'W', Color::White, Color::Blue)
+            self.w_setCell(COORDS, 'W', [Color::White, Color::Blue])
         }
 
         // Forests
@@ -207,7 +206,7 @@ impl TEMPLATE_world {
             if self.w_getCell(COORDS).c_char != ' '{
                 continue;
             }
-            self.w_setCell(COORDS, 'F', Color::White, Color::DarkGreen)
+            self.w_setCell(COORDS, 'F', [Color::White, Color::DarkGreen])
         }
 
 
@@ -257,9 +256,9 @@ impl TEMPLATE_world {
         return OUTw_chunkVec;
     }
 
-    pub fn w_setCell(&mut self, INw_position: [usize;2], INw_character: char, INw_colorChar: Color, INw_colorBg: Color) {
+    pub fn w_setCell(&mut self, INw_position: [usize;2], INw_character: char, INw_color: system::cellColors) {
         let w_workingPosition = self.w_calcPosIndex(INw_position);
-        self.w_chunks[w_workingPosition[0]].ch_cells[w_workingPosition[1]] = TEMPLATE_wrCell{c_char: INw_character, c_colChr: INw_colorChar, c_colBg: INw_colorBg};
+        self.w_chunks[w_workingPosition[0]].ch_cells[w_workingPosition[1]] = TEMPLATE_wrCell{c_char: INw_character, c_color: INw_color};
     }
 
     pub fn w_getCell(&self, INw_position: [usize;2]) -> &TEMPLATE_wrCell{

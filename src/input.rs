@@ -11,36 +11,38 @@ impl SYS_INPUT {
     /// # Input handler
     /// # DO NOT RELY ON CURRENT VERSION OF THIS
     /// It will get updated with Window system and will read from a config file instead of single layout
-    pub fn SYS_HANDLER_input(&self) -> logic::GAME_interactions{
+    pub fn SYS_HANDLER_input(&self, SYS_data: &mut DATA_master){
         if poll(Duration::from_millis(25)).unwrap() {
             if let Event::Key(KeyEvent {code, modifiers: _, state: _, kind,}) = read().unwrap()
             {
                 if kind != KeyEventKind::Press {
-                    return logic::GAME_interactions::i_NULL;
+                    SYS_data.DATA_playerInput = logic::GAME_interactions::i_NULL;
+                    return;
                 }
                 match code {
                     KeyCode::Up => {
-                        return logic::GAME_interactions::i_movPlayer(0);
+                        SYS_data.DATA_playerInput = logic::GAME_interactions::i_movPlayer(player::GAME_playerDirections::DIR_up);
                     }
                     KeyCode::Down => {
-                        return logic::GAME_interactions::i_movPlayer(1);
+                        SYS_data.DATA_playerInput = logic::GAME_interactions::i_movPlayer(player::GAME_playerDirections::DIR_down);
                     }
                     KeyCode::Left => {
-                        return logic::GAME_interactions::i_movPlayer(2);
+                        SYS_data.DATA_playerInput = logic::GAME_interactions::i_movPlayer(player::GAME_playerDirections::DIR_left);
                     }
                     KeyCode::Right => {
-                        return logic::GAME_interactions::i_movPlayer(3);
+                        SYS_data.DATA_playerInput = logic::GAME_interactions::i_movPlayer(player::GAME_playerDirections::DIR_right);
                     }
-                    KeyCode::Char('f') => return logic::GAME_interactions::i_printHello,
-                    KeyCode::Char('g') => return logic::GAME_interactions::i_printDebug,
-                    KeyCode::Char('h') => return logic::GAME_interactions::i_changeWorldTile,
-                    KeyCode::Char('j') => return logic::GAME_interactions::i_clearWorld,
+                    KeyCode::Char('f') => SYS_data.DATA_playerInput = logic::GAME_interactions::i_printHello,
+                    KeyCode::Char('g') => SYS_data.DATA_playerInput = logic::GAME_interactions::i_printDebug,
+                    KeyCode::Char('h') => SYS_data.DATA_playerInput = logic::GAME_interactions::i_changeWorldTile,
+                    KeyCode::Char('j') => SYS_data.DATA_playerInput = logic::GAME_interactions::i_clearWorld,
                     KeyCode::Esc => exit(0),
-                    _ => {return logic::GAME_interactions::i_NULL}
+                    _ => {SYS_data.DATA_playerInput = logic::GAME_interactions::i_NULL}
                 }
+                return;
             }
         }
-        //self.GAME_renderer.r_pushDebugStr("No input, skipping\n");
-        return logic::GAME_interactions::i_NULL;
+        SYS_data.DATA_playerInput = logic::GAME_interactions::i_NULL;
+        SYS_data.DATA_pushDebugStr("No input, skipping".to_string());
     }
 }

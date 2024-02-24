@@ -1,4 +1,4 @@
-use std::{time::Duration, ops::Range, env};
+use std::{time::Duration, ops::Range};
 
 // # FULL FILE DISCLAIMER
 // THIS WILL BE MOVED INTO A CUSTOMIZABLE `.json` FILE LATER ON
@@ -12,10 +12,13 @@ use std::{time::Duration, ops::Range, env};
 pub const SYS_NEWLINE: &str = "\r\n";
 
 #[cfg(target_os = "windows")]
-pub const SYS_NEWLINE: &str = "/r/n";
+pub const SYS_NEWLINE: &str = "\r\n";
 
 pub const SYS_TICKRATE: u8 = 8;
 pub const SYS_TICKTIME: Duration = Duration::from_millis(1000 / SYS_TICKRATE as u64);
+
+pub type coords = [usize; 2];
+pub type cellColors = [crossterm::style::Color; 2];
 
 // region: World data
 

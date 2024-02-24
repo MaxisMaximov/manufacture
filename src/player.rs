@@ -1,3 +1,5 @@
+use std::ops::Add;
+
 use crossterm::style::Color;
 
 use crate::*;
@@ -14,12 +16,9 @@ use crate::*;
 /// # Custom colors
 /// To instead use custom colors set `fp_playerNum` to 0 and `fp_color` to [`Color::Rgb`]
 pub struct TEMPLATE_player {
-    pub p_x: usize,
-    pub p_y: usize,
-    pub p_chunkX: usize,
-    pub p_chunkY: usize,
-    pub p_colorChar: Color,
-    pub p_colorBg: Color,
+    pub p_pos: system::coords,
+    pub p_chunk: system::coords,
+    pub p_color: system::cellColors
 }
 impl TEMPLATE_player {
     pub fn new(INp_playerNum: usize, INp_color: Option<Color>) -> Self{
@@ -30,58 +29,49 @@ impl TEMPLATE_player {
             GAME_playerColors[INp_playerNum]
         };
         TEMPLATE_player {
-            p_x: 11,
-            p_y: 55,
-            p_chunkX: 0,
-            p_chunkY: 0,
-            p_colorChar: Color::White,
-            p_colorBg: Fp_playerColor }
+            p_pos: [10, 10],
+            p_chunk: [2, 2],
+            p_color: [Color::White, Fp_playerColor] }
     }
-    pub fn p_move(&mut self, dir: u8) {
+
+    pub fn p_move(&mut self, dir: &GAME_playerDirections) {
         match dir {
-            0 => {
-                // Up
-                if self.p_y == 0 {
-                    return;
-                }
-                self.p_y -= 1
+            GAME_playerDirections::DIR_up => {
+                self.p_pos[1] = self.p_pos[1].saturating_sub(1);
             }
-            1 => {
-                //Down
-                if self.p_y == (system::SYS_GRID_Y - 1) {
-                    return;
-                }
-                self.p_y += 1
+            GAME_playerDirections::DIR_down => {
+                self.p_pos[1] = self.p_pos[1].add(1).clamp(0, system::SYS_GRID_Y);
             }
-            2 => {
-                //Left
-                if self.p_x == 0 {
-                    return;
-                }
-                self.p_x -= 1
+            GAME_playerDirections::DIR_left => {
+                self.p_pos[0] = self.p_pos[0].saturating_sub(1);
             }
-            3 => {
-                //Right
-                if self.p_x == (system::SYS_GRID_X - 1) {
-                    return;
-                }
-                self.p_x += 1
+            GAME_playerDirections::DIR_right => {
+                self.p_pos[0] = self.p_pos[0].add(1).clamp(0, system::SYS_GRID_X);
             }
             _ => {}
         }
-    }
-    pub fn p_updateChunkPos(&mut self){
-        self.p_chunkX = (self.p_x / system::SYS_CHUNK_X);
-        self.p_chunkY = (self.p_y / system::SYS_CHUNK_Y);
+        self.p_chunk[0] = self.p_pos[0] / system::SYS_CHUNK_X;
+        self.p_chunk[1] = self.p_pos[1] / system::SYS_CHUNK_Y;
     }
 }
 
 /// # Player color "enum"
 /// ## Disclaimer:
 /// Is only for Player 1-4 colors
-pub const GAME_playerColors: [Color;4] = [
+const GAME_playerColors: [Color;4] = [
     Color::Cyan,
     Color::Green,
     Color::Yellow,
     Color::Rgb {r: 255, g: 153, b: 0}
 ];
+
+/// # Player direction enum
+/// This exists solely for readbility
+///
+/// But also if I'd like to have more "advanced" movement
+pub enum GAME_playerDirections {
+    DIR_up,
+    DIR_down,
+    DIR_left,
+    DIR_right
+}
