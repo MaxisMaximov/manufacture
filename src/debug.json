@@ -1,0 +1,26 @@
+{
+    "DEBUG_sys":{
+        "dataContainer_init": "Data Container initialized",
+        "subsystemContainer_init": "Subsystem Container initialized"
+    },
+    "DEBUG_key":{
+        "keyNone": "No key pressed, skipping"
+    },
+    "DEBUG_render":{
+        "RENDER_frameTime": "Rendered frame in: ",
+        "RENDER_border": "Rendered border (position/size): ",
+        "RENDER_textItem": "Rendered text item (id/position): "
+    },
+    "DEBUG_game":{
+        "GAME_pMoveDenied": "Denied player movement at: ",
+        "GAME_tileChange": "Changed tile at: "
+    },
+    "DEBUG_world":{
+        "WORLD_gen":{
+            "GEN_done": "Finished generating world",
+            "GEN_lake": "Generated lake at: ",
+            "GEN_forest": "Generated forest at: "
+        },
+        "WORLD_clear": "Cleared world"
+    }
+}
