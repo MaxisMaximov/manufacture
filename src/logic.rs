@@ -21,12 +21,12 @@ impl SYS_LOGIC {
             }
             GAME_interactions::i_printHello => INi_data.DATA_pushTextItem(renderer::RENDER_textItem {
                 t_text: format!("Hello!{NEW}Hello!", NEW = system::SYS_NEWLINE).to_string(),
-                t_position: [0, 0],
+                t_position: renderer::RENDER_position::POS_TL,
                 t_lifetime: 32,
             }),
             GAME_interactions::i_printDebug => INi_data.DATA_pushTextItem(renderer::RENDER_textItem {
                 t_text: "DEBUG".to_string(),
-                t_position: [32, 32],
+                t_position: renderer::RENDER_position::POS_middle,
                 t_lifetime: 16,
             }),
             GAME_interactions::i_clearWorld => INi_data.DATA_world.w_clearWorld(),

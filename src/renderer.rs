@@ -173,10 +173,18 @@ impl SYS_RENDERER{
     fn r_util_text(&mut self, INr_data: &mut DATA_master) {
         for RTEXT_index in 0..INr_data.DATA_textItems.len() {
             let mut RTEXT_charStartPosition =
-                [
-                    INr_data.DATA_textItems[RTEXT_index].t_position[0],
-                    INr_data.DATA_textItems[RTEXT_index].t_position[1]
-                ];
+                match INr_data.DATA_textItems[RTEXT_index].t_position {
+                    RENDER_position::POS_middle => [system::SYS_REND_BUFFER_X / 2, system::SYS_REND_BUFFER_Y / 2],
+                    RENDER_position::POS_left => [0, system::SYS_REND_BUFFER_Y / 2],
+                    RENDER_position::POS_right => [system::SYS_REND_BUFFER_X - 1, system::SYS_REND_BUFFER_Y / 2],
+                    RENDER_position::POS_top => [system::SYS_REND_BUFFER_X / 2, 0],
+                    RENDER_position::POS_bottom => [system::SYS_REND_BUFFER_X / 2, system::SYS_REND_BUFFER_Y - 1],
+                    RENDER_position::POS_TL => [0, 0],
+                    RENDER_position::POS_TR => [system::SYS_REND_BUFFER_X - 1, 0],
+                    RENDER_position::POS_BL => [0, system::SYS_REND_BUFFER_Y - 1],
+                    RENDER_position::POS_BR => [system::SYS_REND_BUFFER_X - 1, system::SYS_REND_BUFFER_Y - 1],
+                    RENDER_position::POS_custom(POS) => POS
+                };
             let mut RTEXT_charPosition = RTEXT_charStartPosition;
             'RENDER_textBlocks: for RTEXT_char in INr_data.DATA_textItems[RTEXT_index].t_text.clone().chars() {
                 if RTEXT_char == '\r'{
@@ -191,8 +199,8 @@ impl SYS_RENDERER{
                     INr_data.DATA_pushDebugStr(format!(
                         "STRING ERROR: Out of Bounds{NEW}String: --{}--{NEW}Location: X: {} Y: {}",
                         INr_data.DATA_textItems[RTEXT_index].t_text,
-                        INr_data.DATA_textItems[RTEXT_index].t_position[0],
-                        INr_data.DATA_textItems[RTEXT_index].t_position[1],
+                        RTEXT_charPosition[0],
+                        RTEXT_charPosition[1],
                         NEW = system::SYS_NEWLINE
                     ));
                     break 'RENDER_textBlocks;
@@ -248,7 +256,7 @@ impl SYS_RENDERER{
 /// 
 /// So be careful where and what you write
 pub struct RENDER_textItem{
-    pub t_position: system::coords,
+    pub t_position: RENDER_position,
     pub t_text: String,
     pub t_lifetime: u16
 }
@@ -277,4 +285,17 @@ impl Clone for TEMPLATE_wrCell {
             c_colors: self.c_colors
         }
     }
+}
+
+pub enum RENDER_position{
+    POS_middle,
+    POS_right,
+    POS_left,
+    POS_top,
+    POS_bottom,
+    POS_TL,
+    POS_TR,
+    POS_BL,
+    POS_BR,
+    POS_custom(system::coords)
 }
