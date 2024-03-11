@@ -8,6 +8,7 @@ mod world;
 mod input;
 mod renderer;
 mod system;
+mod jsonManager;
 
 // START HERE
 fn main() {
@@ -125,7 +126,8 @@ impl DATA_master {
 pub struct SUBSYSTEM_master{
     pub SUBSYSTEM_logic: logic::SYS_LOGIC,
     pub SUBSYSTEM_renderer: renderer::SYS_RENDERER,
-    pub SUBSYSTEM_input: input::SYS_INPUT
+    pub SUBSYSTEM_input: input::SYS_INPUT,
+    pub SUBSYSTEM_jsonManager: jsonManager::SYS_jsonManager
 }
 
 /// # Cache type

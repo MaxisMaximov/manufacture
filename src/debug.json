@@ -1,10 +1,11 @@
 {
     "DEBUG_sys":{
-        "dataContainer_init": "Data Container initialized",
-        "subsystemContainer_init": "Subsystem Container initialized"
+        "SYS_dataContainer_init": "Data Container initialized",
+        "SYS_subsystemContainer_init": "Subsystem Container initialized",
+        "SYS_processSpeed": "Finished processing in: "
     },
     "DEBUG_key":{
-        "keyNone": "No key pressed, skipping"
+        "KEY_keyNone": "No key pressed, skipping"
     },
     "DEBUG_render":{
         "RENDER_frameTime": "Rendered frame in: ",
