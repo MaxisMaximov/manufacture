@@ -8,6 +8,9 @@ pub struct SYS_LOGIC{
 
 }
 impl SYS_LOGIC {
+    pub fn new() -> Self{
+        SYS_LOGIC {}
+    }
     /// # Interaction manager
     /// # DO NOT RELY ON CURRENT VERSION OF THIS
     /// While I'm not sure how it will change exactly it does "global" interactions for now

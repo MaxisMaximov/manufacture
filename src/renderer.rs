@@ -73,7 +73,7 @@ impl SYS_RENDERER{
         ));
 
         // Clear and print new frame
-        clear();
+        let _ = clear();
         println!("{}", RENDER_bufferstring);
         // Reset buffers
         self.RENDER_bufferGrid.fill(TEMPLATE_wrCell::new());
@@ -90,13 +90,6 @@ impl SYS_RENDERER{
             c_char: cChar,
             c_colors: cColors
         }
-    }
-
-    /// # Calculate Buffer position with offset
-    /// ## Disclaimer
-    /// It will be moved elsewhere once other systems will rely on it
-    fn r_util_calcPos(&self, localPos: system::coords, offsetPos: system::coords) -> usize {
-        return ((localPos[0] + offsetPos[0]) + (localPos[1] + offsetPos[1]) * system::SYS_REND_BUFFER_X);
     }
 
     /// # Render border

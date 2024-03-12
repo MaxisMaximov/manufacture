@@ -1,3 +1,5 @@
+#![allow(nonstandard_style)]
+
 use std::{time::Duration, ops::Range};
 
 // # FULL FILE DISCLAIMER
@@ -51,8 +53,6 @@ pub type cellColors = [crossterm::style::Color; 2];
 
             // How deep should pond/lake iterations go Min-Max
             pub const WORLD_POND_ITERS: Range<usize> = 6..8;
-
-            pub const WORLD_POND_DEEP_THRES: usize = 3;
 
         // endregion: Lakes
 

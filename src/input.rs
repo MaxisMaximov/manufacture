@@ -8,6 +8,10 @@ pub struct SYS_INPUT{
 }
 
 impl SYS_INPUT {
+
+    pub fn new() -> Self{
+        SYS_INPUT {}
+    }
     /// # Input handler
     /// # DO NOT RELY ON CURRENT VERSION OF THIS
     /// It will get updated with Window system and will read from a config file instead of single layout

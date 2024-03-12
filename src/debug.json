@@ -13,15 +13,14 @@
         "RENDER_textItem": "Rendered text item (id/position): "
     },
     "DEBUG_game":{
-        "GAME_pMoveDenied": "Denied player movement at: ",
         "GAME_tileChange": "Changed tile at: "
     },
+    "DEBUG_WORLD_gen":{
+        "GEN_done": "Finished generating world",
+        "GEN_lake": "Generated lake at: ",
+        "GEN_forest": "Generated forest at: "
+    },
     "DEBUG_world":{
-        "WORLD_gen":{
-            "GEN_done": "Finished generating world",
-            "GEN_lake": "Generated lake at: ",
-            "GEN_forest": "Generated forest at: "
-        },
         "WORLD_clear": "Cleared world"
     }
 }

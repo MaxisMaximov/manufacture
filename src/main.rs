@@ -1,3 +1,5 @@
+#![allow(nonstandard_style)]
+
 use crossterm::terminal::enable_raw_mode;
 
 use std::{collections::HashMap, thread::sleep, time::{Duration, Instant}};
@@ -29,13 +31,14 @@ fn main() {
 
     // Initialize the subsystems
     let mut SYS_subsystems = SUBSYSTEM_master{
-        SUBSYSTEM_logic: logic::SYS_LOGIC{},
+        SUBSYSTEM_logic: logic::SYS_LOGIC::new(),
         SUBSYSTEM_renderer: renderer::SYS_RENDERER::new(),
-        SUBSYSTEM_input: input::SYS_INPUT{}
+        SUBSYSTEM_input: input::SYS_INPUT::new(),
+        SUBSYSTEM_jsonManager: jsonManager::SYS_jsonManager::new()
     };
 
     // # THE GAME LOOP
-    'GAME_loop: loop {
+    loop {
 
         // Clear debug string
         SYS_data.DATA_debug.clear();

@@ -1,3 +1,4 @@
+#![allow(nonstandard_style)]
 
 use std::ops::Range;
 
@@ -63,7 +64,7 @@ impl Clone for TEMPLATE_wChunk {
 /// 
 /// `w_clearWorld` function is for debug purposes for now
 pub struct TEMPLATE_world {
-    pub w_chunks: [TEMPLATE_wChunk; (system::SYS_WORLD_X * system::SYS_WORLD_Y)],
+    pub w_chunks: [TEMPLATE_wChunk; system::SYS_WORLD_X * system::SYS_WORLD_Y],
     pub w_dummyChunk: TEMPLATE_wChunk
 }
 impl TEMPLATE_world {
