@@ -3,23 +3,25 @@
 ## A standardized guideline for names in Manufacture
 
 - [Variables](#variables)
-  - [Input](#input)
-  - [Output](#output)
-  - [Inside function](#inside-function)
-  - [Important variables](#important-variables)
-  - [Common names](#common-names)
+  - [Input](#input-variables)
+  - [Output](#output-variables)
+  - [Inside function](#variables-inside-function)
+  - [Important variables](#constant-variables)
+  - [Common names](#common-variable-names)
 - [Functions](#functions)
-  - [Public](#public)
-  - [Private](#private)
-  - [Groups](#groups)
-- Structs
-- Enums
+  - [Public](#public-functions)
+  - [Private](#private-functions)
+  - [Groups](#function-groups)
+- [Structs](#structs)
+  - [Naming](#struct-naming)
+  - [Fields](#struct-fields)
+  - [Functions](#struct-functions)
+- [Enums](#enums)
 - [Debug strings](#debug-strings)
-- Misc
 
 ## Variables
 
-### Input
+### Input Variables
 
 Naming for any data you want the function to have
 
@@ -35,7 +37,7 @@ e.g.
   pub fn DATA_cacheData_ADD(&mut self, IN_dataIndex: &str, IN_data: CACHE_TYPE)
 ```
 
-### Output
+### Output Variables
 
 Naming for any data that will be returned but requires intialization first, such as Lists or Vectors
 
@@ -49,7 +51,7 @@ e.g.
   return OUT_genTiles;
 ```
 
-### Inside function
+### Variables inside function
 
 Naming for variables inside the function to not confuse them with global variables
 
@@ -58,18 +60,18 @@ Syntax: `W_[naMe]`
 e.g.
 
 ```rust
-  let mut w_iterCoords: system::coords = IN_pos;
+  let mut W_iterCoords: system::coords = IN_pos;
 ```
 
 ```rust
-  let w_cellCoords = IN_pos[0] + IN_pos[1] * system::SYS_REND_BUFFER_X;
+  let W_cellCoords = IN_pos[0] + IN_pos[1] * system::SYS_REND_BUFFER_X;
 ```
 
-### Important variables
+### Constant variables
 
 Naming for system constants or other important variables
 
-#### System
+#### System Variables
 
 Syntax: `[CATE_GORY]_[SUB_CATEGORY]_[NA_ME]`
 
@@ -79,7 +81,7 @@ e.g.
 pub const SYS_TICKRATE_BASE: u8 = 8;
 ```
 
-#### Important
+#### Important variables
 
 Syntax: `[CATEGORY]_[naMe]`
 
@@ -89,7 +91,7 @@ e.g.
   let TIMER_renderTime = Instant::now()
 ```
 
-### Common names
+### Common variable names
 
 Common names for reocurring variables  
 Following this is advised
@@ -101,7 +103,7 @@ Timers for speed check: `TIMER_[...]Time`
 
 ## Functions
 
-### Public
+### Public Functions
 
 Naming for functions that will be used outside the struct/module
 
@@ -110,10 +112,10 @@ Syntax: `[CATEGORY]_[naMe]`
 e.g.
 
 ```rust
-  pub fn MAIN_renderGame(&mut self, IN_sysData: &mut DATA_master)
+  pub fn MAIN_renderGame(&mut self, IN_gameData: &mut DATA_master)
 ```
 
-### Private
+### Private Functions
 
 Naming for functions that will be used internally by struct/module **only**
 
@@ -125,7 +127,7 @@ e.g.
   fn render_util_text(&mut self, IN_sysData: &mut DATA_master)
 ```
 
-### Groups
+### Function Groups
 
 Naming for groups of functions that do similar operations
 
@@ -139,11 +141,49 @@ e.g.
 
 ## Structs
 
-TODO
+### Struct Naming
+
+Naming for structs
+
+Syntax: `[TYPE]_[naMe]`
+
+e.g.
+
+```rust
+  pub struct SYS_dataMaster
+```
+
+### Struct Fields
+
+Naming for struct fields
+
+Syntax: `[CATEGORY]_[naMe]`
+
+e.g.
+
+```rust
+  pub DATA_debug: HashMap<String, DATA_debugItem>,
+```
+
+### Struct Functions
+
+Naming for struct functions
+
+Same rules as those in [Functions](#functions) section
+
+Additionally, if the struct is specialized in one thing only (i.e. Renderer, Logic), it must have a `MAIN_` function to start their process
 
 ## Enums
 
-TODO
+Naming for enums
+
+Syntax: `[TYPE]_[naMe]`
+
+e.g.
+
+```rust
+  pub enum DATA_cacheType {
+```
 
 ## Debug Strings
 
@@ -157,7 +197,3 @@ e.g.
   ".DEBUG_sys":{
     "#SYS_dataContainerInit": "Data Container initialized",
 ```
-
-## Misc
-
-TODO
