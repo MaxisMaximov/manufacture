@@ -48,6 +48,19 @@ impl SYS_RENDERER{
         self.r_util_world(INr_data);
 
         // Convert buffer into string
+
+        // I will leave this here cuz I'm proud of it but it's somehow SLOWER THAN NESTED `FOR` LOOPS
+        // let RENDER_bufferstring = self.RENDER_bufferGrid
+        //     .chunks(system::SYS_REND_BUFFER_X)
+        //     .map(|ROW| ROW.iter().map(|CELL|
+        //     CELL
+        //         .c_char
+        //         .with(CELL.c_colors[0])
+        //         .on(CELL.c_colors[1])
+        //         .to_string()
+        //             ).collect::<Vec<String>>().concat()
+        //     ).collect::<Vec<String>>().join(system::SYS_NEWLINE);
+
         let mut RENDER_bufferstring = String::new();
         for YPOS in 0..system::SYS_REND_BUFFER_Y - 1 {
             for XPOS in 0..system::SYS_REND_BUFFER_X - 1 {
@@ -100,34 +113,31 @@ impl SYS_RENDERER{
     /// 
     /// TODO: make this cleaner
     fn r_util_border(&mut self, borderPos: system::coords, borderSizeInner: system::coords) {
-        // Corners first
 
+
+        // Corners first
         self.r_util_setBufferCell(
             borderPos,
             '╔', 
-            [Color::White, 
-            Color::Black],
+            [Color::White, Color::Black],
             false
         );
         self.r_util_setBufferCell(
             [borderPos[0] + borderSizeInner[0], borderPos[1]], 
             '╗', 
-            [Color::White, 
-            Color::Black],
+            [Color::White, Color::Black],
             false
         );
         self.r_util_setBufferCell(
             [borderPos[0], borderPos[1] + borderSizeInner[1]],
             '╚', 
-            [Color::White, 
-            Color::Black],
+            [Color::White, Color::Black],
             false
         );
         self.r_util_setBufferCell(
             [borderPos[0] + borderSizeInner[0], borderPos[1] + borderSizeInner[1]],
             '╝', 
-            [Color::White, 
-            Color::Black],
+            [Color::White, Color::Black],
             false
         );
 
@@ -137,8 +147,7 @@ impl SYS_RENDERER{
                 self.r_util_setBufferCell(
                 [XPOS, YPOS],
                 '=', 
-                [Color::White,
-                Color::Black],
+                [Color::White, Color::Black],
                 false
                 )
             }
@@ -149,8 +158,7 @@ impl SYS_RENDERER{
                 self.r_util_setBufferCell(
                 [XPOS, YPOS],
                 '‖',
-                [Color::White,
-                Color::Black],
+                [Color::White, Color::Black],
                 false
                 )
             }
@@ -165,19 +173,7 @@ impl SYS_RENDERER{
     /// It'll be most likely removed in favor of Window system
     fn r_util_text(&mut self, INr_data: &mut DATA_master) {
         for RTEXT_index in 0..INr_data.DATA_textItems.len() {
-            let mut RTEXT_charStartPosition =
-                match INr_data.DATA_textItems[RTEXT_index].t_position {
-                    RENDER_position::POS_middle => [system::SYS_REND_BUFFER_X / 2, system::SYS_REND_BUFFER_Y / 2],
-                    RENDER_position::POS_left => [0, system::SYS_REND_BUFFER_Y / 2],
-                    RENDER_position::POS_right => [system::SYS_REND_BUFFER_X - 1, system::SYS_REND_BUFFER_Y / 2],
-                    RENDER_position::POS_top => [system::SYS_REND_BUFFER_X / 2, 0],
-                    RENDER_position::POS_bottom => [system::SYS_REND_BUFFER_X / 2, system::SYS_REND_BUFFER_Y - 1],
-                    RENDER_position::POS_TL => [0, 0],
-                    RENDER_position::POS_TR => [system::SYS_REND_BUFFER_X - 1, 0],
-                    RENDER_position::POS_BL => [0, system::SYS_REND_BUFFER_Y - 1],
-                    RENDER_position::POS_BR => [system::SYS_REND_BUFFER_X - 1, system::SYS_REND_BUFFER_Y - 1],
-                    RENDER_position::POS_custom(POS) => POS
-                };
+            let mut RTEXT_charStartPosition = INr_data.DATA_textItems[RTEXT_index].t_position.value();
             let mut RTEXT_charPosition = RTEXT_charStartPosition;
             'RENDER_textBlocks: for RTEXT_char in INr_data.DATA_textItems[RTEXT_index].t_text.clone().chars() {
                 if RTEXT_char == '\r'{
@@ -188,7 +184,7 @@ impl SYS_RENDERER{
                     RTEXT_charPosition = RTEXT_charStartPosition;
                     continue;
                 }
-                if RTEXT_charPosition[0] > system::SYS_REND_BUFFER_X - 1 || RTEXT_charPosition[1] > system::SYS_REND_BUFFER_Y - 1 {
+                if RTEXT_charPosition[0] >= system::SYS_REND_BUFFER_X || RTEXT_charPosition[1] >= system::SYS_REND_BUFFER_Y {
                     INr_data.DATA_pushDebugStr(format!(
                         "STRING ERROR: Out of Bounds{NEW}String: --{}--{NEW}Location: X: {} Y: {}",
                         INr_data.DATA_textItems[RTEXT_index].t_text,
@@ -212,7 +208,9 @@ impl SYS_RENDERER{
 
     /// # Render the world
     fn r_util_world(&mut self, INr_data: &mut DATA_master) {
+        // First get vec of chunk references to not overload the system
         let r_workingChunkArray = INr_data.DATA_world.w_returnChunkArray(INr_data.DATA_player.p_chunk, [system::SYS_REND_CHUNK_X, system::SYS_REND_CHUNK_Y]);
+        
         let r_workingBorderOffset = [
             (INr_data.DATA_player.p_pos[0] % system::SYS_CHUNK_X + system::SYS_REND_CHUNK_X / 2 * system::SYS_CHUNK_X) - system::SYS_REND_WORLD_X / 2,
             (INr_data.DATA_player.p_pos[1] % system::SYS_CHUNK_Y + system::SYS_REND_CHUNK_Y / 2 * system::SYS_CHUNK_Y) - system::SYS_REND_WORLD_Y / 2
@@ -280,6 +278,10 @@ impl Clone for TEMPLATE_wrCell {
     }
 }
 
+/// # Position in Render Buffer
+/// A selection of common positions for useage
+/// 
+/// You can also use your custom position with `POS_custom`
 pub enum RENDER_position{
     POS_middle,
     POS_right,
@@ -291,4 +293,20 @@ pub enum RENDER_position{
     POS_BL,
     POS_BR,
     POS_custom(system::coords)
+}
+impl RENDER_position {
+    pub fn value(&self) -> system::coords{
+        match *self {
+            Self::POS_middle => [system::SYS_REND_BUFFER_X / 2, system::SYS_REND_BUFFER_Y / 2],
+            Self::POS_left => [0, system::SYS_REND_BUFFER_Y / 2],
+            Self::POS_right => [system::SYS_REND_BUFFER_X - 1, system::SYS_REND_BUFFER_Y / 2],
+            Self::POS_top => [system::SYS_REND_BUFFER_X / 2, 0],
+            Self::POS_bottom => [system::SYS_REND_BUFFER_X / 2, system::SYS_REND_BUFFER_Y - 1],
+            Self::POS_TL => [0, 0],
+            Self::POS_TR => [system::SYS_REND_BUFFER_X - 1, 0],
+            Self::POS_BL => [0, system::SYS_REND_BUFFER_Y - 1],
+            Self::POS_BR => [system::SYS_REND_BUFFER_X - 1, system::SYS_REND_BUFFER_Y - 1],
+            Self::POS_custom(POS) => POS
+        }
+    }
 }

@@ -14,11 +14,14 @@ use std::{time::Duration, ops::Range};
 pub const SYS_NEWLINE: &str = "\r\n";
 
 #[cfg(target_os = "windows")]
-pub const SYS_NEWLINE: &str = "\r\n";
+pub const SYS_NEWLINE: &str = "\n";
 
+// How fast should game process everything
+// DO NOT TOUCH SYS_TICKTIME!!!!
 pub const SYS_TICKRATE: u8 = 8;
 pub const SYS_TICKTIME: Duration = Duration::from_millis(1000 / SYS_TICKRATE as u64);
 
+// Custom types so I don't peck it up
 pub type coords = [usize; 2];
 pub type cellColors = [crossterm::style::Color; 2];
 

@@ -104,8 +104,8 @@ impl DATA_master {
     /// Supply it with the index you stored the Cache at
     /// 
     /// If it doesn't find the cache it'll return `None`
-    pub fn DATA_cacheData_GET(&self, IN_dataIndex: String) -> Option<&CACHE_TYPE>{
-        match self.DATA_cache.get(&IN_dataIndex){
+        pub fn DATA_cacheData_GET(&self, IN_dataIndex: &str) -> Option<&CACHE_TYPE>{
+            match self.DATA_cache.get(IN_dataIndex){
             None => return None,
             Some(cacheData) => return Some(cacheData)
         }
@@ -113,15 +113,15 @@ impl DATA_master {
 
     /// # Add cache data
     /// Supply it with index to store cache at and type of cache you want to store
-    pub fn DATA_cacheData_ADD(&mut self, IN_dataIndex: String, IN_data: CACHE_TYPE){
-        self.DATA_cache.insert(IN_dataIndex, IN_data);
+        pub fn DATA_cacheData_ADD(&mut self, IN_dataIndex: &str, IN_data: CACHE_TYPE){
+            self.DATA_cache.insert(IN_dataIndex.to_string(), IN_data);
     }
 
     /// # Free cache data
     /// Supply it with index of cache you don't need anymore
-    pub fn DATA_cacheData_FREE(&mut self, IN_dataIndex: String){
-        self.DATA_cache.remove(&IN_dataIndex);
-    }
+        pub fn DATA_cacheData_FREE(&mut self, IN_dataIndex: &str){
+            self.DATA_cache.remove(IN_dataIndex);
+        }
 }
 
 /// # Master subsystem struct
@@ -142,4 +142,35 @@ pub enum CACHE_TYPE {
     CACHE_u8(u8),
     CACHE_coords([usize; 2]),
     CACHE_interactCode(logic::GAME_interactions)
+}
+
+/// # Debug string item
+/// Holds ID of the debug string, the values for debug and lifetime
+/// 
+/// Set `lifetime` to 255 if it's something you wanna track at all times
+pub struct DEBUG_item{
+    pub DEBUG_strID: String,
+    pub DEBUG_values: String,
+    pub DEBUG_lifetime: u8
+}
+impl DEBUG_item{
+    pub fn new(INds_ID: &str, INds_values: &str, INds_lifetime: u8) -> Self{
+        DEBUG_item{
+            DEBUG_strID: INds_ID.to_string(),
+            DEBUG_values: INds_values.to_string(),
+            DEBUG_lifetime: INds_lifetime
+        }
+}
+    /// # Tickdown lifetime
+    /// Just to make it bit cleaner
+    pub fn ds_tickdown(&mut self){
+        self.DEBUG_lifetime -= 1;
+    }
+
+    /// # Update debug string values
+    /// No it will not format the new values for you
+    pub fn ds_updateValues(&mut self, INds_upVals: String){
+        self.DEBUG_values = INds_upVals
+    }
+
 }
