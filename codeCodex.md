@@ -7,6 +7,7 @@
   - [Output](#output-variables)
   - [Inside function](#variables-inside-function)
   - [Important variables](#constant-variables)
+  - [Temporary values](#temporary-values)
   - [Common names](#common-variable-names)
 - [Functions](#functions)
   - [Public](#public-functions)
@@ -18,6 +19,7 @@
   - [Functions](#struct-functions)
 - [Enums](#enums)
 - [Debug strings](#debug-strings)
+- [Misc](#misc)
 
 ## Variables
 
@@ -89,6 +91,16 @@ e.g.
 
 ```rust
   let TIMER_renderTime = Instant::now()
+```
+
+### Temporary values
+
+Primarily to stop compiler from whining
+
+Syntax: `idkfa_[naMe]`
+
+```rust
+  let mut idkfa = DATA_LOCK.DATA_player.p_pos
 ```
 
 ### Common variable names
@@ -196,4 +208,16 @@ e.g.
 ```json
   ".DEBUG_sys":{
     "#SYS_dataContainerInit": "Data Container initialized",
+```
+
+## Misc
+
+Naming for miscellaneous things
+
+### Global values lock
+
+Syntax: `[NAME]_LOCK`
+
+```rust
+  let mut DATA_LOCK = SYS_data.lock().unwrap()
 ```

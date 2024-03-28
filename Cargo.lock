@@ -177,6 +177,7 @@ version = "0.1.0"
 dependencies = [
  "clearscreen",
  "crossterm",
+ "once_cell",
  "rand",
  "serde_json",
 ]
