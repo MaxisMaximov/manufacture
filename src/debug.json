@@ -1,27 +1,28 @@
 {
     ".DEBUG_sys":{
-        "#SYS_dataContainer_init": "Data Container initialized",
-        "#SYS_subsystemLogic_init": "Logic initialized",
-        "#SYS_subsystemRenderer_init": "Renderer initialized",
-        "#SYS_subsystemInput_init": "Input manager initialized",
+        ".SYS_ssInit":{
+            "#SSINIT_data": "Data Container initialized",
+            "#SSINIT_logic": "Logic initialized",
+            "#SSINIT_render": "Renderer initialized",
+            "#SSINIT_input": "Input manager initialized"
+        },
         "#SYS_processSpeed": "Finished processing in: "
     },
-    ".DEBUG_key":{
-        "#KEY_keyNone": "No key pressed, skipping"
+    ".DEBUG_input":{
+        "#INPUT_whatKey": "Key pressed: "
     },
     ".DEBUG_render":{
         "#RENDER_frameTime": "Rendered frame in: ",
-        "#RENDER_border": "Rendered border (position/size): ",
         "#RENDER_textItem": "Rendered text item (id/position): "
     },
-    ".DEBUG_game":{
-        "#GAME_tileChange": "Changed tile at: "
+    ".DEBUG_logic":{
+        "#LOGIC_interaction": "Current interaction: "
     },
     ".DEBUG_world":{
         ".WORLD_gen": {
             "#GEN_done": "Finished generating world",
-            "#GEN_lake": "Generated lake at: ",
-            "#GEN_forest": "Generated forest at: "
+            "#GEN_lake": "Generated lake (location/iters): ",
+            "#GEN_forest": "Generated forest at (location/iters): "
         },
         "#WORLD_clear": "Cleared world"
     }

@@ -9,31 +9,27 @@ pub struct SYS_LOGIC{
 }
 impl SYS_LOGIC {
     pub fn new() -> Self{
-        SYS_LOGIC {}
+        Self {}
     }
     /// # Interaction manager
     /// # DO NOT RELY ON CURRENT VERSION OF THIS
     /// While I'm not sure how it will change exactly it does "global" interactions for now
     /// 
     /// Window system will have different way of managing those
-    pub fn GAME_interact(&mut self, INi_data: &mut DATA_master) {
-        match &INi_data.DATA_playerInput {
+    pub fn GAME_interact(&mut self) {
+        let mut DATA_LOCK = SYS_data.lock().unwrap();
+        match DATA_LOCK.DATA_playerInput {
             GAME_interactions::i_changeWorldTile => {
-                INi_data.DATA_world
-                    .w_setCell(INi_data.DATA_player.p_pos, 'c', [Color::Black, INi_data.DATA_player.p_color[1]])
+                let idkfa_pos = DATA_LOCK.DATA_player.p_pos;
+                let idkfa_colors = [Color::Black, DATA_LOCK.DATA_player.p_color[1]];
+                DATA_LOCK.DATA_world.w_setCell(idkfa_pos, 'c', idkfa_colors);
             }
-            GAME_interactions::i_printHello => INi_data.DATA_pushTextItem(renderer::RENDER_textItem {
-                t_text: format!("Hello!{NEW}Hello!", NEW = system::SYS_NEWLINE).to_string(),
-                t_position: renderer::RENDER_position::POS_TL,
-                t_lifetime: 32,
-            }),
-            GAME_interactions::i_printDebug => INi_data.DATA_pushTextItem(renderer::RENDER_textItem {
-                t_text: "DEBUG".to_string(),
-                t_position: renderer::RENDER_position::POS_middle,
-                t_lifetime: 16,
-            }),
-            GAME_interactions::i_clearWorld => INi_data.DATA_world.w_clearWorld(),
-            GAME_interactions::i_movPlayer(dir) => INi_data.DATA_player.p_move(dir),
+            GAME_interactions::i_printHello => DATA_LOCK.DATA_pushTextItem("Hello!\r\nHello!", renderer::RENDER_position::POS_TL, 32),
+            GAME_interactions::i_printDebug => DATA_LOCK.DATA_pushTextItem("DEBUG", renderer::RENDER_position::POS_middle, 16),
+            GAME_interactions::i_clearWorld => DATA_LOCK.DATA_world.w_clearWorld(),
+            GAME_interactions::i_movPlayer(dir) => {
+                let idkfa_direction = dir;
+                DATA_LOCK.DATA_player.p_move(&idkfa_direction)}
             GAME_interactions::i_NULL => {}
         }
     }

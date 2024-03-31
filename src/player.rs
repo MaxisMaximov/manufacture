@@ -49,6 +49,7 @@ impl TEMPLATE_player {
                 self.p_pos[0] = self.p_pos[0].add(1).clamp(0, system::SYS_GRID_X);
             }
         }
+        // Update current chunk         // I hate when small changes like this comment flag the whole file as Modified.
         self.p_chunk[0] = self.p_pos[0] / system::SYS_CHUNK_X;
         self.p_chunk[1] = self.p_pos[1] / system::SYS_CHUNK_Y;
     }

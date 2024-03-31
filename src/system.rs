@@ -10,11 +10,13 @@ use std::{time::Duration, ops::Range};
 // AND SO THAT TESTING CAN BE DONE WITHOUT RECOMPILING
 
 // This block right here is because of Linux.
-#[cfg(target_os = "linux")]
-pub const SYS_NEWLINE: &str = "\r\n";
+// UPDATE: I commented it out cuz `\r\n` doesn't make a difference on Windows
+// But future compatibility thingies will be here
 
-#[cfg(target_os = "windows")]
-pub const SYS_NEWLINE: &str = "\n";
+// #[cfg(target_os = "linux")]
+// pub const SYS_NEWLINE: &str = "\r\n";
+// #[cfg(target_os = "windows")]
+// pub const SYS_NEWLINE: &str = "\n";
 
 // How fast should game process everything
 // DO NOT TOUCH SYS_TICKTIME!!!!

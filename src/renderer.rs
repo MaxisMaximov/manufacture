@@ -14,7 +14,7 @@ pub struct SYS_RENDERER{
 }
 impl SYS_RENDERER{
     pub fn new() -> Self{
-        SYS_RENDERER { 
+        Self { 
             RENDER_bufferGrid: [TEMPLATE_wrCell::new(); system::SYS_REND_BUFFER_X * system::SYS_REND_BUFFER_Y],
         }
     }
@@ -28,8 +28,7 @@ impl SYS_RENDERER{
     /// - Convert buffer into printable string
     /// - Clear screen for next frame
     /// - Display frame
-    /// - Display debug string
-    pub fn SYS_HANDLER_renderGame(&mut self, INr_data: &mut DATA_master) {
+    pub fn SYS_HANDLER_renderGame(&mut self) {
         let RENDER_start = Instant::now();
 
         // Set cell for the player
@@ -37,15 +36,15 @@ impl SYS_RENDERER{
         self.r_util_setBufferCell(
             [system::SYS_REND_WORLD_X / 2 + 2, system::SYS_REND_WORLD_Y / 2 + 2], 
             'P', 
-            INr_data.DATA_player.p_color,
+            SYS_data.lock().unwrap().DATA_player.p_color,
             false
         );
 
-        self.r_util_text(INr_data);
+        self.r_util_text();
 
         self.r_util_border([1, 1], [system::SYS_REND_WORLD_X + 1, system::SYS_REND_WORLD_Y + 1]);
 
-        self.r_util_world(INr_data);
+        self.r_util_world();
 
         // Convert buffer into string
 
@@ -65,15 +64,9 @@ impl SYS_RENDERER{
         for YPOS in 0..system::SYS_REND_BUFFER_Y - 1 {
             for XPOS in 0..system::SYS_REND_BUFFER_X - 1 {
                 let RENDER_cell = self.RENDER_bufferGrid[XPOS + YPOS * system::SYS_REND_BUFFER_X];
-                RENDER_bufferstring.push_str(
-                    &RENDER_cell
-                        .c_char
-                        .with(RENDER_cell.c_colors[0])
-                        .on(RENDER_cell.c_colors[1])
-                        .to_string(),
-                )
+                write!(RENDER_bufferstring, "{}", RENDER_cell.c_char.with(RENDER_cell.c_colors[0]).on(RENDER_cell.c_colors[1]).to_string());
             }
-            RENDER_bufferstring.push_str(system::SYS_NEWLINE)
+            RENDER_bufferstring.push_str("\r\n")
         }
 
         // DEBUG
@@ -171,11 +164,11 @@ impl SYS_RENDERER{
     /// 
     /// # DO NOT RELY ON THIS
     /// It'll be most likely removed in favor of Window system
-    fn r_util_text(&mut self, INr_data: &mut DATA_master) {
-        for RTEXT_index in 0..INr_data.DATA_textItems.len() {
-            let mut RTEXT_charStartPosition = INr_data.DATA_textItems[RTEXT_index].t_position.value();
+    fn r_util_text(&mut self) {
+        for RTEXT_index in 0..SYS_data.lock().unwrap().DATA_textItems.len() {
+            let mut RTEXT_charStartPosition = SYS_data.lock().unwrap().DATA_textItems[RTEXT_index].t_position.value();
             let mut RTEXT_charPosition = RTEXT_charStartPosition;
-            'RENDER_textBlocks: for RTEXT_char in INr_data.DATA_textItems[RTEXT_index].t_text.clone().chars() {
+            'RENDER_textBlocks: for RTEXT_char in SYS_data.lock().unwrap().DATA_textItems[RTEXT_index].t_text.clone().chars() {
                 if RTEXT_char == '\r'{
                     continue;
                 }
@@ -185,37 +178,32 @@ impl SYS_RENDERER{
                     continue;
                 }
                 if RTEXT_charPosition[0] >= system::SYS_REND_BUFFER_X || RTEXT_charPosition[1] >= system::SYS_REND_BUFFER_Y {
-                    INr_data.DATA_pushDebugStr(format!(
-                        "STRING ERROR: Out of Bounds{NEW}String: --{}--{NEW}Location: X: {} Y: {}",
-                        INr_data.DATA_textItems[RTEXT_index].t_text,
-                        RTEXT_charPosition[0],
-                        RTEXT_charPosition[1],
-                        NEW = system::SYS_NEWLINE
-                    ));
                     break 'RENDER_textBlocks;
                 }
                 self.r_util_setBufferCell(RTEXT_charPosition, RTEXT_char, [Color::White, Color::Black], false);
                 RTEXT_charPosition[0] += 1
             }
-            if INr_data.DATA_textItems[RTEXT_index].t_lifetime == 255{
+            if SYS_data.lock().unwrap().DATA_textItems[RTEXT_index].t_lifetime == 255{
                 continue;
             }
-            INr_data.DATA_textItems[RTEXT_index].t_lifetime -= 1;
+            SYS_data.lock().unwrap().DATA_textItems[RTEXT_index].t_lifetime -= 1;
         }
 
-        INr_data.DATA_textItems.retain(|RTEXT| RTEXT.t_lifetime > 0)
+        SYS_data.lock().unwrap().DATA_textItems.retain(|RTEXT| RTEXT.t_lifetime > 0)
     }
 
     /// # Render the world
-    fn r_util_world(&mut self, INr_data: &mut DATA_master) {
+    fn r_util_world(&mut self) {
         // First get vec of chunk references to not overload the system
-        let r_workingChunkArray = INr_data.DATA_world.w_returnChunkArray(INr_data.DATA_player.p_chunk, [system::SYS_REND_CHUNK_X, system::SYS_REND_CHUNK_Y]);
+        let DATA_LOCK = SYS_data.lock().unwrap();
+        let r_workingChunkArray = DATA_LOCK.DATA_world.w_returnChunkArray(DATA_LOCK.DATA_player.p_chunk, [system::SYS_REND_CHUNK_X, system::SYS_REND_CHUNK_Y]);
         
         let r_workingBorderOffset = [
-            (INr_data.DATA_player.p_pos[0] % system::SYS_CHUNK_X + system::SYS_REND_CHUNK_X / 2 * system::SYS_CHUNK_X) - system::SYS_REND_WORLD_X / 2,
-            (INr_data.DATA_player.p_pos[1] % system::SYS_CHUNK_Y + system::SYS_REND_CHUNK_Y / 2 * system::SYS_CHUNK_Y) - system::SYS_REND_WORLD_Y / 2
+            (DATA_LOCK.DATA_player.p_pos[0] % system::SYS_CHUNK_X + system::SYS_REND_CHUNK_X / 2 * system::SYS_CHUNK_X) - system::SYS_REND_WORLD_X / 2,
+            (DATA_LOCK.DATA_player.p_pos[1] % system::SYS_CHUNK_Y + system::SYS_REND_CHUNK_Y / 2 * system::SYS_CHUNK_Y) - system::SYS_REND_WORLD_Y / 2
         ];
 
+        // I hate how much of a spaghett this is
         for YPOS in 0..system::SYS_REND_WORLD_Y{
             for XPOS in 0..system::SYS_REND_WORLD_X{
                 let r_workingChunkCell = &r_workingChunkArray[
@@ -233,24 +221,7 @@ impl SYS_RENDERER{
             }
         }
     }
-}
 
-
-/// # "Textbox" struct
-/// Lets you paste a text somewhere in the game screen
-/// 
-/// # DO NOT RELY ON THIS
-/// It'll be replaced in favor of Window system
-/// 
-/// # Warning
-/// The Renderer doesn't check if the text overflows the X position yet, only if it's outside the buffer
-/// 
-/// So be careful where and what you write
-pub struct RENDER_textItem{
-    pub t_position: RENDER_position,
-    pub t_text: String,
-    pub t_lifetime: u16
-}
 
 
 /// # Render Buffer Cell
