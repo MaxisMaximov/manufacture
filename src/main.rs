@@ -16,9 +16,18 @@ mod jsonManager;
 // This is a mess.
 pub static SYS_jsonManager: Lazy<Mutex<jsonManager::SYS_jsonManager>> = Lazy::new(|| Mutex::new(jsonManager::SYS_jsonManager::new()));
 pub static SYS_data: Lazy<Mutex<DATA_master>> = Lazy::new(|| Mutex::new(DATA_master::new(player::TEMPLATE_player::new(1, None))));
+pub static SYS_debug: Lazy<Mutex<DEBUG_master>> = Lazy::new(|| Mutex::new(DEBUG_master::new()));
 
 // START HERE
 fn main() {
+
+    SYS_debug.lock().unwrap().DEBUG_debugStr_ADD(
+        "#SSINIT_data",
+        ".DEBUG_sys/.SYS_ssInit/#SSINIT_data",
+        "",
+        40
+    );
+
     // Switch to Raw Mode
     enable_raw_mode().unwrap();
 
@@ -31,6 +40,13 @@ fn main() {
     let mut SYS_renderer = renderer::SYS_RENDERER::new();
     let mut SYS_logic = logic::SYS_LOGIC::new();
     let SYS_input = input::SYS_INPUT::new();
+
+    SYS_debug.lock().unwrap().DEBUG_debugStr_ADD(
+        "#SYS_processTime",
+        ".DEBUG_sys/#SYS_processSpeed",
+        "",
+        255
+    );
 
     // # THE GAME LOOP
     loop {
@@ -48,6 +64,9 @@ fn main() {
         SYS_renderer.SYS_HANDLER_renderGame();
 
         // Log how long it took to process everything
+        SYS_debug.lock().unwrap().DEBUG_debugStr_GET("#SYS_processTime").unwrap().ds_updateValues(&format!("{:?}", loopStart.elapsed()));
+        SYS_renderer.SYS_HANDLER_renderDebugStrs();
+
         let loop_elapsedTime: Duration = loopStart.elapsed();
         if loop_elapsedTime < system::SYS_TICKTIME {
             sleep(system::SYS_TICKTIME - loop_elapsedTime)
@@ -64,7 +83,6 @@ fn main() {
 pub struct DATA_master{
     pub DATA_player: player::TEMPLATE_player,
     pub DATA_world: world::TEMPLATE_world,
-    pub DATA_debug: HashMap<String, DEBUG_item>,
     pub DATA_textItems: Vec<RENDER_textItem>,
     pub DATA_playerInput: logic::GAME_interactions,
     DATA_cache: HashMap<String, CACHE_TYPE>
@@ -75,7 +93,6 @@ impl DATA_master {
         Self{
             DATA_player: IN_player,
             DATA_world: world::TEMPLATE_world::new(),
-            DATA_debug: HashMap::new(),
             DATA_textItems: Vec::new(),
             DATA_playerInput: logic::GAME_interactions::i_NULL,
             DATA_cache: HashMap::new()
@@ -86,56 +103,71 @@ impl DATA_master {
     /// 
     /// # DO NOT RELY ON THIS
     /// Will also be rewritten in favor of Window system
-    pub fn DATA_pushTextItem(&mut self, INr_textItem: renderer::RENDER_textItem){
-        self.DATA_textItems.push(INr_textItem)
+    pub fn DATA_pushTextItem(&mut self, INr_text: &str, INr_position: renderer::RENDER_position, INr_lifetime: u16){
+        self.DATA_textItems.push(RENDER_textItem {t_text: INr_text.to_string(), t_position: INr_position, t_lifetime: INr_lifetime})
     }
 
     // region: CACHE
 
-    /// # Get cache data
-    /// Supply it with the index you stored the Cache at
-    /// 
-    /// If it doesn't find the cache it'll return `None`
+        /// # Get cache data
+        /// Supply it with the index you stored the Cache at
+        /// 
+        /// If it doesn't find the cache it'll return `None`
         pub fn DATA_cacheData_GET(&self, IN_dataIndex: &str) -> Option<&CACHE_TYPE>{
             match self.DATA_cache.get(IN_dataIndex){
-            None => return None,
-            Some(cacheData) => return Some(cacheData)
+                None => return None,
+                Some(cacheData) => return Some(cacheData)
+            }
         }
-    }
 
-    /// # Add cache data
-    /// Supply it with index to store cache at and type of cache you want to store
+        /// # Add cache data
+        /// Supply it with index to store cache at and type of cache you want to store
         pub fn DATA_cacheData_ADD(&mut self, IN_dataIndex: &str, IN_data: CACHE_TYPE){
             self.DATA_cache.insert(IN_dataIndex.to_string(), IN_data);
-    }
-
-    /// # Free cache data
-    /// Supply it with index of cache you don't need anymore
+        }
+        
+        /// # Free cache data
+        /// Supply it with index of cache you don't need anymore
         pub fn DATA_cacheData_FREE(&mut self, IN_dataIndex: &str){
             self.DATA_cache.remove(IN_dataIndex);
         }
     // endregion: CACHE
+}
 
-    // region: DEBUGSTR
-        /// # Get debug string reference
-        /// So that you can update it
-        pub fn DATA_debugStr_GET(&mut self, IN_dataIndex: &str) -> Option<&mut DEBUG_item>{
-            match self.DATA_debug.get_mut(IN_dataIndex){
-                None => return None,
-                Some(debugStr) => return Some(debugStr)
-            }
+/// # Master Debug Struct
+/// Holds the Debug info from subsystems
+/// 
+/// Reason I made this?  
+/// So that Deadlocks don't happen with `SYS_data` because apparently it likes to do that
+pub struct DEBUG_master{
+    pub DATA_debugItems: HashMap<String, DEBUG_item>,
+    pub DATA_debugStrs: Vec<String>
+}
+impl DEBUG_master{
+    pub fn new() -> Self{
+        Self{
+            DATA_debugItems: HashMap::new(),
+            DATA_debugStrs: Vec::new()
         }
-        /// # Add string for debug
-        /// Supply it with index to store debug string at and the debug string values
-        pub fn DATA_debugStr_ADD(&mut self, INd_dataIndex: &str, INd_ID: &str, INd_values: &str, INd_lifetime: u16){
-            self.DATA_debug.insert(INd_dataIndex.to_string(), DEBUG_item::new(INd_ID, INd_values, INd_lifetime));
+    }
+    /// # Get debug string reference
+    /// So that you can update it
+    pub fn DEBUG_debugStr_GET(&mut self, IN_dataIndex: &str) -> Option<&mut DEBUG_item>{
+        match self.DATA_debugItems.get_mut(IN_dataIndex){
+            None => return None,
+            Some(debugStr) => return Some(debugStr)
         }
-        /// # Free debug string
-        /// If you REALLY want to remove it
-        pub fn DATA_debugStr_FREE(&mut self, INd_dataIndex: &str){
-            self.DATA_debug.remove(INd_dataIndex);
-        }
-    // endregion: DEBUGSTR
+    }
+    /// # Add string for debug
+    /// Supply it with index to store debug string at and the debug string values
+    pub fn DEBUG_debugStr_ADD(&mut self, INd_dataIndex: &str, INd_ID: &str, INd_values: &str, INd_lifetime: u16){
+        self.DATA_debugItems.insert(INd_dataIndex.to_string(), DEBUG_item::new(INd_ID, INd_values, INd_lifetime));
+    }
+    /// # Free debug string
+    /// If you REALLY want to remove it
+    pub fn DEBUG_debugStr_FREE(&mut self, INd_dataIndex: &str){
+        self.DATA_debugItems.remove(INd_dataIndex);
+    }
 }
 
 /// # Cache type
@@ -145,7 +177,7 @@ impl DATA_master {
 pub enum CACHE_TYPE {
     CACHE_usize(usize),
     CACHE_u8(u8),
-    CACHE_coords([usize; 2]),
+    CACHE_coords(system::coords),
     CACHE_interactCode(logic::GAME_interactions)
 }
 
@@ -154,18 +186,18 @@ pub enum CACHE_TYPE {
 /// 
 /// Set `lifetime` to 255 if it's something you wanna track at all times
 pub struct DEBUG_item{
-    pub DEBUG_strID: String,
+    pub DEBUG_str: String,
     pub DEBUG_values: String,
     pub DEBUG_lifetime: u16
 }
 impl DEBUG_item{
     pub fn new(INds_ID: &str, INds_values: &str, INds_lifetime: u16) -> Self{
         Self{
-            DEBUG_strID: INds_ID.to_string(),
+            DEBUG_str: SYS_jsonManager.lock().unwrap().JSON_FETCH_debugStr(INds_ID), // Autoconvert the ID into the String to not read from .json sh#t ton
             DEBUG_values: INds_values.to_string(),
             DEBUG_lifetime: INds_lifetime
         }
-}
+    }
     /// # Tickdown lifetime
     /// Just to make it bit cleaner
     pub fn ds_tickdown(&mut self){

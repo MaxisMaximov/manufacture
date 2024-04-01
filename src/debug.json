@@ -6,23 +6,23 @@
             "#SSINIT_render": "Renderer initialized",
             "#SSINIT_input": "Input manager initialized"
         },
-        "#SYS_processSpeed": "Finished processing in: "
+        "#SYS_processSpeed": "Finished processing in:"
     },
     ".DEBUG_input":{
-        "#INPUT_whatKey": "Key pressed: "
+        "#INPUT_whatKey": "Key pressed:"
     },
     ".DEBUG_render":{
-        "#RENDER_frameTime": "Rendered frame in: ",
-        "#RENDER_textItem": "Rendered text item (id/position): "
+        "#RENDER_frameTime": "Rendered frame in:",
+        "#RENDER_textItem": "Rendered text item (id/position):"
     },
     ".DEBUG_logic":{
-        "#LOGIC_interaction": "Current interaction: "
+        "#LOGIC_interaction": "Current interaction:"
     },
     ".DEBUG_world":{
         ".WORLD_gen": {
             "#GEN_done": "Finished generating world",
-            "#GEN_lake": "Generated lake (location/iters): ",
-            "#GEN_forest": "Generated forest at (location/iters): "
+            "#GEN_lake": "Generated lake (location/iters):",
+            "#GEN_forest": "Generated forest at (location/iters):"
         },
         "#WORLD_clear": "Cleared world"
     }

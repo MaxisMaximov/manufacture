@@ -1,4 +1,6 @@
 
+use std::fmt;
+
 use crossterm::style::Color;
 
 use crate::*;
@@ -9,6 +11,20 @@ pub struct SYS_LOGIC{
 }
 impl SYS_LOGIC {
     pub fn new() -> Self{
+        let mut DEBUG_LOCK = SYS_debug.lock().unwrap();
+        DEBUG_LOCK.DEBUG_debugStr_ADD(
+            "#LOGIC_interaction",
+            ".DEBUG_logic/#LOGIC_interaction",
+            "",
+            255
+        );
+
+        DEBUG_LOCK.DEBUG_debugStr_ADD(
+            "#SSINIT_logic",
+            ".DEBUG_sys/.SYS_ssInit/#SSINIT_logic",
+            "",
+            40
+        );
         Self {}
     }
     /// # Interaction manager
@@ -18,6 +34,8 @@ impl SYS_LOGIC {
     /// Window system will have different way of managing those
     pub fn GAME_interact(&mut self) {
         let mut DATA_LOCK = SYS_data.lock().unwrap();
+        let idkfa_interaction = DATA_LOCK.DATA_playerInput;
+        SYS_debug.lock().unwrap().DEBUG_debugStr_GET("#LOGIC_interaction").unwrap().ds_updateValues(&format!("{}", idkfa_interaction));
         match DATA_LOCK.DATA_playerInput {
             GAME_interactions::i_changeWorldTile => {
                 let idkfa_pos = DATA_LOCK.DATA_player.p_pos;
@@ -38,6 +56,7 @@ impl SYS_LOGIC {
 /// # Interactions enum
 /// # DON'T RELY ON THIS
 /// It will be replaced with introduction of Window system
+#[derive(Debug, Clone, Copy)]
 pub enum GAME_interactions {
     i_NULL,
     i_movPlayer(player::GAME_playerDirections),
@@ -45,4 +64,18 @@ pub enum GAME_interactions {
     i_printHello,
     i_printDebug,
     i_clearWorld,
+}
+impl fmt::Display for GAME_interactions{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let idkfa_pDir;
+        let idkfa_fmt = match *self {
+            Self::i_NULL => "NULL",
+            Self::i_movPlayer(dir) => {idkfa_pDir = format!("movPlayer >> {}", dir); &idkfa_pDir},
+            Self::i_changeWorldTile => "changeWorldTile",
+            Self::i_printHello => "printHello",
+            Self::i_printDebug => "printDebug",
+            Self::i_clearWorld => "clearWorld"
+        };
+        write!(f, "{}", idkfa_fmt)
+    }
 }

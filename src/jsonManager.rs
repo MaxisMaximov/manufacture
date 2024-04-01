@@ -33,6 +33,6 @@ impl SYS_jsonManager {
             }
             W_retrievedData = idkfa_value.clone()
         }
-        return W_retrievedData.to_string();
+        return W_retrievedData.as_str().unwrap().to_string();
     }
 }

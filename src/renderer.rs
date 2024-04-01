@@ -1,6 +1,6 @@
 use clearscreen::clear;
 use crossterm::style::{Color, Stylize};
-use std::time::Instant;
+use std::{io::{stdout, Write}, time::Instant};
 
 use crate::*;
 
@@ -11,11 +11,30 @@ use crate::*;
 /// Although hopefully the new one will be <<compatible
 pub struct SYS_RENDERER{
     RENDER_bufferGrid: [TEMPLATE_wrCell; system::SYS_REND_BUFFER_X * system::SYS_REND_BUFFER_Y],
+    RENDER_bufferDebug: String
 }
 impl SYS_RENDERER{
     pub fn new() -> Self{
+
+        let mut DEBUG_LOCK = SYS_debug.lock().unwrap();
+
+        DEBUG_LOCK.DEBUG_debugStr_ADD(
+            "#RENDER_frameTime",
+            ".DEBUG_render/#RENDER_frameTime",
+            "",
+            255
+        );
+
+        DEBUG_LOCK.DEBUG_debugStr_ADD(
+            "#SSINIT_render",
+            ".DEBUG_sys/.SYS_ssInit/#SSINIT_render",
+            "",
+            40
+        );
+
         Self { 
             RENDER_bufferGrid: [TEMPLATE_wrCell::new(); system::SYS_REND_BUFFER_X * system::SYS_REND_BUFFER_Y],
+            RENDER_bufferDebug: String::new()
         }
     }
 
@@ -40,7 +59,7 @@ impl SYS_RENDERER{
             false
         );
 
-        self.r_util_text();
+        //self.r_util_text();
 
         self.r_util_border([1, 1], [system::SYS_REND_WORLD_X + 1, system::SYS_REND_WORLD_Y + 1]);
 
@@ -60,27 +79,22 @@ impl SYS_RENDERER{
         //             ).collect::<Vec<String>>().concat()
         //     ).collect::<Vec<String>>().join(system::SYS_NEWLINE);
 
-        let mut RENDER_bufferstring = String::new();
+        // Clear and print new frame
+        let _ = clear();
+        let mut STDOUT_LOCK = stdout().lock();
         for YPOS in 0..system::SYS_REND_BUFFER_Y - 1 {
             for XPOS in 0..system::SYS_REND_BUFFER_X - 1 {
                 let RENDER_cell = self.RENDER_bufferGrid[XPOS + YPOS * system::SYS_REND_BUFFER_X];
-                write!(RENDER_bufferstring, "{}", RENDER_cell.c_char.with(RENDER_cell.c_colors[0]).on(RENDER_cell.c_colors[1]).to_string());
+                write!(STDOUT_LOCK, "{}", RENDER_cell.c_char.with(RENDER_cell.c_colors[0]).on(RENDER_cell.c_colors[1])).unwrap();
             }
-            RENDER_bufferstring.push_str("\r\n")
+            write!(STDOUT_LOCK, "\r\n").unwrap()
         }
+        stdout().flush().unwrap();
 
         // DEBUG
-        let r_frameTime = RENDER_start.elapsed();
-        INr_data.DATA_debug.push_str(&format!(
-            "Finished frame rendering in {:?}{NEW}Approximate FPS: {}",
-            r_frameTime,
-            1000000 / r_frameTime.as_micros(),
-            NEW = system::SYS_NEWLINE
-        ));
+        // let r_frameTime = RENDER_start.elapsed();
+        SYS_debug.lock().unwrap().DEBUG_debugStr_GET("#RENDER_frameTime").unwrap().ds_updateValues(&format!("{:?}", RENDER_start.elapsed()));
 
-        // Clear and print new frame
-        let _ = clear();
-        println!("{}", RENDER_bufferstring);
         // Reset buffers
         self.RENDER_bufferGrid.fill(TEMPLATE_wrCell::new());
     }
@@ -221,6 +235,20 @@ impl SYS_RENDERER{
             }
         }
     }
+
+    pub fn SYS_HANDLER_renderDebugStrs(&mut self){
+        let mut DEBUG_LOCK = SYS_debug.lock().unwrap();
+        for DEBUGSTR in DEBUG_LOCK.DATA_debugItems.values_mut(){
+            if &DEBUGSTR.DEBUG_str == "#MARK_FOR_DELETION"{
+                continue;
+            }
+            self.RENDER_bufferDebug.push_str(&format!("{} {}\r\n", &DEBUGSTR.DEBUG_str, &DEBUGSTR.DEBUG_values.clone().with(Color::Yellow)));
+            DEBUGSTR.ds_tickdown()
+        };
+        println!("{}", self.RENDER_bufferDebug);
+        self.RENDER_bufferDebug.clear()
+    }
+}
 
 
 

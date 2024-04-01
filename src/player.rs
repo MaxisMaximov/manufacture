@@ -1,4 +1,4 @@
-use std::ops::Add;
+use std::{fmt, ops::Add};
 
 use crossterm::style::Color;
 
@@ -69,9 +69,21 @@ const GAME_playerColors: [Color;4] = [
 /// This exists solely for readbility
 ///
 /// But also if I'd like to have more "advanced" movement
+#[derive(Debug, Clone, Copy)]
 pub enum GAME_playerDirections {
     DIR_up,
     DIR_down,
     DIR_left,
     DIR_right
+}
+impl fmt::Display for GAME_playerDirections{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let idkfa_string = match *self {
+            GAME_playerDirections::DIR_up => "Up",
+            GAME_playerDirections::DIR_down => "Down",
+            GAME_playerDirections::DIR_left => "Left",
+            GAME_playerDirections::DIR_right => "Right"
+        };
+        write!(f, "{}", idkfa_string)
+    }
 }
