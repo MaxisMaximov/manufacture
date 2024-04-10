@@ -13,7 +13,11 @@
     },
     ".DEBUG_render":{
         "#RENDER_frameTime": "Rendered frame in:",
-        "#RENDER_textItem": "Rendered text item (id/position):"
+        "#RENDER_textItem": "Rendered text item (id/position):",
+        "#RENDER_worldTime": "Render world function time:",
+        "#RENDER_convTime": "Converted buffer to string in:",
+        "#RENDER_borderTime": "Renderer border in:",
+        "#RENDER_textTime": "Rendered all text in: "
     },
     ".DEBUG_logic":{
         "#LOGIC_interaction": "Current interaction:"

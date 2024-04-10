@@ -1,4 +1,5 @@
 #![allow(nonstandard_style)]
+#![allow(unused_labels)]
 
 use crossterm::terminal::enable_raw_mode;
 use once_cell::sync::Lazy;
@@ -138,7 +139,7 @@ impl DATA_master {
 /// Holds the Debug info from subsystems
 /// 
 /// Reason I made this?  
-/// So that Deadlocks don't happen with `SYS_data` because apparently it likes to do that
+/// So that Deadlocks don't happen with `SYS_data` because apparently it really likes to do that
 pub struct DEBUG_master{
     pub DATA_debugItems: HashMap<String, DEBUG_item>,
     pub DATA_debugStrs: Vec<String>
@@ -150,6 +151,13 @@ impl DEBUG_master{
             DATA_debugStrs: Vec::new()
         }
     }
+
+    /// Clean up the hashmap
+    /// A.k.a. get rid of `#MARK_FOR_DELETION` entries
+    pub fn DEBUG_cleanup(&mut self){
+        self.DATA_debugItems.retain(|_, v| v.DEBUG_str == "#MARK_FOR_DELETION")
+    }
+
     /// # Get debug string reference
     /// So that you can update it
     pub fn DEBUG_debugStr_GET(&mut self, IN_dataIndex: &str) -> Option<&mut DEBUG_item>{
@@ -158,11 +166,13 @@ impl DEBUG_master{
             Some(debugStr) => return Some(debugStr)
         }
     }
+
     /// # Add string for debug
     /// Supply it with index to store debug string at and the debug string values
     pub fn DEBUG_debugStr_ADD(&mut self, INd_dataIndex: &str, INd_ID: &str, INd_values: &str, INd_lifetime: u16){
         self.DATA_debugItems.insert(INd_dataIndex.to_string(), DEBUG_item::new(INd_ID, INd_values, INd_lifetime));
     }
+
     /// # Free debug string
     /// If you REALLY want to remove it
     pub fn DEBUG_debugStr_FREE(&mut self, INd_dataIndex: &str){
@@ -193,11 +203,12 @@ pub struct DEBUG_item{
 impl DEBUG_item{
     pub fn new(INds_ID: &str, INds_values: &str, INds_lifetime: u16) -> Self{
         Self{
-            DEBUG_str: SYS_jsonManager.lock().unwrap().JSON_FETCH_debugStr(INds_ID), // Autoconvert the ID into the String to not read from .json sh#t ton
+            DEBUG_str: SYS_jsonManager.lock().unwrap().JSON_FETCH_debugStr(INds_ID), // Autoconvert the ID into the String to not read from .json a sh#t ton
             DEBUG_values: INds_values.to_string(),
             DEBUG_lifetime: INds_lifetime
         }
     }
+
     /// # Tickdown lifetime
     /// Just to make it bit cleaner
     pub fn ds_tickdown(&mut self){

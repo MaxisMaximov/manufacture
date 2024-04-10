@@ -29,7 +29,7 @@ impl SYS_jsonManager {
             // If nothing is found, just return the original index
             // I gotta find a cleaner way for this
             if idkfa_value == &serde_json::Value::Null{
-                return IN_index.to_string();
+                return NEXTINDEX.to_string();
             }
             W_retrievedData = idkfa_value.clone()
         }

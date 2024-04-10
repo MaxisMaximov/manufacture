@@ -12,20 +12,22 @@ impl SYS_INPUT {
     pub fn new() -> Self{
         let mut DEBUG_LOCK = SYS_debug.lock().unwrap();
 
-        // Add what must be kept track of
-        DEBUG_LOCK.DEBUG_debugStr_ADD(
-            "#INPUT_keyType",
-            ".DEBUG_input/#INPUT_whatKey",
-            "",
-            255
-        );
+        'INIT_debugStr: {
+            DEBUG_LOCK.DEBUG_debugStr_ADD(
+                "#INPUT_keyType",
+                ".DEBUG_input/#INPUT_whatKey",
+                "",
+                255
+            );
 
-        DEBUG_LOCK.DEBUG_debugStr_ADD(
-            "#INPUT_init",
-            ".DEBUG_sys/.SYS_ssInit/#SSINIT_input",
-            "",
-            40
-        );
+            DEBUG_LOCK.DEBUG_debugStr_ADD(
+                "#INPUT_init",
+                ".DEBUG_sys/.SYS_ssInit/#SSINIT_input",
+                "",
+                40
+            );
+        }
+
         Self {}
     }
     /// # Input handler
@@ -33,7 +35,7 @@ impl SYS_INPUT {
     /// It will get updated with Window system and will read from a config file instead of single layout
     pub fn SYS_HANDLER_input(&self){
         let mut DATA_LOCK = SYS_data.lock().unwrap();
-        if poll(Duration::from_millis(25)).unwrap() {
+        if poll(Duration::from_millis(1)).unwrap() {
             if let Event::Key(KeyEvent {code, modifiers: _, state: _, kind,}) = read().unwrap()
             {
                 if kind != KeyEventKind::Press {

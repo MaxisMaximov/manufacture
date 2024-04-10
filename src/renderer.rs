@@ -11,30 +11,57 @@ use crate::*;
 /// Although hopefully the new one will be <<compatible
 pub struct SYS_RENDERER{
     RENDER_bufferGrid: [TEMPLATE_wrCell; system::SYS_REND_BUFFER_X * system::SYS_REND_BUFFER_Y],
-    RENDER_bufferDebug: String
 }
 impl SYS_RENDERER{
     pub fn new() -> Self{
 
         let mut DEBUG_LOCK = SYS_debug.lock().unwrap();
+        'INIT_debugStr: {
+            DEBUG_LOCK.DEBUG_debugStr_ADD(
+                "#RENDER_frameTime",
+                ".DEBUG_render/#RENDER_frameTime",
+                "",
+                255
+            );
 
-        DEBUG_LOCK.DEBUG_debugStr_ADD(
-            "#RENDER_frameTime",
-            ".DEBUG_render/#RENDER_frameTime",
-            "",
-            255
-        );
+            DEBUG_LOCK.DEBUG_debugStr_ADD(
+                "#RENDER_worldTime",
+                ".DEBUG_render/#RENDER_worldTime",
+                "",
+                255
+            );
 
-        DEBUG_LOCK.DEBUG_debugStr_ADD(
-            "#SSINIT_render",
-            ".DEBUG_sys/.SYS_ssInit/#SSINIT_render",
-            "",
-            40
-        );
+            DEBUG_LOCK.DEBUG_debugStr_ADD(
+                "#RENDER_convTime",
+                ".DEBUG_render/#RENDER_convTime",
+                "",
+                255
+            );
+
+            DEBUG_LOCK.DEBUG_debugStr_ADD(
+                "#RENDER_borderTime",
+                ".DEBUG_render/#RENDER_borderTime",
+                "",
+                255
+            );
+
+            DEBUG_LOCK.DEBUG_debugStr_ADD(
+                "#RENDER_textTime",
+                ".DEBUG_render/#RENDER_textTime",
+                "",
+                255
+            );
+
+            DEBUG_LOCK.DEBUG_debugStr_ADD(
+                "#SSINIT_render",
+                ".DEBUG_sys/.SYS_ssInit/#SSINIT_render",
+                "",
+                40
+            );
+        }
 
         Self { 
-            RENDER_bufferGrid: [TEMPLATE_wrCell::new(); system::SYS_REND_BUFFER_X * system::SYS_REND_BUFFER_Y],
-            RENDER_bufferDebug: String::new()
+            RENDER_bufferGrid: [TEMPLATE_wrCell::new(); system::SYS_REND_BUFFER_X * system::SYS_REND_BUFFER_Y]
         }
     }
 
@@ -49,6 +76,7 @@ impl SYS_RENDERER{
     /// - Display frame
     pub fn SYS_HANDLER_renderGame(&mut self) {
         let RENDER_start = Instant::now();
+        let mut DEBUG_LOCK = SYS_debug.lock().unwrap();
 
         // Set cell for the player
         // TODO: Clean up
@@ -59,11 +87,23 @@ impl SYS_RENDERER{
             false
         );
 
-        //self.r_util_text();
+        {
+            let loopStart = Instant::now();
+            self.r_util_text();
+            DEBUG_LOCK.DEBUG_debugStr_GET("#RENDER_textTime").unwrap().ds_updateValues(&format!("{:?}", loopStart.elapsed()))
+        }
+        
+        {
+            let loopStart = Instant::now();
+            self.r_util_border([1, 1], [system::SYS_REND_WORLD_X + 1, system::SYS_REND_WORLD_Y + 1]);
+            DEBUG_LOCK.DEBUG_debugStr_GET("#RENDER_borderTime").unwrap().ds_updateValues(&format!("{:?}", loopStart.elapsed()))
+        }
 
-        self.r_util_border([1, 1], [system::SYS_REND_WORLD_X + 1, system::SYS_REND_WORLD_Y + 1]);
-
-        self.r_util_world();
+        {
+            let loopStart = Instant::now();
+            self.r_util_world();
+            DEBUG_LOCK.DEBUG_debugStr_GET("#RENDER_worldTime").unwrap().ds_updateValues(&format!("{:?}", loopStart.elapsed()))
+        }
 
         // Convert buffer into string
 
@@ -80,23 +120,24 @@ impl SYS_RENDERER{
         //     ).collect::<Vec<String>>().join(system::SYS_NEWLINE);
 
         // Clear and print new frame
-        let _ = clear();
-        let mut STDOUT_LOCK = stdout().lock();
-        for YPOS in 0..system::SYS_REND_BUFFER_Y - 1 {
-            for XPOS in 0..system::SYS_REND_BUFFER_X - 1 {
-                let RENDER_cell = self.RENDER_bufferGrid[XPOS + YPOS * system::SYS_REND_BUFFER_X];
-                write!(STDOUT_LOCK, "{}", RENDER_cell.c_char.with(RENDER_cell.c_colors[0]).on(RENDER_cell.c_colors[1])).unwrap();
+        {
+            let _ = clear();
+            let loopStart = Instant::now();
+            let mut STDOUT_LOCK = stdout().lock();
+            for YPOS in 0..system::SYS_REND_BUFFER_Y - 1 {
+                for XPOS in 0..system::SYS_REND_BUFFER_X - 1 {
+                    let RENDER_cell = &self.RENDER_bufferGrid[XPOS + YPOS * system::SYS_REND_BUFFER_X];
+                    write!(STDOUT_LOCK, "{}", RENDER_cell.c_char.with(RENDER_cell.c_colors[0]).on(RENDER_cell.c_colors[1])).unwrap();
+                }
+                write!(STDOUT_LOCK, "\r\n").unwrap()
             }
-            write!(STDOUT_LOCK, "\r\n").unwrap()
+            stdout().flush().unwrap();
+            self.RENDER_bufferGrid.fill(TEMPLATE_wrCell::new());
+            DEBUG_LOCK.DEBUG_debugStr_GET("#RENDER_convTime").unwrap().ds_updateValues(&format!("{:?}", loopStart.elapsed()));
         }
-        stdout().flush().unwrap();
 
         // DEBUG
-        // let r_frameTime = RENDER_start.elapsed();
-        SYS_debug.lock().unwrap().DEBUG_debugStr_GET("#RENDER_frameTime").unwrap().ds_updateValues(&format!("{:?}", RENDER_start.elapsed()));
-
-        // Reset buffers
-        self.RENDER_bufferGrid.fill(TEMPLATE_wrCell::new());
+        DEBUG_LOCK.DEBUG_debugStr_GET("#RENDER_frameTime").unwrap().ds_updateValues(&format!("{:?}", RENDER_start.elapsed()));
     }
 
     /// # Set buffer cell
@@ -106,10 +147,7 @@ impl SYS_RENDERER{
         if self.RENDER_bufferGrid[cellCoords].c_char != ' ' && !forceOverwrite{
             return;
         }
-        self.RENDER_bufferGrid[cellCoords] = TEMPLATE_wrCell {
-            c_char: cChar,
-            c_colors: cColors
-        }
+        self.RENDER_bufferGrid[cellCoords].CELL_update(Some(cChar), Some(cColors[0]), Some(cColors[1]))
     }
 
     /// # Render border
@@ -179,10 +217,11 @@ impl SYS_RENDERER{
     /// # DO NOT RELY ON THIS
     /// It'll be most likely removed in favor of Window system
     fn r_util_text(&mut self) {
-        for RTEXT_index in 0..SYS_data.lock().unwrap().DATA_textItems.len() {
-            let mut RTEXT_charStartPosition = SYS_data.lock().unwrap().DATA_textItems[RTEXT_index].t_position.value();
+        let mut DATA_LOCK = SYS_data.lock().unwrap();
+        for RTEXT_index in 0..DATA_LOCK.DATA_textItems.len() {
+            let mut RTEXT_charStartPosition = DATA_LOCK.DATA_textItems[RTEXT_index].t_position.value();
             let mut RTEXT_charPosition = RTEXT_charStartPosition;
-            'RENDER_textBlocks: for RTEXT_char in SYS_data.lock().unwrap().DATA_textItems[RTEXT_index].t_text.clone().chars() {
+            'RENDER_textBlocks: for RTEXT_char in DATA_LOCK.DATA_textItems[RTEXT_index].t_text.clone().chars() {
                 if RTEXT_char == '\r'{
                     continue;
                 }
@@ -197,13 +236,13 @@ impl SYS_RENDERER{
                 self.r_util_setBufferCell(RTEXT_charPosition, RTEXT_char, [Color::White, Color::Black], false);
                 RTEXT_charPosition[0] += 1
             }
-            if SYS_data.lock().unwrap().DATA_textItems[RTEXT_index].t_lifetime == 255{
+            if DATA_LOCK.DATA_textItems[RTEXT_index].t_lifetime == 255{
                 continue;
             }
-            SYS_data.lock().unwrap().DATA_textItems[RTEXT_index].t_lifetime -= 1;
+            DATA_LOCK.DATA_textItems[RTEXT_index].t_lifetime -= 1;
         }
 
-        SYS_data.lock().unwrap().DATA_textItems.retain(|RTEXT| RTEXT.t_lifetime > 0)
+        DATA_LOCK.DATA_textItems.retain(|RTEXT| RTEXT.t_lifetime > 0)
     }
 
     /// # Render the world
@@ -238,15 +277,19 @@ impl SYS_RENDERER{
 
     pub fn SYS_HANDLER_renderDebugStrs(&mut self){
         let mut DEBUG_LOCK = SYS_debug.lock().unwrap();
+        let mut STDOUT_LOCK = stdout().lock();
         for DEBUGSTR in DEBUG_LOCK.DATA_debugItems.values_mut(){
             if &DEBUGSTR.DEBUG_str == "#MARK_FOR_DELETION"{
                 continue;
             }
-            self.RENDER_bufferDebug.push_str(&format!("{} {}\r\n", &DEBUGSTR.DEBUG_str, &DEBUGSTR.DEBUG_values.clone().with(Color::Yellow)));
+
+            write!(STDOUT_LOCK, "{} {}\r\n",
+                &DEBUGSTR.DEBUG_str.clone().with(system::SYS_DEBUGCOLORS.0),
+                &DEBUGSTR.DEBUG_values.clone().with(system::SYS_DEBUGCOLORS.1)).unwrap();
+
             DEBUGSTR.ds_tickdown()
         };
-        println!("{}", self.RENDER_bufferDebug);
-        self.RENDER_bufferDebug.clear()
+        STDOUT_LOCK.flush().unwrap();
     }
 }
 
@@ -258,25 +301,23 @@ impl SYS_RENDERER{
 /// 
 /// * Character
 /// * Colors for character and background
+#[derive(Clone, Copy)]
 pub struct TEMPLATE_wrCell {
     pub c_char: char,
     pub c_colors: system::cellColors
 }
 impl TEMPLATE_wrCell{
     pub fn new() -> Self{
-        TEMPLATE_wrCell { c_char: ' ', c_colors: [Color::White, Color::Black] }
+        Self {c_char: ' ', c_colors: [system::SYS_DEFCOLORS.0, system::SYS_DEFCOLORS.1] }
+    }
+    /// Update cell colors
+    /// It also refreshes the final string
+    pub fn CELL_update(&mut self, IN_char: Option<char>, IN_FGColor: Option<Color>, IN_BGColor: Option<Color>){
+        if IN_char.is_some(){self.c_char = IN_char.unwrap()}
+        if IN_FGColor.is_some(){self.c_colors[0] = IN_FGColor.unwrap()}
+        if IN_BGColor.is_some(){self.c_colors[1] = IN_BGColor.unwrap()}
     }
 }
-impl Copy for TEMPLATE_wrCell {}
-impl Clone for TEMPLATE_wrCell {
-    fn clone(&self) -> Self {
-        TEMPLATE_wrCell {
-            c_char: self.c_char,
-            c_colors: self.c_colors
-        }
-    }
-}
-
 /// # Position in Render Buffer
 /// A selection of common positions for useage
 /// 

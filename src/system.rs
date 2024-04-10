@@ -2,6 +2,8 @@
 
 use std::{time::Duration, ops::Range};
 
+use crossterm::style::Color;
+
 // # FULL FILE DISCLAIMER
 // THIS WILL BE MOVED INTO A CUSTOMIZABLE `.json` FILE LATER ON
 // 
@@ -99,3 +101,13 @@ pub type cellColors = [crossterm::style::Color; 2];
     pub const SYS_REND_CHUNK_Y: usize = 5;
 
 // endregion: Renderer data
+
+// region: Misc
+
+    /// Default Render colors
+    pub const SYS_DEFCOLORS: (Color, Color) = (Color::White, Color::Reset);
+
+    /// Default debug colors
+    pub const SYS_DEBUGCOLORS: (Color, Color) = (Color::White, Color:: Yellow);
+
+// endregion: Misc
