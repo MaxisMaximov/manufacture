@@ -22,11 +22,14 @@ pub static SYS_debug: Lazy<Mutex<DEBUG_master>> = Lazy::new(|| Mutex::new(DEBUG_
 // START HERE
 fn main() {
 
-    SYS_debug.lock().unwrap().DEBUG_debugStr_ADD(
-        "#SSINIT_data",
-        ".DEBUG_sys/.SYS_ssInit/#SSINIT_data",
-        "",
-        40
+    SYS_debug.lock().unwrap().DATA_debugItems.insert(
+        "#SSINIT_data".to_string(),
+        DEBUG_item::new(".DEBUG_sys/.SYS_ssInit/#SSINIT_data", "", 40)
+    );
+
+    SYS_debug.lock().unwrap().DATA_debugItems.insert(
+        "#SYS_processTime".to_string(),
+        DEBUG_item::new(".DEBUG_sys/#SYS_processSpeed", "", 255)
     );
 
     // Switch to Raw Mode
@@ -41,13 +44,6 @@ fn main() {
     let mut SYS_renderer = renderer::SYS_RENDERER::new();
     let mut SYS_logic = logic::SYS_LOGIC::new();
     let SYS_input = input::SYS_INPUT::new();
-
-    SYS_debug.lock().unwrap().DEBUG_debugStr_ADD(
-        "#SYS_processTime",
-        ".DEBUG_sys/#SYS_processSpeed",
-        "",
-        255
-    );
 
     // # THE GAME LOOP
     loop {
@@ -65,7 +61,7 @@ fn main() {
         SYS_renderer.SYS_HANDLER_renderGame();
 
         // Log how long it took to process everything
-        SYS_debug.lock().unwrap().DEBUG_debugStr_GET("#SYS_processTime").unwrap().ds_updateValues(&format!("{:?}", loopStart.elapsed()));
+        SYS_debug.lock().unwrap().DATA_debugItems.get_mut("#SYS_processTime").unwrap().ds_updateValues(&format!("{:?}", loopStart.elapsed()));
         SYS_renderer.SYS_HANDLER_renderDebugStrs();
 
         let loop_elapsedTime: Duration = loopStart.elapsed();
@@ -89,7 +85,6 @@ pub struct DATA_master{
     DATA_cache: HashMap<String, CACHE_TYPE>
 }
 impl DATA_master {
-
     pub fn new(IN_player: player::TEMPLATE_player) -> Self{
         Self{
             DATA_player: IN_player,
@@ -99,40 +94,9 @@ impl DATA_master {
             DATA_cache: HashMap::new()
         }
     }
-
-    /// # Push text for rendering
-    /// 
-    /// # DO NOT RELY ON THIS
-    /// Will also be rewritten in favor of Window system
-    pub fn DATA_pushTextItem(&mut self, INr_text: &str, INr_position: renderer::RENDER_position, INr_lifetime: u16){
-        self.DATA_textItems.push(RENDER_textItem {t_text: INr_text.to_string(), t_position: INr_position, t_lifetime: INr_lifetime})
+    pub fn DATA_textItemCleanup(&mut self){
+        self.DATA_textItems.retain(|x| x.t_text == "#MARK_FOR_DELETION")
     }
-
-    // region: CACHE
-
-        /// # Get cache data
-        /// Supply it with the index you stored the Cache at
-        /// 
-        /// If it doesn't find the cache it'll return `None`
-        pub fn DATA_cacheData_GET(&self, IN_dataIndex: &str) -> Option<&CACHE_TYPE>{
-            match self.DATA_cache.get(IN_dataIndex){
-                None => return None,
-                Some(cacheData) => return Some(cacheData)
-            }
-        }
-
-        /// # Add cache data
-        /// Supply it with index to store cache at and type of cache you want to store
-        pub fn DATA_cacheData_ADD(&mut self, IN_dataIndex: &str, IN_data: CACHE_TYPE){
-            self.DATA_cache.insert(IN_dataIndex.to_string(), IN_data);
-        }
-        
-        /// # Free cache data
-        /// Supply it with index of cache you don't need anymore
-        pub fn DATA_cacheData_FREE(&mut self, IN_dataIndex: &str){
-            self.DATA_cache.remove(IN_dataIndex);
-        }
-    // endregion: CACHE
 }
 
 /// # Master Debug Struct
@@ -156,27 +120,6 @@ impl DEBUG_master{
     /// A.k.a. get rid of `#MARK_FOR_DELETION` entries
     pub fn DEBUG_cleanup(&mut self){
         self.DATA_debugItems.retain(|_, v| v.DEBUG_str == "#MARK_FOR_DELETION")
-    }
-
-    /// # Get debug string reference
-    /// So that you can update it
-    pub fn DEBUG_debugStr_GET(&mut self, IN_dataIndex: &str) -> Option<&mut DEBUG_item>{
-        match self.DATA_debugItems.get_mut(IN_dataIndex){
-            None => return None,
-            Some(debugStr) => return Some(debugStr)
-        }
-    }
-
-    /// # Add string for debug
-    /// Supply it with index to store debug string at and the debug string values
-    pub fn DEBUG_debugStr_ADD(&mut self, INd_dataIndex: &str, INd_ID: &str, INd_values: &str, INd_lifetime: u16){
-        self.DATA_debugItems.insert(INd_dataIndex.to_string(), DEBUG_item::new(INd_ID, INd_values, INd_lifetime));
-    }
-
-    /// # Free debug string
-    /// If you REALLY want to remove it
-    pub fn DEBUG_debugStr_FREE(&mut self, INd_dataIndex: &str){
-        self.DATA_debugItems.remove(INd_dataIndex);
     }
 }
 
@@ -212,6 +155,12 @@ impl DEBUG_item{
     /// # Tickdown lifetime
     /// Just to make it bit cleaner
     pub fn ds_tickdown(&mut self){
+
+        // If it's marked for del just ignore
+        if self.DEBUG_str == "#MARK_FOR_DELETION"{
+            return;
+        }
+
         // If it's ""permament"" then don't do anything
         if self.DEBUG_lifetime == 255{
             return;
@@ -264,6 +213,9 @@ impl RENDER_textItem{
     pub fn TEXT_tickdown(&mut self){
         // If it's ""permament"" then don't do anything
         if self.t_lifetime == 255 {
+            return;
+        }
+        if self.t_lifetime == 0{
             return;
         }
         self.t_lifetime -= 1

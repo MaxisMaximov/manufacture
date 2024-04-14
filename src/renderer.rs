@@ -17,46 +17,34 @@ impl SYS_RENDERER{
 
         let mut DEBUG_LOCK = SYS_debug.lock().unwrap();
         'INIT_debugStr: {
-            DEBUG_LOCK.DEBUG_debugStr_ADD(
-                "#RENDER_frameTime",
-                ".DEBUG_render/#RENDER_frameTime",
-                "",
-                255
+            DEBUG_LOCK.DATA_debugItems.insert(
+                "#RENDER_frameTime".to_string(),
+                DEBUG_item::new(".DEBUG_render/#RENDER_frameTime","", 255)
             );
 
-            DEBUG_LOCK.DEBUG_debugStr_ADD(
-                "#RENDER_worldTime",
-                ".DEBUG_render/#RENDER_worldTime",
-                "",
-                255
+            DEBUG_LOCK.DATA_debugItems.insert(
+                "#RENDER_worldTime".to_string(),
+                DEBUG_item::new(".DEBUG_render/#RENDER_worldTime","", 255)
             );
 
-            DEBUG_LOCK.DEBUG_debugStr_ADD(
-                "#RENDER_convTime",
-                ".DEBUG_render/#RENDER_convTime",
-                "",
-                255
+            DEBUG_LOCK.DATA_debugItems.insert(
+                "#RENDER_convTime".to_string(),
+                DEBUG_item::new(".DEBUG_render/#RENDER_convTime", "", 255)
             );
 
-            DEBUG_LOCK.DEBUG_debugStr_ADD(
-                "#RENDER_borderTime",
-                ".DEBUG_render/#RENDER_borderTime",
-                "",
-                255
+            DEBUG_LOCK.DATA_debugItems.insert(
+                "#RENDER_borderTime".to_string(),
+                DEBUG_item::new(".DEBUG_render/#RENDER_borderTime", "", 255)
             );
 
-            DEBUG_LOCK.DEBUG_debugStr_ADD(
-                "#RENDER_textTime",
-                ".DEBUG_render/#RENDER_textTime",
-                "",
-                255
+            DEBUG_LOCK.DATA_debugItems.insert(
+                "#RENDER_textTime".to_string(),
+                DEBUG_item::new(".DEBUG_render/#RENDER_textTime", "", 255)
             );
 
-            DEBUG_LOCK.DEBUG_debugStr_ADD(
-                "#SSINIT_render",
-                ".DEBUG_sys/.SYS_ssInit/#SSINIT_render",
-                "",
-                40
+            DEBUG_LOCK.DATA_debugItems.insert(
+                "#SSINIT_render".to_string(),
+                DEBUG_item::new(".DEBUG_sys/.SYS_ssInit/#SSINIT_render", "",  40)
             );
         }
 
@@ -90,19 +78,19 @@ impl SYS_RENDERER{
         {
             let loopStart = Instant::now();
             self.r_util_text();
-            DEBUG_LOCK.DEBUG_debugStr_GET("#RENDER_textTime").unwrap().ds_updateValues(&format!("{:?}", loopStart.elapsed()))
+            DEBUG_LOCK.DATA_debugItems.get_mut("#RENDER_textTime").unwrap().ds_updateValues(&format!("{:?}", loopStart.elapsed()))
         }
         
         {
             let loopStart = Instant::now();
             self.r_util_border([1, 1], [system::SYS_REND_WORLD_X + 1, system::SYS_REND_WORLD_Y + 1]);
-            DEBUG_LOCK.DEBUG_debugStr_GET("#RENDER_borderTime").unwrap().ds_updateValues(&format!("{:?}", loopStart.elapsed()))
+            DEBUG_LOCK.DATA_debugItems.get_mut("#RENDER_borderTime").unwrap().ds_updateValues(&format!("{:?}", loopStart.elapsed()))
         }
 
         {
             let loopStart = Instant::now();
             self.r_util_world();
-            DEBUG_LOCK.DEBUG_debugStr_GET("#RENDER_worldTime").unwrap().ds_updateValues(&format!("{:?}", loopStart.elapsed()))
+            DEBUG_LOCK.DATA_debugItems.get_mut("#RENDER_worldTime").unwrap().ds_updateValues(&format!("{:?}", loopStart.elapsed()))
         }
 
         // Convert buffer into string
@@ -133,11 +121,11 @@ impl SYS_RENDERER{
             }
             stdout().flush().unwrap();
             self.RENDER_bufferGrid.fill(TEMPLATE_wrCell::new());
-            DEBUG_LOCK.DEBUG_debugStr_GET("#RENDER_convTime").unwrap().ds_updateValues(&format!("{:?}", loopStart.elapsed()));
+            DEBUG_LOCK.DATA_debugItems.get_mut("#RENDER_convTime").unwrap().ds_updateValues(&format!("{:?}", loopStart.elapsed()));
         }
 
         // DEBUG
-        DEBUG_LOCK.DEBUG_debugStr_GET("#RENDER_frameTime").unwrap().ds_updateValues(&format!("{:?}", RENDER_start.elapsed()));
+        DEBUG_LOCK.DATA_debugItems.get_mut("#RENDER_frameTime").unwrap().ds_updateValues(&format!("{:?}", RENDER_start.elapsed()));
     }
 
     /// # Set buffer cell
@@ -159,32 +147,34 @@ impl SYS_RENDERER{
     /// TODO: make this cleaner
     fn r_util_border(&mut self, borderPos: system::coords, borderSizeInner: system::coords) {
 
+        'BORDER_CORNERS:{
+            // Corners first
+            self.r_util_setBufferCell(
+                borderPos,
+                '╔', 
+                [Color::White, Color::Black],
+                false
+            );
+            self.r_util_setBufferCell(
+                [borderPos[0] + borderSizeInner[0], borderPos[1]], 
+                '╗', 
+                [Color::White, Color::Black],
+                false
+            );
+            self.r_util_setBufferCell(
+                [borderPos[0], borderPos[1] + borderSizeInner[1]],
+                '╚', 
+                [Color::White, Color::Black],
+                false
+            );
+            self.r_util_setBufferCell(
+                [borderPos[0] + borderSizeInner[0], borderPos[1] + borderSizeInner[1]],
+                '╝', 
+                [Color::White, Color::Black],
+                false
+            );
 
-        // Corners first
-        self.r_util_setBufferCell(
-            borderPos,
-            '╔', 
-            [Color::White, Color::Black],
-            false
-        );
-        self.r_util_setBufferCell(
-            [borderPos[0] + borderSizeInner[0], borderPos[1]], 
-            '╗', 
-            [Color::White, Color::Black],
-            false
-        );
-        self.r_util_setBufferCell(
-            [borderPos[0], borderPos[1] + borderSizeInner[1]],
-            '╚', 
-            [Color::White, Color::Black],
-            false
-        );
-        self.r_util_setBufferCell(
-            [borderPos[0] + borderSizeInner[0], borderPos[1] + borderSizeInner[1]],
-            '╝', 
-            [Color::White, Color::Black],
-            false
-        );
+        }
 
         // Top and bottom border
         for YPOS in [borderPos[1], borderPos[1] + borderSizeInner[1]] {
@@ -218,10 +208,10 @@ impl SYS_RENDERER{
     /// It'll be most likely removed in favor of Window system
     fn r_util_text(&mut self) {
         let mut DATA_LOCK = SYS_data.lock().unwrap();
-        for RTEXT_index in 0..DATA_LOCK.DATA_textItems.len() {
-            let mut RTEXT_charStartPosition = DATA_LOCK.DATA_textItems[RTEXT_index].t_position.value();
+        for RTEXT in DATA_LOCK.DATA_textItems.iter_mut(){
+            let mut RTEXT_charStartPosition = RTEXT.t_position.value();
             let mut RTEXT_charPosition = RTEXT_charStartPosition;
-            'RENDER_textBlocks: for RTEXT_char in DATA_LOCK.DATA_textItems[RTEXT_index].t_text.clone().chars() {
+            'RENDER_textBlocks: for RTEXT_char in RTEXT.t_text.clone().chars() {
                 if RTEXT_char == '\r'{
                     continue;
                 }
@@ -236,10 +226,10 @@ impl SYS_RENDERER{
                 self.r_util_setBufferCell(RTEXT_charPosition, RTEXT_char, [Color::White, Color::Black], false);
                 RTEXT_charPosition[0] += 1
             }
-            if DATA_LOCK.DATA_textItems[RTEXT_index].t_lifetime == 255{
+            if RTEXT.t_lifetime == 255{
                 continue;
             }
-            DATA_LOCK.DATA_textItems[RTEXT_index].t_lifetime -= 1;
+            RTEXT.TEXT_tickdown();
         }
 
         DATA_LOCK.DATA_textItems.retain(|RTEXT| RTEXT.t_lifetime > 0)
@@ -323,6 +313,7 @@ impl TEMPLATE_wrCell{
 /// 
 /// You can also use your custom position with `POS_custom`
 pub enum RENDER_position{
+    None,
     POS_middle,
     POS_right,
     POS_left,
@@ -337,6 +328,7 @@ pub enum RENDER_position{
 impl RENDER_position {
     pub fn value(&self) -> system::coords{
         match *self {
+            Self::None => [0, 0],
             Self::POS_middle => [system::SYS_REND_BUFFER_X / 2, system::SYS_REND_BUFFER_Y / 2],
             Self::POS_left => [0, system::SYS_REND_BUFFER_Y / 2],
             Self::POS_right => [system::SYS_REND_BUFFER_X - 1, system::SYS_REND_BUFFER_Y / 2],

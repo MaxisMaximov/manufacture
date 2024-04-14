@@ -221,3 +221,11 @@ Syntax: `[NAME]_LOCK`
 ```rust
   let mut DATA_LOCK = SYS_data.lock().unwrap()
 ```
+
+### Uncategorized stuff
+
+Syntax: `IDDQD_[naMe]`
+
+```rust
+  pub struct IDDQD_textItem {
+```
