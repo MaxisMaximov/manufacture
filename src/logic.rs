@@ -14,12 +14,12 @@ impl SYS_LOGIC {
         let mut DEBUG_LOCK = SYS_debug.lock().unwrap();
         DEBUG_LOCK.DATA_debugItems.insert(
             "#LOGIC_interaction".to_string(),
-            DEBUG_item::new(".DEBUG_logic/#LOGIC_interaction", "", 255)
+            IDDQD_textItem::newDebug(".DEBUG_logic/#LOGIC_interaction", "", 255)
         );
 
         DEBUG_LOCK.DATA_debugItems.insert(
             "#SSINIT_logic".to_string(),
-            DEBUG_item::new(".DEBUG_sys/.SYS_ssInit/#SSINIT_logic", "", 40)
+            IDDQD_textItem::newDebug(".DEBUG_sys/.SYS_ssInit/#SSINIT_logic", "", 40)
         );
         Self {}
     }
@@ -31,7 +31,7 @@ impl SYS_LOGIC {
     pub fn GAME_interact(&mut self) {
         let mut DATA_LOCK = SYS_data.lock().unwrap();
         let idkfa_interaction = DATA_LOCK.DATA_playerInput;
-        SYS_debug.lock().unwrap().DATA_debugItems.get_mut("#LOGIC_interaction").unwrap().ds_updateValues(&format!("{}", idkfa_interaction));
+        SYS_debug.lock().unwrap().DATA_debugItems.get_mut("#LOGIC_interaction").unwrap().t_values = format!("{}", idkfa_interaction);
         match DATA_LOCK.DATA_playerInput {
             GAME_interactions::i_changeWorldTile => {
                 let idkfa_pos = DATA_LOCK.DATA_player.p_pos;
@@ -40,11 +40,11 @@ impl SYS_LOGIC {
             }
             GAME_interactions::i_printHello => 
                 DATA_LOCK.DATA_textItems.push(
-                    RENDER_textItem::new(renderer::RENDER_position::POS_TL, "Hello!\r\nHello!", 32)
+                    IDDQD_textItem::newText(renderer::RENDER_position::POS_TL, "Hello!\r\nHello!", 32)
                 ),
             GAME_interactions::i_printDebug =>
                 DATA_LOCK.DATA_textItems.push(
-                    RENDER_textItem::new(renderer::RENDER_position::POS_middle, "DEBUG", 16)
+                    IDDQD_textItem::newText(renderer::RENDER_position::POS_middle, "DEBUG", 16)
                 ),
             GAME_interactions::i_clearWorld => DATA_LOCK.DATA_world.w_clearWorld(),
             GAME_interactions::i_movPlayer(dir) => {

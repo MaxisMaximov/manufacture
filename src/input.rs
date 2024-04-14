@@ -15,12 +15,12 @@ impl SYS_INPUT {
         'INIT_debugStr: {
             DEBUG_LOCK.DATA_debugItems.insert(
                 "#INPUT_keyType".to_string(),
-                DEBUG_item::new(".DEBUG_input/#INPUT_whatKey", "", 255)
+                IDDQD_textItem::newDebug(".DEBUG_input/#INPUT_whatKey", "", 255)
             );
 
             DEBUG_LOCK.DATA_debugItems.insert(
                 "#INPUT_init".to_string(),
-                DEBUG_item::new(".DEBUG_sys/.SYS_ssInit/#SSINIT_input", "", 40)
+                IDDQD_textItem::newDebug(".DEBUG_sys/.SYS_ssInit/#SSINIT_input", "", 40)
             );
         }
 
@@ -38,7 +38,7 @@ impl SYS_INPUT {
                     DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_NULL;
                     return;
                 }
-                SYS_debug.lock().unwrap().DATA_debugItems.get_mut("#INPUT_keyType").unwrap().ds_updateValues(&format!("{:?}", code));
+                SYS_debug.lock().unwrap().DATA_debugItems.get_mut("#INPUT_keyType").unwrap().t_values = format!("{:?}", code);
                 match code {
                     KeyCode::Up => {
                         DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_movPlayer(player::GAME_playerDirections::DIR_up);
@@ -62,7 +62,7 @@ impl SYS_INPUT {
                 return;
             }
         }
-        SYS_debug.lock().unwrap().DATA_debugItems.get_mut("#INPUT_keyType").unwrap().ds_updateValues("None");
+        SYS_debug.lock().unwrap().DATA_debugItems.get_mut("#INPUT_keyType").unwrap().t_values = "None".to_string();
         DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_NULL;
     }
 }

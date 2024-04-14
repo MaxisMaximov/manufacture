@@ -19,32 +19,32 @@ impl SYS_RENDERER{
         'INIT_debugStr: {
             DEBUG_LOCK.DATA_debugItems.insert(
                 "#RENDER_frameTime".to_string(),
-                DEBUG_item::new(".DEBUG_render/#RENDER_frameTime","", 255)
+                IDDQD_textItem::newDebug(".DEBUG_render/#RENDER_frameTime","", 255)
             );
 
             DEBUG_LOCK.DATA_debugItems.insert(
                 "#RENDER_worldTime".to_string(),
-                DEBUG_item::new(".DEBUG_render/#RENDER_worldTime","", 255)
+                IDDQD_textItem::newDebug(".DEBUG_render/#RENDER_worldTime","", 255)
             );
 
             DEBUG_LOCK.DATA_debugItems.insert(
                 "#RENDER_convTime".to_string(),
-                DEBUG_item::new(".DEBUG_render/#RENDER_convTime", "", 255)
+                IDDQD_textItem::newDebug(".DEBUG_render/#RENDER_convTime", "", 255)
             );
 
             DEBUG_LOCK.DATA_debugItems.insert(
                 "#RENDER_borderTime".to_string(),
-                DEBUG_item::new(".DEBUG_render/#RENDER_borderTime", "", 255)
+                IDDQD_textItem::newDebug(".DEBUG_render/#RENDER_borderTime", "", 255)
             );
 
             DEBUG_LOCK.DATA_debugItems.insert(
                 "#RENDER_textTime".to_string(),
-                DEBUG_item::new(".DEBUG_render/#RENDER_textTime", "", 255)
+                IDDQD_textItem::newDebug(".DEBUG_render/#RENDER_textTime", "", 255)
             );
 
             DEBUG_LOCK.DATA_debugItems.insert(
                 "#SSINIT_render".to_string(),
-                DEBUG_item::new(".DEBUG_sys/.SYS_ssInit/#SSINIT_render", "",  40)
+                IDDQD_textItem::newDebug(".DEBUG_sys/.SYS_ssInit/#SSINIT_render", "",  40)
             );
         }
 
@@ -78,19 +78,19 @@ impl SYS_RENDERER{
         {
             let loopStart = Instant::now();
             self.r_util_text();
-            DEBUG_LOCK.DATA_debugItems.get_mut("#RENDER_textTime").unwrap().ds_updateValues(&format!("{:?}", loopStart.elapsed()))
+            DEBUG_LOCK.DATA_debugItems.get_mut("#RENDER_textTime").unwrap().t_values = format!("{:?}", loopStart.elapsed())
         }
         
         {
             let loopStart = Instant::now();
             self.r_util_border([1, 1], [system::SYS_REND_WORLD_X + 1, system::SYS_REND_WORLD_Y + 1]);
-            DEBUG_LOCK.DATA_debugItems.get_mut("#RENDER_borderTime").unwrap().ds_updateValues(&format!("{:?}", loopStart.elapsed()))
+            DEBUG_LOCK.DATA_debugItems.get_mut("#RENDER_borderTime").unwrap().t_values = format!("{:?}", loopStart.elapsed())
         }
 
         {
             let loopStart = Instant::now();
             self.r_util_world();
-            DEBUG_LOCK.DATA_debugItems.get_mut("#RENDER_worldTime").unwrap().ds_updateValues(&format!("{:?}", loopStart.elapsed()))
+            DEBUG_LOCK.DATA_debugItems.get_mut("#RENDER_worldTime").unwrap().t_values = format!("{:?}", loopStart.elapsed())
         }
 
         // Convert buffer into string
@@ -121,11 +121,11 @@ impl SYS_RENDERER{
             }
             stdout().flush().unwrap();
             self.RENDER_bufferGrid.fill(TEMPLATE_wrCell::new());
-            DEBUG_LOCK.DATA_debugItems.get_mut("#RENDER_convTime").unwrap().ds_updateValues(&format!("{:?}", loopStart.elapsed()));
+            DEBUG_LOCK.DATA_debugItems.get_mut("#RENDER_convTime").unwrap().t_values = format!("{:?}", loopStart.elapsed());
         }
 
         // DEBUG
-        DEBUG_LOCK.DATA_debugItems.get_mut("#RENDER_frameTime").unwrap().ds_updateValues(&format!("{:?}", RENDER_start.elapsed()));
+        DEBUG_LOCK.DATA_debugItems.get_mut("#RENDER_frameTime").unwrap().t_values = format!("{:?}", RENDER_start.elapsed());
     }
 
     /// # Set buffer cell
@@ -211,7 +211,7 @@ impl SYS_RENDERER{
         for RTEXT in DATA_LOCK.DATA_textItems.iter_mut(){
             let mut RTEXT_charStartPosition = RTEXT.t_position.value();
             let mut RTEXT_charPosition = RTEXT_charStartPosition;
-            'RENDER_textBlocks: for RTEXT_char in RTEXT.t_text.clone().chars() {
+            'RENDER_textBlocks: for RTEXT_char in RTEXT.t_string.clone().chars() {
                 if RTEXT_char == '\r'{
                     continue;
                 }
@@ -269,15 +269,15 @@ impl SYS_RENDERER{
         let mut DEBUG_LOCK = SYS_debug.lock().unwrap();
         let mut STDOUT_LOCK = stdout().lock();
         for DEBUGSTR in DEBUG_LOCK.DATA_debugItems.values_mut(){
-            if &DEBUGSTR.DEBUG_str == "#MARK_FOR_DELETION"{
+            if &DEBUGSTR.t_string == "#MARK_FOR_DELETION"{
                 continue;
             }
 
             write!(STDOUT_LOCK, "{} {}\r\n",
-                &DEBUGSTR.DEBUG_str.clone().with(system::SYS_DEBUGCOLORS.0),
-                &DEBUGSTR.DEBUG_values.clone().with(system::SYS_DEBUGCOLORS.1)).unwrap();
+                &DEBUGSTR.t_string.clone().with(system::SYS_DEBUGCOLORS.0),
+                &DEBUGSTR.t_values.clone().with(system::SYS_DEBUGCOLORS.1)).unwrap();
 
-            DEBUGSTR.ds_tickdown()
+            DEBUGSTR.TEXT_tickdown()
         };
         STDOUT_LOCK.flush().unwrap();
     }
