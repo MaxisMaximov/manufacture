@@ -15,7 +15,6 @@ mod system;
 mod jsonManager;
 
 // This is a mess.
-pub static SYS_jsonManager: Lazy<Mutex<jsonManager::SYS_jsonManager>> = Lazy::new(|| Mutex::new(jsonManager::SYS_jsonManager::new()));
 pub static SYS_data: Lazy<Mutex<DATA_master>> = Lazy::new(|| Mutex::new(DATA_master::new(player::TEMPLATE_player::new(1, None))));
 pub static SYS_debug: Lazy<Mutex<DEBUG_master>> = Lazy::new(|| Mutex::new(DEBUG_master::new()));
 
@@ -42,8 +41,8 @@ fn main() {
 
     // Initialize the subsystems
     let mut SYS_renderer = renderer::SYS_RENDERER::new();
-    let mut SYS_logic = logic::SYS_LOGIC::new();
-    let SYS_input = input::SYS_INPUT::new();
+    logic::new();
+    input::new();
 
     // # THE GAME LOOP
     loop {
@@ -52,10 +51,10 @@ fn main() {
         let loopStart: Instant = Instant::now();
 
         // Set next Player input to process
-        SYS_input.SYS_HANDLER_input();
+        input::SYS_HANDLER_input();
 
         // Process the input
-        SYS_logic.GAME_interact();
+        logic::GAME_interact();
 
         // Render everything
         SYS_renderer.SYS_HANDLER_renderGame();
@@ -153,7 +152,7 @@ impl IDDQD_textItem{
     pub fn newDebug(IN_strID: &str, IN_values: &str, IN_lifetime: u16) -> Self{
         Self{
             t_position: renderer::RENDER_position::None,
-            t_string: SYS_jsonManager.lock().unwrap().JSON_FETCH_debugStr(IN_strID), // Prefetch the debug string to give jsonManager some slack
+            t_string: jsonManager::JSON_FETCH_debugStr(IN_strID), // Prefetch the debug string to give jsonManager some slack
             t_values: IN_values.to_string(),
             t_lifetime: IN_lifetime
         }

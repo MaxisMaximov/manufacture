@@ -4,7 +4,8 @@
             "#SSINIT_data": "Data Container initialized",
             "#SSINIT_logic": "Logic initialized",
             "#SSINIT_render": "Renderer initialized",
-            "#SSINIT_input": "Input manager initialized"
+            "#SSINIT_input": "Input manager initialized",
+            "#SSINIT_json": "Json manager initialized"
         },
         "#SYS_processSpeed": "Finished processing in:"
     },
