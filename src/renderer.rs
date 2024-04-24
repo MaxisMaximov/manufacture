@@ -342,3 +342,52 @@ impl RENDER_position {
         }
     }
 }
+
+/// # Render Buffer
+/// 
+/// Holds full size cells
+struct RENDER_buffer{
+    pub BUFFER_grid: Vec<TEMPLATE_wrCell>
+}
+impl RENDER_buffer{
+    pub fn new(IN_size: system::coords) -> Self{
+        Self { BUFFER_grid: vec![TEMPLATE_wrCell::new(); IN_size[0] * IN_size[1]]}
+    }
+    pub fn reset(&mut self){
+        self.BUFFER_grid.fill(TEMPLATE_wrCell::new())
+    }
+}
+impl Index<system::coords> for RENDER_buffer{
+    type Output = TEMPLATE_wrCell;
+    fn index(&self, index: system::coords) -> &Self::Output {
+        &self.BUFFER_grid[index[0] + index[1] * system::SYS_REND_BUFFER_X]
+    }
+}
+
+/// # Cheap render buffer
+/// 
+/// Holds *references* to cells in it's palette
+/// 
+/// TODO: actually make something use it
+struct RENDER_cheapBuffer{
+    pub CBUFFER_grid: Vec<&'static TEMPLATE_wrCell>,
+    pub CBUFFER_palette: Vec<TEMPLATE_wrCell>
+}
+impl RENDER_cheapBuffer{
+    const idkfa_cell: renderer::TEMPLATE_wrCell = TEMPLATE_wrCell::new();
+    pub fn new(IN_size: system::coords) -> Self{
+        Self{
+            CBUFFER_grid: vec![&Self::idkfa_cell; IN_size[0] * IN_size[1]],
+            CBUFFER_palette: Vec::new()
+        }
+    }
+    pub fn reset(&mut self){
+        self.CBUFFER_grid.fill(&Self::idkfa_cell)
+    }
+}
+impl Index<system::coords> for RENDER_cheapBuffer{
+    type Output = TEMPLATE_wrCell;
+    fn index(&self, index: system::coords) -> &Self::Output {
+        &self.CBUFFER_grid[index[0] + index[1] * system::SYS_REND_BUFFER_X]
+    }
+}
