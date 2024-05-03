@@ -41,7 +41,7 @@ pub fn GAME_interact() {
             ),
         GAME_interactions::i_printDebug =>
             DATA_LOCK.DATA_textItems.push(
-                IDDQD_textItem::newText(renderer::RENDER_position::POS_middle, "DEBUG", 16)
+                IDDQD_textItem::newText(renderer::RENDER_position::POS_right, "DEBUG", 16)
             ),
         GAME_interactions::i_clearWorld => DATA_LOCK.DATA_world.w_clearWorld(),
         GAME_interactions::i_movPlayer(dir) => {
