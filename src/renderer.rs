@@ -19,10 +19,10 @@ use crate::*;
 /// Although hopefully the new one will be <<compatible
 
 static RENDER_mainBuffer: Lazy<Mutex<RENDER_buffer>> = Lazy::new(|| {
-    Mutex::new(RENDER_buffer::new([
+    Mutex::new(RENDER_buffer::new((
         system::SYS_REND_BUFFER_X,
         system::SYS_REND_BUFFER_Y,
-    ]))
+    )))
 });
 
 pub fn new() {
@@ -82,10 +82,10 @@ pub fn SYS_HANDLER_renderGame() {
     'RENDER_playerSet: {
         let DATA_LOCK = SYS_data.lock().unwrap();
 
-        RENDER_mainBuffer.lock().unwrap()[[
+        RENDER_mainBuffer.lock().unwrap()[(
             (system::SYS_REND_WORLD_X + 2),
             (system::SYS_REND_WORLD_Y + 2),
-        ]] = TEMPLATE_wrCell {
+        )] = TEMPLATE_wrCell {
             c_char: 'P',
             c_colors: DATA_LOCK.DATA_player.p_color,
         };
@@ -107,8 +107,8 @@ pub fn SYS_HANDLER_renderGame() {
         let loopStart = Instant::now();
 
         self::r_util_border(
-            [1, 1],
-            [system::SYS_REND_WORLD_X * 2 + 1, system::SYS_REND_WORLD_Y * 2 + 1],
+            (1, 1),
+            (system::SYS_REND_WORLD_X * 2 + 1, system::SYS_REND_WORLD_Y * 2 + 1),
         );
 
         DEBUG_LOCK
@@ -118,8 +118,6 @@ pub fn SYS_HANDLER_renderGame() {
         .t_values = format!("{:?}", loopStart.elapsed())
     }
     
-    
-
     // LINE DRAWER TEST
     // self::r_util_drawBufferLineAngle([4, 4], [2,0], '#', [Color::Cyan, Color::Cyan]);
     // self::r_util_drawBufferLineAngle([4, 4], [0,2], '#', [Color::Cyan, Color::Cyan]);
@@ -149,14 +147,14 @@ pub fn SYS_HANDLER_renderGame() {
         // Convert buffer to string
         for YPOS in 0..system::SYS_REND_BUFFER_Y {
             for XPOS in 0..system::SYS_REND_BUFFER_X {
-                let RENDER_cell = BUFFER_LOCK[[XPOS, YPOS]];
+                let RENDER_cell = BUFFER_LOCK[(XPOS, YPOS)];
                 let _ = write!(
                     STDOUT_LOCK,
                     "{}",
                     RENDER_cell
                         .c_char
-                        .with(RENDER_cell.c_colors[0])
-                        .on(RENDER_cell.c_colors[1])
+                        .with(RENDER_cell.c_colors.0)
+                        .on(RENDER_cell.c_colors.1)
                 );
             }
             write!(STDOUT_LOCK, "\r\n").unwrap()
@@ -198,15 +196,15 @@ fn r_util_drawBufferLineAngle(
     let w_endPos: system::coords;
 
     // Calc delta distance between points
-    let w_deltaX = IN_pos_A[0].abs_diff(IN_pos_B[0]);
-    let w_deltaY = IN_pos_A[1].abs_diff(IN_pos_B[1]);
+    let w_deltaX = IN_pos_A.0.abs_diff(IN_pos_B.0);
+    let w_deltaY = IN_pos_A.1.abs_diff(IN_pos_B.1);
 
     // Check which is the main axis
     if w_deltaX >= w_deltaY{ // X Axis
         
         // Check and set position
         'CHECK_pos:{
-            if IN_pos_A[0] < IN_pos_B[0]{
+            if IN_pos_A.0 < IN_pos_B.0{
                 w_startPos = IN_pos_A;
                 w_endPos = IN_pos_B
             }
@@ -216,16 +214,16 @@ fn r_util_drawBufferLineAngle(
             }
         }
         
-        let mut w_curY = w_startPos[1]; // Set subaxis position
-        let w_sign = if w_startPos[1] < w_endPos[1]{false} else{true}; // Check what way the line is going, set sign if needed
+        let mut w_curY = w_startPos.1; // Set subaxis position
+        let w_sign = if w_startPos.1 < w_endPos.1{false} else{true}; // Check what way the line is going, set sign if needed
 
         // Iterate
-        for XPOS in w_startPos[0]..=w_endPos[0]{
-            BUFFER_LOCK[[XPOS, w_curY]] = TEMPLATE_wrCell{ c_char: IN_char, c_colors: IN_colors };
+        for XPOS in w_startPos.0..=w_endPos.0{
+            BUFFER_LOCK[(XPOS, w_curY)] = TEMPLATE_wrCell{ c_char: IN_char, c_colors: IN_colors };
 
             // Idk who made this equation but why does it work
             // SubaxisDelta * 2 > SuperaxisDelta
-            if w_curY.abs_diff(w_endPos[1])*2 > XPOS.abs_diff(w_endPos[0]){
+            if w_curY.abs_diff(w_endPos.1)*2 > XPOS.abs_diff(w_endPos.1){
                 // If sign is enabled that means it goes down
                 if w_sign{w_curY -= 1}
                 else{w_curY += 1}
@@ -236,7 +234,7 @@ fn r_util_drawBufferLineAngle(
 
         // Check  and set position
         'CHECK_pos:{
-            if IN_pos_A[1] < IN_pos_B[1]{
+            if IN_pos_A.1 < IN_pos_B.1{
                 w_startPos = IN_pos_A;
                 w_endPos = IN_pos_B
             }
@@ -246,16 +244,16 @@ fn r_util_drawBufferLineAngle(
             }
         }
 
-        let mut w_curX = w_startPos[0]; // Set subaxis position
-        let w_sign = if w_startPos[0] < w_endPos[0]{false} else{true}; // Check what way the line is going, set sign if needed
+        let mut w_curX = w_startPos.0; // Set subaxis position
+        let w_sign = if w_startPos.0 < w_endPos.0{false} else{true}; // Check what way the line is going, set sign if needed
 
         // Iterate
-        for YPOS in w_startPos[1]..=w_endPos[1]{
-            BUFFER_LOCK[[w_curX, YPOS]] = TEMPLATE_wrCell{ c_char: IN_char, c_colors: IN_colors };
+        for YPOS in w_startPos.1..=w_endPos.1{
+            BUFFER_LOCK[(w_curX, YPOS)] = TEMPLATE_wrCell{ c_char: IN_char, c_colors: IN_colors };
 
             // Idk who made this equation but why does it work
             // SubaxisDelta * 2 > SuperaxisDelta
-            if w_curX.abs_diff(w_endPos[0])*2 > YPOS.abs_diff(w_endPos[1]){
+            if w_curX.abs_diff(w_endPos.0)*2 > YPOS.abs_diff(w_endPos.1){
                 // If sign is enabled that means it goes left
                 if w_sign {w_curX -= 1}
                 else{w_curX += 1}
@@ -270,15 +268,15 @@ fn r_util_border(borderPos: system::coords, borderSizeInner: system::coords) {
     
     let w_corners = (
         borderPos, // TL
-        [borderPos[0] + borderSizeInner[0], borderPos[1]], // TR
-        [borderPos[0], borderPos[1] + borderSizeInner[1]], // BL
-        [borderPos[0] + borderSizeInner[0], borderPos[1] + borderSizeInner[1]] // BR
+        (borderPos.0 + borderSizeInner.0, borderPos.1), // TR
+        (borderPos.0, borderPos.1 + borderSizeInner.1), // BL
+        (borderPos.0 + borderSizeInner.0, borderPos.1 + borderSizeInner.1) // BR
     );
     
-    self::r_util_drawBufferLineAngle(w_corners.0, w_corners.1, '=', [Color::White, Color::Black]);
-    self::r_util_drawBufferLineAngle(w_corners.2, w_corners.3, '=', [Color::White, Color::Black]);
-    self::r_util_drawBufferLineAngle(w_corners.0, w_corners.2, '‖', [Color::White, Color::Black]);
-    self::r_util_drawBufferLineAngle(w_corners.1, w_corners.3, '‖', [Color::White, Color::Black]);
+    self::r_util_drawBufferLineAngle(w_corners.0, w_corners.1, '=', (Color::White, Color::Black));
+    self::r_util_drawBufferLineAngle(w_corners.2, w_corners.3, '=', (Color::White, Color::Black));
+    self::r_util_drawBufferLineAngle(w_corners.0, w_corners.2, '‖', (Color::White, Color::Black));
+    self::r_util_drawBufferLineAngle(w_corners.1, w_corners.3, '‖', (Color::White, Color::Black));
     
     let mut BUFFER_LOCK = self::RENDER_mainBuffer.lock().unwrap();
     // Corners at end cuz it's easier to set them
@@ -286,25 +284,25 @@ fn r_util_border(borderPos: system::coords, borderSizeInner: system::coords) {
         'TOP_LEFT: {
             BUFFER_LOCK[w_corners.0] = TEMPLATE_wrCell {
                 c_char: '╔',
-                c_colors: [Color::White, Color::Black],
+                c_colors: (Color::White, Color::Black),
             }
         }
         'TOP_RIGHT: {
             BUFFER_LOCK[w_corners.1] = TEMPLATE_wrCell {
                 c_char: '╗',
-                c_colors: [Color::White, Color::Black],
+                c_colors: (Color::White, Color::Black),
             }
         }
         'BOTTOM_LEFT: {
             BUFFER_LOCK[w_corners.2] = TEMPLATE_wrCell {
                 c_char: '╚',
-                c_colors: [Color::White, Color::Black],
+                c_colors: (Color::White, Color::Black),
             }
         }
         'BOTTOM_RIGHT: {
             BUFFER_LOCK[w_corners.3] = TEMPLATE_wrCell {
                 c_char: '╝',
-                c_colors: [Color::White, Color::Black],
+                c_colors: (Color::White, Color::Black),
             }
         }
     }
@@ -319,12 +317,12 @@ fn r_util_text() {
     let mut DATA_LOCK = SYS_data.lock().unwrap();
     let mut BUFFER_LOCK = RENDER_mainBuffer.lock().unwrap();
 
-    let mut w_skipToNewline = false;
+    let mut w_skipToNewline: bool = false;
 
     for RTEXT in DATA_LOCK.DATA_textItems.iter_mut() {
 
-        let mut RTEXT_charStartPosition = RTEXT.t_position.value();
-        let mut RTEXT_charPosition = RTEXT_charStartPosition;
+        let mut RTEXT_charStartPosition: system::coords = RTEXT.t_position.value();
+        let mut RTEXT_charPosition: system::coords = RTEXT_charStartPosition;
         'RENDER_textBlocks: for RTEXT_char in RTEXT.t_string.clone().chars() {
 
             if RTEXT_char == '\r' {
@@ -332,7 +330,7 @@ fn r_util_text() {
             }
             if RTEXT_char == '\n' {
                 w_skipToNewline = false;
-                RTEXT_charStartPosition[1] += 1;
+                RTEXT_charStartPosition.1 += 1;
                 RTEXT_charPosition = RTEXT_charStartPosition;
                 continue;
             }
@@ -340,22 +338,22 @@ fn r_util_text() {
             if w_skipToNewline{continue}
 
             // If X exceeds mark the skip
-            if RTEXT_charPosition[0] >= system::SYS_REND_BUFFER_X{
+            if RTEXT_charPosition.0 >= system::SYS_REND_BUFFER_X{
                 w_skipToNewline = true;
                 continue;
             }
 
             // If Y exceeds there's no hope for the string
-            if RTEXT_charPosition[1] >= system::SYS_REND_BUFFER_Y
+            if RTEXT_charPosition.1 >= system::SYS_REND_BUFFER_Y
             {
                 break 'RENDER_textBlocks;
             }
 
             BUFFER_LOCK[RTEXT_charPosition] = TEMPLATE_wrCell {
                 c_char: RTEXT_char,
-                c_colors: [Color::White, Color::Black],
+                c_colors: system::SYS_DEFCOLORS,
             };
-            RTEXT_charPosition[0] += 1
+            RTEXT_charPosition.0 += 1
         }
         if RTEXT.t_lifetime == 255 {
             continue;
@@ -380,16 +378,16 @@ fn r_util_world() {
 
     // Calc border offset
     // Player offset in chunk + Chunk radius offset - radius
-    let r_workingBorderOffset = [
+    let r_workingBorderOffset: system::coords = (
         // X
-        (DATA_LOCK.DATA_player.p_pos[0] % system::SYS_CHUNK_X
+        (DATA_LOCK.DATA_player.p_pos.0 % system::SYS_CHUNK_X
             + system::SYS_REND_CHUNKRAD * system::SYS_CHUNK_X)
             - system::SYS_REND_WORLD_X,
         // Y
-        (DATA_LOCK.DATA_player.p_pos[1] % system::SYS_CHUNK_Y
+        (DATA_LOCK.DATA_player.p_pos.1 % system::SYS_CHUNK_Y
             + system::SYS_REND_CHUNKRAD * system::SYS_CHUNK_Y)
             - system::SYS_REND_WORLD_Y,
-    ];
+    );
 
     // Quickset X position
     let mut w_bufferX: usize = 2;
@@ -397,23 +395,23 @@ fn r_util_world() {
     for XPOS in 0..system::SYS_REND_WORLDSIZE_X{
 
         // Quickset Y position
-        let mut w_bufferY:usize = 2;
+        let mut w_bufferY: usize = 2;
 
         // Just to not recalc every Y iter
-        let idkfa_posX = r_workingBorderOffset[0] + XPOS;
+        let idkfa_posX: usize = r_workingBorderOffset.0 + XPOS;
 
         for YPOS in 0..system::SYS_REND_WORLDSIZE_Y{
 
-            let idkfa_posY = r_workingBorderOffset[1] + YPOS;
+            let idkfa_posY = r_workingBorderOffset.1 + YPOS;
 
             let w_cell = r_workingChunkArray[
                 idkfa_posX/system::SYS_CHUNK_X + 
                 idkfa_posY/system::SYS_CHUNK_Y * system::SYS_REND_CHUNKRADSIZE]
-                    [[idkfa_posX%system::SYS_CHUNK_X, idkfa_posY%system::SYS_CHUNK_Y]];
+                    [(idkfa_posX % system::SYS_CHUNK_X, idkfa_posY % system::SYS_CHUNK_Y)];
 
             // Finally set the buffer cell
             // Gotta find a cleaner way for this
-            BUFFER_LOCK[[w_bufferX, w_bufferY]] = TEMPLATE_wrCell{c_char:w_cell.c_char, c_colors:w_cell.c_color};
+            BUFFER_LOCK[(w_bufferX, w_bufferY)] = TEMPLATE_wrCell{c_char:w_cell.c_char, c_colors:w_cell.c_color};
             w_bufferY += 1
         }
         w_bufferX += 1
@@ -482,16 +480,16 @@ pub enum RENDER_position {
 impl RENDER_position {
     pub fn value(&self) -> system::coords {
         match *self {
-            Self::None => [0, 0],
-            Self::POS_middle => [system::SYS_REND_BUFFER_X / 2, system::SYS_REND_BUFFER_Y / 2],
-            Self::POS_left => [0, system::SYS_REND_BUFFER_Y / 2],
-            Self::POS_right => [system::SYS_REND_BUFFER_X - 1, system::SYS_REND_BUFFER_Y / 2],
-            Self::POS_top => [system::SYS_REND_BUFFER_X / 2, 0],
-            Self::POS_bottom => [system::SYS_REND_BUFFER_X / 2, system::SYS_REND_BUFFER_Y - 1],
-            Self::POS_TL => [0, 0],
-            Self::POS_TR => [system::SYS_REND_BUFFER_X - 1, 0],
-            Self::POS_BL => [0, system::SYS_REND_BUFFER_Y - 1],
-            Self::POS_BR => [system::SYS_REND_BUFFER_X - 1, system::SYS_REND_BUFFER_Y - 1],
+            Self::None => (0, 0),
+            Self::POS_middle => (system::SYS_REND_BUFFER_X / 2, system::SYS_REND_BUFFER_Y / 2),
+            Self::POS_left => (0, system::SYS_REND_BUFFER_Y / 2),
+            Self::POS_right => (system::SYS_REND_BUFFER_X - 1, system::SYS_REND_BUFFER_Y / 2),
+            Self::POS_top => (system::SYS_REND_BUFFER_X / 2, 0),
+            Self::POS_bottom => (system::SYS_REND_BUFFER_X / 2, system::SYS_REND_BUFFER_Y - 1),
+            Self::POS_TL => (0, 0),
+            Self::POS_TR => (system::SYS_REND_BUFFER_X - 1, 0),
+            Self::POS_BL => (0, system::SYS_REND_BUFFER_Y - 1),
+            Self::POS_BR => (system::SYS_REND_BUFFER_X - 1, system::SYS_REND_BUFFER_Y - 1),
             Self::POS_custom(POS) => POS,
         }
     }
@@ -506,7 +504,7 @@ struct RENDER_buffer {
 impl RENDER_buffer {
     pub fn new(IN_size: system::coords) -> Self {
         Self {
-            BUFFER_grid: vec![TEMPLATE_wrCell::new(); IN_size[0] * IN_size[1]],
+            BUFFER_grid: vec![TEMPLATE_wrCell::new(); IN_size.0 * IN_size.1],
         }
     }
     pub fn reset(&mut self) {
@@ -516,11 +514,11 @@ impl RENDER_buffer {
 impl Index<system::coords> for RENDER_buffer {
     type Output = TEMPLATE_wrCell;
     fn index(&self, index: system::coords) -> &Self::Output {
-        &self.BUFFER_grid[index[0] + index[1] * system::SYS_REND_BUFFER_X]
+        &self.BUFFER_grid[index.0 + index.1 * system::SYS_REND_BUFFER_X]
     }
 }
 impl IndexMut<system::coords> for RENDER_buffer {
     fn index_mut(&mut self, index: system::coords) -> &mut Self::Output {
-        &mut self.BUFFER_grid[index[0] + index[1] * system::SYS_REND_BUFFER_X]
+        &mut self.BUFFER_grid[index.0 + index.1 * system::SYS_REND_BUFFER_X]
     }
 }

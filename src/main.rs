@@ -4,7 +4,7 @@
 
 use crossterm::{
     cursor, execute,
-    terminal::{enable_raw_mode, EnterAlternateScreen},
+    terminal::{enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
 use once_cell::sync::Lazy;
 

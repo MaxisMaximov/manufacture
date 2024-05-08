@@ -48,7 +48,10 @@ pub fn SYS_HANDLER_input(){
                 KeyCode::Char('g') => DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_printDebug,
                 KeyCode::Char('h') => DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_changeWorldTile,
                 KeyCode::Char('j') => DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_clearWorld,
-                KeyCode::Esc => exit(0),
+                KeyCode::Esc => {
+                    let _ = execute!(stdout(), LeaveAlternateScreen);
+                    exit(0)
+                },
                 _ => {DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_NULL}
             }
             return;

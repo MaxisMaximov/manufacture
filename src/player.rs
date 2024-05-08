@@ -29,29 +29,29 @@ impl TEMPLATE_player {
             GAME_playerColors[INp_playerNum]
         };
         TEMPLATE_player {
-            p_pos: [10, 10],
-            p_chunk: [2, 2],
-            p_color: [Color::White, Fp_playerColor] }
+            p_pos: (10, 10),
+            p_chunk: (2, 2),
+            p_color: (Color::White, Fp_playerColor) }
     }
 
     pub fn p_move(&mut self, dir: &GAME_playerDirections) {
         match dir {
             GAME_playerDirections::DIR_up => {
-                self.p_pos[1] = self.p_pos[1].saturating_sub(1);
+                self.p_pos.1 = self.p_pos.1.saturating_sub(1);
             }
             GAME_playerDirections::DIR_down => {
-                self.p_pos[1] = self.p_pos[1].add(1).clamp(0, system::SYS_GRID_Y);
+                self.p_pos.1 = self.p_pos.1.add(1).clamp(0, system::SYS_GRID_Y);
             }
             GAME_playerDirections::DIR_left => {
-                self.p_pos[0] = self.p_pos[0].saturating_sub(1);
+                self.p_pos.0 = self.p_pos.0.saturating_sub(1);
             }
             GAME_playerDirections::DIR_right => {
-                self.p_pos[0] = self.p_pos[0].add(1).clamp(0, system::SYS_GRID_X);
+                self.p_pos.0 = self.p_pos.0.add(1).clamp(0, system::SYS_GRID_X);
             }
         }
         // Update current chunk         // I hate when small changes like this comment flag the whole file as Modified.
-        self.p_chunk[0] = self.p_pos[0] / system::SYS_CHUNK_X;
-        self.p_chunk[1] = self.p_pos[1] / system::SYS_CHUNK_Y;
+        self.p_chunk.0 = self.p_pos.0 / system::SYS_CHUNK_X;
+        self.p_chunk.1 = self.p_pos.1 / system::SYS_CHUNK_Y;
     }
 }
 

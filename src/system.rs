@@ -26,8 +26,8 @@ pub const SYS_TICKRATE: u8 = 8;
 pub const SYS_TICKTIME: Duration = Duration::from_millis(1000 / SYS_TICKRATE as u64);
 
 // Custom types so I don't peck it up
-pub type coords = [usize; 2];
-pub type cellColors = [crossterm::style::Color; 2];
+pub type coords = (usize, usize);
+pub type cellColors = (crossterm::style::Color, crossterm::style::Color);
 
 // region: World data
 

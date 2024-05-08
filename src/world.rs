@@ -20,10 +20,10 @@ pub struct TEMPLATE_wrCell {
 }
 impl TEMPLATE_wrCell{
     pub fn new() -> Self{
-        TEMPLATE_wrCell { c_char: ' ', c_color: [Color::White, Color:: Black] }
+        TEMPLATE_wrCell { c_char: ' ', c_color: (Color::White, Color::Black)}
     }
     pub fn newDummy() -> Self{
-        TEMPLATE_wrCell { c_char: '0', c_color: [Color::Black, Color:: White] }
+        TEMPLATE_wrCell { c_char: '0', c_color: (Color::Black, Color::White)}
     }
 }
 
@@ -44,12 +44,12 @@ impl TEMPLATE_wChunk {
 impl Index<system::coords> for TEMPLATE_wChunk{
     type Output = TEMPLATE_wrCell;
     fn index(&self, index: system::coords) -> &Self::Output {
-        &self.ch_cells[index[0] + index[1] * system::SYS_CHUNK_X]
+        &self.ch_cells[index.0 + index.1 * system::SYS_CHUNK_X]
     }
 }
 impl IndexMut<system::coords> for TEMPLATE_wChunk{
     fn index_mut(&mut self, index: system::coords) -> &mut Self::Output {
-        &mut self.ch_cells[index[0] + index[1] * system::SYS_CHUNK_X]
+        &mut self.ch_cells[index.0 + index.1 * system::SYS_CHUNK_X]
     }
 }
 
@@ -88,28 +88,28 @@ impl TEMPLATE_world {
 
         for _ in 0..INw_iters{
             // Find coords of tiles where the iteration has influence
-            let w_circleStartingPosition = [w_iterCoords[0].saturating_sub(w_iterRadius), w_iterCoords[1].saturating_sub(w_iterRadius)];
+            let w_circleStartingPosition: system::coords = (w_iterCoords.0.saturating_sub(w_iterRadius), w_iterCoords.1.saturating_sub(w_iterRadius));
             for CELLY in 0..w_iterSize{
                 // If iterator is out of Y bounds of the world, don't iterate over the rest
-                if w_circleStartingPosition[1] + CELLY >= system::SYS_GRID_Y{
+                if w_circleStartingPosition.1 + CELLY >= system::SYS_GRID_Y{
                     break;
                 }
                 for CELLX in 0..w_iterSize{
                     // If iterator is out of X bounds of the world, don't iterate over the rest
-                    if (w_circleStartingPosition[0] + CELLX) >= system::SYS_GRID_X{
+                    if (w_circleStartingPosition.0 + CELLX) >= system::SYS_GRID_X{
                         break;
                     }
                     
                     // Now checks for the cell itself
-                    let w_cellPos = [w_circleStartingPosition[0] + CELLX, w_circleStartingPosition[1] + CELLY];
+                    let w_cellPos: system::coords = (w_circleStartingPosition.0 + CELLX, w_circleStartingPosition.1 + CELLY);
                     
                     // If it's inside the rhomb inside the circle it's guaranteed to be valid
-                    if w_cellPos[0].abs_diff(w_iterCoords[0]) + w_cellPos[1].abs_diff(w_iterCoords[1]) <= w_iterRadius{
+                    if w_cellPos.0.abs_diff(w_iterCoords.0) + w_cellPos.1.abs_diff(w_iterCoords.1) <= w_iterRadius{
                         w_genCircleTiles.push(w_cellPos);
                         continue;
                     }
                     // If it's not in rhomb or radius then skip
-                    if w_cellPos[0].abs_diff(w_iterCoords[0]).pow(2) + w_cellPos[1].abs_diff(w_iterCoords[1]).pow(2) > w_iterRadius.pow(2){
+                    if w_cellPos.0.abs_diff(w_iterCoords.0).pow(2) + w_cellPos.1.abs_diff(w_iterCoords.1).pow(2) > w_iterRadius.pow(2){
                         continue;
                     }
                     // If all previous checks passed that means it's valid
@@ -122,11 +122,11 @@ impl TEMPLATE_world {
             w_genCircleTiles.dedup();
 
             // Find coords for next iteration
-            w_nextIterAreaX = w_iterCoords[0].saturating_sub(w_iterRadius)..(w_iterCoords[0] + w_iterRadius).clamp(0, system::SYS_GRID_X);
-            w_nextIterAreaY = w_iterCoords[1].saturating_sub(w_iterRadius)..(w_iterCoords[1] + w_iterRadius).clamp(0, system::SYS_GRID_X);
+            w_nextIterAreaX = w_iterCoords.0.saturating_sub(w_iterRadius)..(w_iterCoords.0 + w_iterRadius).clamp(0, system::SYS_GRID_X);
+            w_nextIterAreaY = w_iterCoords.1.saturating_sub(w_iterRadius)..(w_iterCoords.1 + w_iterRadius).clamp(0, system::SYS_GRID_X);
             loop {
-                w_nextIterCoords = [INw_RNG.gen_range(w_nextIterAreaX.clone()), INw_RNG.gen_range(w_nextIterAreaY.clone())];
-                if w_nextIterCoords[0].abs_diff(w_iterCoords[0]).pow(2) + w_nextIterCoords[1].abs_diff(w_iterCoords[1]).pow(2) > w_iterRadius.pow(2){
+                w_nextIterCoords = (INw_RNG.gen_range(w_nextIterAreaX.clone()), INw_RNG.gen_range(w_nextIterAreaY.clone()));
+                if w_nextIterCoords.0.abs_diff(w_iterCoords.0).pow(2) + w_nextIterCoords.1.abs_diff(w_iterCoords.1).pow(2) > w_iterRadius.pow(2){
                     continue;
                 }
                 break;
@@ -168,7 +168,7 @@ impl TEMPLATE_world {
             
             // Let the iterator handle the rest
             w_genLakeTiles.extend(self.w_util_circleIter(&mut w_RNG,
-                [w_lakeRandomX, w_lakeRandomY],
+                (w_lakeRandomX, w_lakeRandomY),
                 w_lakeIters,
                 system::WORLD_POND_SIZE));
             
@@ -177,7 +177,7 @@ impl TEMPLATE_world {
             w_genLakeTiles.dedup();
         }
         for COORDS in w_genLakeTiles{
-            self[COORDS] = TEMPLATE_wrCell{c_char: 'W', c_color: [Color::White, Color::Blue]}
+            self[COORDS] = TEMPLATE_wrCell{c_char: 'W', c_color: (Color::White, Color::Blue)}
         }
 
         // Forests
@@ -190,7 +190,7 @@ impl TEMPLATE_world {
             
             // Let the iterator handle the rest
             w_genForestTiles.extend(self.w_util_circleIter(&mut w_RNG,
-                [w_forestRandomX, w_forestRandomY],
+                (w_forestRandomX, w_forestRandomY),
                 w_forestIters,
                 system::WORLD_FOREST_SIZE));
             
@@ -203,18 +203,10 @@ impl TEMPLATE_world {
             if self[COORDS].c_char != ' '{
                 continue;
             }
-            self[COORDS] = TEMPLATE_wrCell{c_char: 'F', c_color: [Color::White, Color::DarkGreen]}
+            self[COORDS] = TEMPLATE_wrCell{c_char: 'F', c_color: (Color::White, Color::DarkGreen)}
         }
 
 
-    }
-    /// # Calculate position in the world
-    /// Takes `[X, Y]` coords as input and outputs `[ChunkIndex, CellIndex]`
-    pub fn w_calcPosIndex(&self, INw_position: system::coords) -> system::coords{
-        return [
-            ((INw_position[0] / system::SYS_CHUNK_X)) + ((INw_position[1] / system::SYS_CHUNK_Y)) * system::SYS_WORLD_X,
-            (INw_position[0] % system::SYS_CHUNK_X) + (INw_position[1] % system::SYS_CHUNK_Y) * system::SYS_CHUNK_X
-        ];
     }
 
     /// # Get a slice of the world at `[X, Y]` size centered on chunk of `usize` radius
@@ -224,31 +216,31 @@ impl TEMPLATE_world {
     pub fn w_returnChunkArray(&self, w_centerCoords: system::coords, INw_radius: usize) -> Vec<&TEMPLATE_wChunk>{
 
         // Calc size quickly
-        let w_size = INw_radius * 2 + 1;
+        let w_size: usize = INw_radius * 2 + 1;
 
         // Set positions
-        let w_startPosition = [
-                w_centerCoords[0].saturating_sub(INw_radius),
-                w_centerCoords[1].saturating_sub(INw_radius)
-            ];
+        let w_startPosition: system::coords = (
+                w_centerCoords.0.saturating_sub(INw_radius),
+                w_centerCoords.1.saturating_sub(INw_radius)
+        );
 
         // WORLDSIZE - 1 to prevent overflows
-        let w_endPosition = [
-            (w_centerCoords[0] + INw_radius).clamp(0, system::SYS_WORLD_X - 1),
-            (w_centerCoords[1] + INw_radius).clamp(0, system::SYS_WORLD_Y - 1)
-        ];
+        let w_endPosition: system::coords = (
+            (w_centerCoords.0 + INw_radius).clamp(0, system::SYS_WORLD_X - 1),
+            (w_centerCoords.1 + INw_radius).clamp(0, system::SYS_WORLD_Y - 1)
+        );
 
         // Init vector of refs to return
-        let mut OUTw_chunkVec: Vec<&TEMPLATE_wChunk> = vec![&self.w_dummyChunk; (w_size).pow(2)];
+        let mut OUTw_chunkVec: Vec<&TEMPLATE_wChunk> = vec![&self.w_dummyChunk; w_size.pow(2)];
 
         // Calc positions in vec with offset
-        let mut w_vecX: usize = INw_radius - w_centerCoords[0].abs_diff(w_startPosition[0]);
+        let mut w_vecX: usize = INw_radius - w_centerCoords.0.abs_diff(w_startPosition.0);
          
-        for XPOS in w_startPosition[0]..=w_endPosition[0]{
+        for XPOS in w_startPosition.0..=w_endPosition.0{
             // Reset Y position on every X iter
-            let mut w_vecY: usize = INw_radius - w_centerCoords[1].abs_diff(w_startPosition[1]);
+            let mut w_vecY: usize = INw_radius - w_centerCoords.1.abs_diff(w_startPosition.1);
 
-            for YPOS in w_startPosition[1]..=w_endPosition[1]{
+            for YPOS in w_startPosition.1..=w_endPosition.1{
                 OUTw_chunkVec[w_vecX + w_vecY * w_size] = &self.w_chunks[XPOS + YPOS * system::SYS_WORLD_X];
                 w_vecY += 1
             }
@@ -268,16 +260,16 @@ impl Index<system::coords> for TEMPLATE_world{
 
     fn index(&self, index: system::coords) -> &Self::Output {
         &self.w_chunks[
-            index[0]/system::SYS_CHUNK_X + 
-            index[1]/system::SYS_CHUNK_Y * system::SYS_WORLD_X]
-                [[index[0]%system::SYS_CHUNK_X, index[1]%system::SYS_CHUNK_Y]]
+            index.0/system::SYS_CHUNK_X + 
+            index.1/system::SYS_CHUNK_Y * system::SYS_WORLD_X]
+                [(index.0%system::SYS_CHUNK_X, index.1%system::SYS_CHUNK_Y)]
     }
 }
 impl IndexMut<system::coords> for TEMPLATE_world{
     fn index_mut(&mut self, index: system::coords) -> &mut Self::Output {
         &mut self.w_chunks[
-            index[0]/system::SYS_CHUNK_X + 
-            index[1]/system::SYS_CHUNK_Y * system::SYS_WORLD_X]
-                [[index[0]%system::SYS_CHUNK_X, index[1]%system::SYS_CHUNK_Y]]
+            index.0/system::SYS_CHUNK_X + 
+            index.1/system::SYS_CHUNK_Y * system::SYS_WORLD_X]
+                [(index.0%system::SYS_CHUNK_X, index.1%system::SYS_CHUNK_Y)]
     }
 }

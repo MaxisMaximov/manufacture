@@ -1,4 +1,3 @@
-
 use std::fmt;
 
 use crossterm::style::Color;
@@ -27,26 +26,35 @@ pub fn new(){
 /// Window system will have different way of managing those
 pub fn GAME_interact() {
     let mut DATA_LOCK = SYS_data.lock().unwrap();
+
     let idkfa_interaction = DATA_LOCK.DATA_playerInput;
+    
     SYS_debug.lock().unwrap().DATA_debugItems.get_mut("#LOGIC_interaction").unwrap().t_values = format!("{}", idkfa_interaction);
+
     match DATA_LOCK.DATA_playerInput {
+
         GAME_interactions::i_changeWorldTile => {
-            let idkfa_pos = DATA_LOCK.DATA_player.p_pos;
-            let idkfa_colors = [Color::Black, DATA_LOCK.DATA_player.p_color[1]];
+            let idkfa_pos: system::coords = DATA_LOCK.DATA_player.p_pos;
+            let idkfa_colors: system::cellColors = (Color::Black, DATA_LOCK.DATA_player.p_color.1);
             DATA_LOCK.DATA_world[idkfa_pos] = world::TEMPLATE_wrCell{c_char: 'c', c_color: idkfa_colors};
         }
+
         GAME_interactions::i_printHello => 
             DATA_LOCK.DATA_textItems.push(
                 IDDQD_textItem::newText(renderer::RENDER_position::POS_TL, "Hello!\r\nHello!", 32)
             ),
+
         GAME_interactions::i_printDebug =>
             DATA_LOCK.DATA_textItems.push(
                 IDDQD_textItem::newText(renderer::RENDER_position::POS_right, "DEBUG", 16)
             ),
+
         GAME_interactions::i_clearWorld => DATA_LOCK.DATA_world.w_clearWorld(),
+
         GAME_interactions::i_movPlayer(dir) => {
             let idkfa_direction = dir;
             DATA_LOCK.DATA_player.p_move(&idkfa_direction)}
+
         GAME_interactions::i_NULL => {}
     }
 }
