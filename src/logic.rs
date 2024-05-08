@@ -33,7 +33,7 @@ pub fn GAME_interact() {
         GAME_interactions::i_changeWorldTile => {
             let idkfa_pos = DATA_LOCK.DATA_player.p_pos;
             let idkfa_colors = [Color::Black, DATA_LOCK.DATA_player.p_color[1]];
-            DATA_LOCK.DATA_world.w_setCell(idkfa_pos, 'c', idkfa_colors);
+            DATA_LOCK.DATA_world[idkfa_pos] = world::TEMPLATE_wrCell{c_char: 'c', c_color: idkfa_colors};
         }
         GAME_interactions::i_printHello => 
             DATA_LOCK.DATA_textItems.push(

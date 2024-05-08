@@ -1,6 +1,4 @@
-#![allow(nonstandard_style)]
-
-use std::ops::Range;
+use std::ops::{Index, IndexMut, Range};
 
 use crossterm::style::Color;
 use rand::{rngs::ThreadRng, thread_rng, Rng};
@@ -15,6 +13,7 @@ use crate::*;
 /// * Colors for character and background
 ///
 /// TODO: Make it store buildings as well
+#[derive(Clone, Copy)]
 pub struct TEMPLATE_wrCell {
     pub c_char: char,
     pub c_color: system::cellColors,
@@ -27,18 +26,10 @@ impl TEMPLATE_wrCell{
         TEMPLATE_wrCell { c_char: '0', c_color: [Color::Black, Color:: White] }
     }
 }
-impl Copy for TEMPLATE_wrCell {}
-impl Clone for TEMPLATE_wrCell {
-    fn clone(&self) -> Self {
-        TEMPLATE_wrCell {
-            c_char: self.c_char,
-            c_color: self.c_color
-        }
-    }
-}
 
 /// # World Chunk struct
 /// For now holds only cells, dunno what else to add to it
+#[derive(Clone, Copy)]
 pub struct TEMPLATE_wChunk {
     pub ch_cells: [TEMPLATE_wrCell; system::SYS_CHUNK_X * system::SYS_CHUNK_Y]
 }
@@ -50,10 +41,15 @@ impl TEMPLATE_wChunk {
         TEMPLATE_wChunk { ch_cells: [TEMPLATE_wrCell::newDummy(); system::SYS_CHUNK_X * system:: SYS_CHUNK_Y]}
     }
 }
-impl Copy for TEMPLATE_wChunk {}
-impl Clone for TEMPLATE_wChunk {
-    fn clone(&self) -> Self {
-        TEMPLATE_wChunk { ch_cells: self.ch_cells }
+impl Index<system::coords> for TEMPLATE_wChunk{
+    type Output = TEMPLATE_wrCell;
+    fn index(&self, index: system::coords) -> &Self::Output {
+        &self.ch_cells[index[0] + index[1] * system::SYS_CHUNK_X]
+    }
+}
+impl IndexMut<system::coords> for TEMPLATE_wChunk{
+    fn index_mut(&mut self, index: system::coords) -> &mut Self::Output {
+        &mut self.ch_cells[index[0] + index[1] * system::SYS_CHUNK_X]
     }
 }
 
@@ -181,7 +177,7 @@ impl TEMPLATE_world {
             w_genLakeTiles.dedup();
         }
         for COORDS in w_genLakeTiles{
-            self.w_setCell(COORDS, 'W', [Color::White, Color::Blue])
+            self[COORDS] = TEMPLATE_wrCell{c_char: 'W', c_color: [Color::White, Color::Blue]}
         }
 
         // Forests
@@ -204,10 +200,10 @@ impl TEMPLATE_world {
         }
         for COORDS in w_genForestTiles{
             // Skip cells that are already occupied by lakes
-            if self.w_getCell(COORDS).c_char != ' '{
+            if self[COORDS].c_char != ' '{
                 continue;
             }
-            self.w_setCell(COORDS, 'F', [Color::White, Color::DarkGreen])
+            self[COORDS] = TEMPLATE_wrCell{c_char: 'F', c_color: [Color::White, Color::DarkGreen]}
         }
 
 
@@ -256,17 +252,26 @@ impl TEMPLATE_world {
         return OUTw_chunkVec;
     }
 
-    pub fn w_setCell(&mut self, INw_position: system::coords, INw_character: char, INw_color: system::cellColors) {
-        let w_workingPosition = self.w_calcPosIndex(INw_position);
-        self.w_chunks[w_workingPosition[0]].ch_cells[w_workingPosition[1]] = TEMPLATE_wrCell{c_char: INw_character, c_color: INw_color};
-    }
-
-    pub fn w_getCell(&self, INw_position: system::coords) -> &TEMPLATE_wrCell{
-        let w_workingPos = self.w_calcPosIndex(INw_position);
-        return &self.w_chunks[w_workingPos[0]].ch_cells[w_workingPos[1]];
-    }
-
     pub fn w_clearWorld(&mut self) {
         self.w_chunks.fill(TEMPLATE_wChunk::new())
+    }
+}
+
+impl Index<system::coords> for TEMPLATE_world{
+    type Output = TEMPLATE_wrCell;
+
+    fn index(&self, index: system::coords) -> &Self::Output {
+        &self.w_chunks[
+            index[0]/system::SYS_CHUNK_X + 
+            index[1]/system::SYS_CHUNK_Y * system::SYS_WORLD_X]
+                [[index[0]%system::SYS_CHUNK_X, index[1]%system::SYS_CHUNK_Y]]
+    }
+}
+impl IndexMut<system::coords> for TEMPLATE_world{
+    fn index_mut(&mut self, index: system::coords) -> &mut Self::Output {
+        &mut self.w_chunks[
+            index[0]/system::SYS_CHUNK_X + 
+            index[1]/system::SYS_CHUNK_Y * system::SYS_WORLD_X]
+                [[index[0]%system::SYS_CHUNK_X, index[1]%system::SYS_CHUNK_Y]]
     }
 }
