@@ -89,16 +89,23 @@ pub type cellColors = [crossterm::style::Color; 2];
     pub const SYS_REND_BUFFER_X: usize = 48;
     pub const SYS_REND_BUFFER_Y: usize = 32;
 
-    // Dimensions of the world screen
-    pub const SYS_REND_WORLD_X: usize = 24;
-    pub const SYS_REND_WORLD_Y: usize = 24;
+    // Radius dimensions of the world screen
+    pub const SYS_REND_WORLD_X: usize = 10;
+    pub const SYS_REND_WORLD_Y: usize = 10;
 
-    // Sets how many chunks should be loaded into Renderer at once
-    // KEEP IT TO ODD NUMBERS
-    // It will crash the game if it's not
-    // Also if you'll set it to 0 and report it as a bug I will punch you.
-    pub const SYS_REND_CHUNK_X: usize = 5;
-    pub const SYS_REND_CHUNK_Y: usize = 5;
+    // DO NOT TOUCH!!
+    // Full size of render world
+    pub const SYS_REND_WORLDSIZE_X: usize = SYS_REND_WORLD_X * 2 + 1;
+    pub const SYS_REND_WORLDSIZE_Y: usize = SYS_REND_WORLD_Y * 2 + 1;
+
+    // Sets radius for chunks that should be loaded into Renderer at once
+    // The chunk player's in is always loaded
+    // If you'll set it to 0 and report it as a bug I will punch you.
+    pub const SYS_REND_CHUNKRAD: usize = 2;
+
+    // DO NOT TOUCH!!
+    // Full size of render chunks
+    pub const SYS_REND_CHUNKRADSIZE: usize = SYS_REND_CHUNKRAD * 2 + 1;
 
 // endregion: Renderer data
 

@@ -217,37 +217,43 @@ impl TEMPLATE_world {
         ];
     }
 
-    /// # Get a slice of the world of `[X, Y]` size centered on chunk
+    /// # Get a slice of the world at `[X, Y]` size centered on chunk of `usize` radius
     /// Returns array of chunk references
     /// 
     /// Any area that is out of bounds gets filled with Dummy Chunks
-    pub fn w_returnChunkArray(&self, w_iterCoords: system::coords, INw_size: system::coords) -> Vec<&TEMPLATE_wChunk>{
+    pub fn w_returnChunkArray(&self, w_centerCoords: system::coords, INw_radius: usize) -> Vec<&TEMPLATE_wChunk>{
 
-        let w_radius = [INw_size[0] / 2, INw_size[1] / 2];
+        // Calc size quickly
+        let w_size = INw_radius * 2 + 1;
 
+        // Set positions
         let w_startPosition = [
-                w_iterCoords[0].saturating_sub(INw_size[0] / 2),
-                w_iterCoords[1].saturating_sub(INw_size[1] / 2)
+                w_centerCoords[0].saturating_sub(INw_radius),
+                w_centerCoords[1].saturating_sub(INw_radius)
             ];
-        let mut OUTw_chunkVec: Vec<&TEMPLATE_wChunk> = vec![&self.w_dummyChunk; INw_size[0] * INw_size[1]];
-        let mut WORLDYPOS = 0;
 
-        // This is another mess to fix.
-        for YPOS in (
-                w_radius[1] - w_startPosition[1].abs_diff(w_iterCoords[1])
-                )..=(
-                    w_radius[1] - w_startPosition[1].abs_diff(w_iterCoords[1]) + w_startPosition[1].abs_diff((w_iterCoords[1] + w_radius[1]).clamp(0, system::SYS_WORLD_Y - 1))
-                ){
-                let mut WORLDXPOS: usize = 0;
-                for XPOS in (
-                    w_radius[0] - w_startPosition[0].abs_diff(w_iterCoords[0])
-                    )..=(
-                        w_radius[0] - w_startPosition[0].abs_diff(w_iterCoords[0]) + w_startPosition[0].abs_diff((w_iterCoords[0] + w_radius[0]).clamp(0, system::SYS_WORLD_X - 1))
-                    ){
-                    OUTw_chunkVec[XPOS + YPOS * INw_size[0]] = &self.w_chunks[w_startPosition[0] + WORLDXPOS + (w_startPosition[1] + WORLDYPOS) * system::SYS_WORLD_X];
-                    WORLDXPOS += 1
-                }
-                WORLDYPOS += 1
+        // WORLDSIZE - 1 to prevent overflows
+        let w_endPosition = [
+            (w_centerCoords[0] + INw_radius).clamp(0, system::SYS_WORLD_X - 1),
+            (w_centerCoords[1] + INw_radius).clamp(0, system::SYS_WORLD_Y - 1)
+        ];
+
+        // Init vector of refs to return
+        let mut OUTw_chunkVec: Vec<&TEMPLATE_wChunk> = vec![&self.w_dummyChunk; (w_size).pow(2)];
+
+        // Calc positions in vec with offset
+        let mut w_vecX: usize = INw_radius - w_centerCoords[0].abs_diff(w_startPosition[0]);
+         
+        for XPOS in w_startPosition[0]..=w_endPosition[0]{
+            // Reset Y position on every X iter
+            let mut w_vecY: usize = INw_radius - w_centerCoords[1].abs_diff(w_startPosition[1]);
+
+            for YPOS in w_startPosition[1]..=w_endPosition[1]{
+                OUTw_chunkVec[w_vecX + w_vecY * w_size] = &self.w_chunks[XPOS + YPOS * system::SYS_WORLD_X];
+                w_vecY += 1
+            }
+
+            w_vecX += 1
         }
         return OUTw_chunkVec;
     }
