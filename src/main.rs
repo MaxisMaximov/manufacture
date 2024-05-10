@@ -52,7 +52,7 @@ fn main() {
     // Will fix it with new world gen
     //SYS_data.lock().unwrap().DATA_world.w_generateRandom();
 
-    // Initialize the subsystems
+    // "Initialize" the subsystems
     renderer::new();
     logic::new();
     input::new();
@@ -66,7 +66,7 @@ fn main() {
         // Set next Player input to process
         input::SYS_HANDLER_input();
 
-        // Process the input
+        // Process the game
         logic::GAME_interact();
 
         // Render everything
@@ -80,7 +80,6 @@ fn main() {
             .get_mut("#SYS_processTime")
             .unwrap()
             .t_values = format!("{:?}", loopStart.elapsed());
-        renderer::SYS_HANDLER_renderDebugStrs();
 
         let loop_elapsedTime: Duration = loopStart.elapsed();
         if loop_elapsedTime < system::SYS_TICKTIME {
