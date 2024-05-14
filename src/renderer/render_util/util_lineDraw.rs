@@ -1,7 +1,7 @@
 use crate::system;
 use crate::renderer::*;
 
-pub fn r_util_drawBufferLineAngle(
+pub fn main(
     IN_pos_A: system::coords,
     IN_pos_B: system::coords,
     IN_char: char,

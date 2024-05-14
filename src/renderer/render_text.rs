@@ -7,7 +7,7 @@ use crate::renderer::*;
 ///
 /// # DO NOT RELY ON THIS
 /// It'll be most likely removed in favor of Window system
-pub fn r_util_text() {
+pub fn textBox() {
     let mut DATA_LOCK = SYS_data.lock().unwrap();
     let mut BUFFER_LOCK = RENDER_mainBuffer.lock().unwrap();
 
@@ -60,7 +60,7 @@ pub fn r_util_text() {
         .retain(|RTEXT| RTEXT.t_lifetime > 0)
 }
 
-pub fn SYS_HANDLER_renderDebugStrs() {
+pub fn debug() {
     let mut DEBUG_LOCK = SYS_debug.lock().unwrap();
     let mut STDOUT_LOCK = stdout().lock();
     for DEBUGSTR in DEBUG_LOCK.DATA_debugItems.values_mut() {

@@ -54,10 +54,10 @@ fn main() {
     //SYS_data.lock().unwrap().DATA_world.w_generateRandom();
 
     // "Initialize" the subsystems
-    renderer::new();
-    logic::new();
-    input::new();
-    jsonManager::new();
+    renderer::init();
+    logic::init();
+    input::init();
+    jsonManager::init();
 
     // # THE GAME LOOP
     loop {
@@ -65,13 +65,13 @@ fn main() {
         let loopStart: Instant = Instant::now();
 
         // Set next Player input to process
-        input::SYS_HANDLER_input();
+        input::main();
 
         // Process the game
-        logic::GAME_interact();
+        logic::main();
 
         // Render everything
-        renderer::SYS_HANDLER_renderGame();
+        renderer::main();
 
         // Log how long it took to process everything
         SYS_debug
@@ -173,7 +173,7 @@ impl IDDQD_textItem {
     pub fn newDebug(IN_strID: &str, IN_values: &str, IN_lifetime: u16) -> Self {
         Self {
             t_position: renderer::RENDER_position::None,
-            t_string: match jsonManager::JSON_FETCH_debugStr(IN_strID){
+            t_string: match jsonManager::debugStr(IN_strID){
                 Ok(STRING) => STRING,
                 Err(_) => IN_strID.to_owned()
             }, // Prefetch the debug string to give jsonManager some slack

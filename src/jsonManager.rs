@@ -8,7 +8,7 @@ use crate::{IDDQD_textItem, SYS_debug, SYS_ERROR};
 // Yes I'm concerned about these things early on
 // No I don't have any idea why
 
-pub fn new(){
+pub fn init(){
     SYS_debug.lock().unwrap().DATA_debugItems.insert(
         "#SSINIT_json".to_string(), 
         IDDQD_textItem::newDebug(
@@ -20,7 +20,7 @@ pub fn new(){
 
 /// # Fetch debug string from `debug.json`
 /// If it finds nothing it will return `Err()`
-pub fn JSON_FETCH_debugStr(IN_index: &str) -> Result<String, SYS_ERROR> {
+pub fn debugStr(IN_index: &str) -> Result<String, SYS_ERROR> {
     let idkfa_reader = BufReader::new(File::open("./src/json/debug.json").unwrap());
     let mut W_retrievedData: serde_json::Value = serde_json::from_reader(idkfa_reader).unwrap();
 

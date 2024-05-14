@@ -5,7 +5,7 @@ use crossterm::style::Color;
 use crate::*;
 
 /// # Game logic
-pub fn new(){
+pub fn init(){
     let mut DEBUG_LOCK = SYS_debug.lock().unwrap();
     'INIT_debugStr:{
         DEBUG_LOCK.DATA_debugItems.insert(
@@ -24,7 +24,7 @@ pub fn new(){
 /// While I'm not sure how it will change exactly it does "global" interactions for now
 /// 
 /// Window system will have different way of managing those
-pub fn GAME_interact() {
+pub fn main() {
     let mut DATA_LOCK = SYS_data.lock().unwrap();
 
     let idkfa_interaction = DATA_LOCK.DATA_playerInput;

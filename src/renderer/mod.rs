@@ -29,7 +29,7 @@ static RENDER_mainBuffer: Lazy<Mutex<RENDER_buffer>> = Lazy::new(|| {
     )))
 });
 
-pub fn new() {
+pub fn init() {
     let mut DEBUG_LOCK = SYS_debug.lock().unwrap();
     'INIT_debugStr: {
         DEBUG_LOCK.DATA_debugItems.insert(
@@ -65,7 +65,7 @@ pub fn new() {
 }
 
 /// # Render game
-pub fn SYS_HANDLER_renderGame() {
+pub fn main() {
     let RENDER_start = Instant::now();
     let mut DEBUG_LOCK = SYS_debug.lock().unwrap();
 
@@ -98,7 +98,7 @@ pub fn SYS_HANDLER_renderGame() {
     'RENDER_renderText: {
         let loopStart = Instant::now();
 
-        render_text::r_util_text();
+        render_text::textBox();
 
         DEBUG_LOCK
         .DATA_debugItems
@@ -110,7 +110,7 @@ pub fn SYS_HANDLER_renderGame() {
     'RENDER_renderWorldBorder: {
         let loopStart = Instant::now();
 
-        render_util::util_border::r_util_border(
+        render_util::util_border::main(
             (1, 1),
             (system::SYS_REND_WORLD_X * 2 + 1, system::SYS_REND_WORLD_Y * 2 + 1),
         );
@@ -179,7 +179,7 @@ pub fn SYS_HANDLER_renderGame() {
     drop(DEBUG_LOCK);
 
     // Render debug stuff last, everything should be processed by this point
-    render_text::SYS_HANDLER_renderDebugStrs();
+    render_text::debug();
 }
 
 /// # Render Buffer Cell
