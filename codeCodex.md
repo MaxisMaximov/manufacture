@@ -57,16 +57,16 @@ e.g.
 
 Naming for variables inside the function to not confuse them with global variables
 
-Syntax: `W_[naMe]`
+Syntax: `w_[naMe]`
 
 e.g.
 
 ```rust
-  let mut W_iterCoords: system::coords = IN_pos;
+  let mut w_iterCoords: system::coords = IN_pos;
 ```
 
 ```rust
-  let W_cellCoords = IN_pos[0] + IN_pos[1] * system::SYS_REND_BUFFER_X;
+  let w_cellCoords = IN_pos[0] + IN_pos[1] * system::SYS_REND_BUFFER_X;
 ```
 
 ### Constant variables
@@ -100,7 +100,7 @@ Primarily to stop compiler from whining
 Syntax: `idkfa_[naMe]`
 
 ```rust
-  let mut idkfa = DATA_LOCK.DATA_player.p_pos
+  let mut idkfa_playerPos = DATA_LOCK.DATA_player.p_pos
 ```
 
 ### Common variable names
@@ -108,10 +108,10 @@ Syntax: `idkfa_[naMe]`
 Common names for reocurring variables  
 Following this is advised
 
-Position: `IN_pos` | `w_[...]Pos`  
+Position: `IN_pos` | `w_[...]Pos` | `OUT_pos`  
 System data: `&mut IN_sysData`  
 Indexing for Hashmaps: `IN_dataIndex`  
-Timers for speed check: `TIMER_[...]Time`
+Timers for speed check: `TIMER_[...]Time` | `loopStart`
 
 ## Functions
 
@@ -124,7 +124,7 @@ Syntax: `[CATEGORY]_[naMe]`
 e.g.
 
 ```rust
-  pub fn MAIN_renderGame(&mut self, IN_gameData: &mut DATA_master)
+  pub fn MAIN_renderGame(&mut self)
 ```
 
 ### Private Functions
@@ -136,7 +136,7 @@ Syntax: `[cateGory]_[subCategory]_[naMe]`
 e.g.
 
 ```rust
-  fn render_util_text(&mut self, IN_sysData: &mut DATA_master)
+  fn render_util_text(&mut self)
 ```
 
 ### Function Groups
@@ -162,7 +162,7 @@ Syntax: `[TYPE]_[naMe]`
 e.g.
 
 ```rust
-  pub struct SYS_dataMaster
+  pub struct Data_dataMaster
 ```
 
 ### Struct Fields
@@ -194,7 +194,7 @@ Syntax: `[TYPE]_[naMe]`
 e.g.
 
 ```rust
-  pub enum DATA_cacheType {
+  pub enum DATA_cacheType
 ```
 
 ## Debug Strings
@@ -227,5 +227,5 @@ Syntax: `[NAME]_LOCK`
 Syntax: `IDDQD_[naMe]`
 
 ```rust
-  pub struct IDDQD_textItem {
+  pub struct IDDQD_textItem
 ```

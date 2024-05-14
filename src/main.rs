@@ -8,6 +8,7 @@ use crossterm::{
 };
 use once_cell::sync::Lazy;
 
+use core::fmt;
 use std::{
     collections::HashMap,
     io::stdout,
@@ -172,7 +173,10 @@ impl IDDQD_textItem {
     pub fn newDebug(IN_strID: &str, IN_values: &str, IN_lifetime: u16) -> Self {
         Self {
             t_position: renderer::RENDER_position::None,
-            t_string: jsonManager::JSON_FETCH_debugStr(IN_strID), // Prefetch the debug string to give jsonManager some slack
+            t_string: match jsonManager::JSON_FETCH_debugStr(IN_strID){
+                Ok(STRING) => STRING,
+                Err(_) => IN_strID.to_owned()
+            }, // Prefetch the debug string to give jsonManager some slack
             t_values: IN_values.to_string(),
             t_lifetime: IN_lifetime,
         }
@@ -217,5 +221,21 @@ impl IDDQD_textItem {
             t_values: "#MARK_FOR_DELETION".to_string(),
             t_lifetime: 0,
         }
+    }
+}
+
+pub enum SYS_ERROR{
+    jsonRead(String, String),
+    borderRender(system::coords),
+    textRender(system::coords)
+}
+impl fmt::Display for SYS_ERROR{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let idkfa_string = match self {
+            Self::jsonRead(ID, FILE) => format!("ERROR: jsonRead | Could not read string {ID} from {FILE}.json"),
+            Self::borderRender(COORDS) => format!("ERROR: borderRender | Could not render border at {COORDS:?}"),
+            Self::textRender(COORDS) => format!("ERROR: textRender | Text renderer outside of buffer at {COORDS:?}")
+        };
+        write!(f, "{}", idkfa_string)
     }
 }
