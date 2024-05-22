@@ -25,6 +25,8 @@ mod renderer;
 mod system;
 mod world;
 
+pub use system::*;
+
 // This is a mess.
 pub static SYS_data: Lazy<Mutex<DATA_master>> =
     Lazy::new(|| Mutex::new(DATA_master::new(player::TEMPLATE_player::new(1, None))));
@@ -90,11 +92,7 @@ fn main() {
 }
 
 /// # Master Data struct
-/// Holds every required data of the game such as player, world and Debug data
-///
-/// Cache must be gotten/added/removed through `DATA_cacheData` functions
-///
-/// I do not trust myself to do it correctly every time
+/// Holds every required data of the game such as player and world, soon buildings
 pub struct DATA_master {
     pub DATA_player: player::TEMPLATE_player,
     pub DATA_world: world::TEMPLATE_world,
@@ -151,7 +149,7 @@ impl DEBUG_master {
 pub enum CACHE_TYPE {
     CACHE_usize(usize),
     CACHE_u8(u8),
-    CACHE_coords(system::coords),
+    CACHE_coords(vector2),
     CACHE_interactCode(logic::GAME_interactions),
 }
 

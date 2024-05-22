@@ -34,8 +34,8 @@ pub fn main() {
     match DATA_LOCK.DATA_playerInput {
 
         GAME_interactions::i_changeWorldTile => {
-            let idkfa_pos: system::coords = DATA_LOCK.DATA_player.p_pos;
-            let idkfa_colors: system::cellColors = (Color::Black, DATA_LOCK.DATA_player.p_color.1);
+            let idkfa_pos: vector2 = DATA_LOCK.DATA_player.p_pos;
+            let idkfa_colors: colorSet = (Color::Black, DATA_LOCK.DATA_player.p_color.1);
             DATA_LOCK.DATA_world[idkfa_pos] = world::TEMPLATE_wrCell{c_char: 'c', c_color: idkfa_colors};
         }
 

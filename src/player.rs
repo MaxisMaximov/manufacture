@@ -16,9 +16,9 @@ use crate::*;
 /// # Custom colors
 /// To instead use custom colors set `fp_playerNum` to 0 and `fp_color` to [`Color::Rgb`]
 pub struct TEMPLATE_player {
-    pub p_pos: system::coords,
-    pub p_chunk: system::coords,
-    pub p_color: system::cellColors
+    pub p_pos: vector2,
+    pub p_chunk: vector2,
+    pub p_color: colorSet
 }
 impl TEMPLATE_player {
     pub fn new(INp_playerNum: usize, INp_color: Option<Color>) -> Self{
@@ -40,18 +40,18 @@ impl TEMPLATE_player {
                 self.p_pos.1 = self.p_pos.1.saturating_sub(1);
             }
             GAME_playerDirections::DIR_down => {
-                self.p_pos.1 = self.p_pos.1.add(1).clamp(0, system::SYS_GRID_Y);
+                self.p_pos.1 = self.p_pos.1.add(1).clamp(0, WORLD::GENERAL::WORLD_GRID_Y);
             }
             GAME_playerDirections::DIR_left => {
                 self.p_pos.0 = self.p_pos.0.saturating_sub(1);
             }
             GAME_playerDirections::DIR_right => {
-                self.p_pos.0 = self.p_pos.0.add(1).clamp(0, system::SYS_GRID_X);
+                self.p_pos.0 = self.p_pos.0.add(1).clamp(0, WORLD::GENERAL::WORLD_GRID_X);
             }
         }
         // Update current chunk         // I hate when small changes like this comment flag the whole file as Modified.
-        self.p_chunk.0 = self.p_pos.0 / system::SYS_CHUNK_X;
-        self.p_chunk.1 = self.p_pos.1 / system::SYS_CHUNK_Y;
+        self.p_chunk.0 = self.p_pos.0 / WORLD::GENERAL::WORLD_CHUNK_X;
+        self.p_chunk.1 = self.p_pos.1 / WORLD::GENERAL::WORLD_CHUNK_Y;
     }
 }
 

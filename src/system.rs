@@ -1,24 +1,15 @@
 #![allow(nonstandard_style)]
 
-use std::{time::Duration, ops::Range};
+use std::{ops::Range, time::Duration};
 
 use crossterm::style::Color;
 
 // # FULL FILE DISCLAIMER
 // THIS WILL BE MOVED INTO A CUSTOMIZABLE `.json` FILE LATER ON
-// 
+//
 // SO THAT GITHUB WON'T SCREAM ABOUT INCOMPATIBILITY ERRORS
-// 
+//
 // AND SO THAT TESTING CAN BE DONE WITHOUT RECOMPILING
-
-// This block right here is because of Linux.
-// UPDATE: I commented it out cuz `\r\n` doesn't make a difference on Windows
-// But future compatibility thingies will be here
-
-// #[cfg(target_os = "linux")]
-// pub const SYS_NEWLINE: &str = "\r\n";
-// #[cfg(target_os = "windows")]
-// pub const SYS_NEWLINE: &str = "\n";
 
 // How fast should game process everything
 // DO NOT TOUCH SYS_TICKTIME!!!!
@@ -26,95 +17,90 @@ pub const SYS_TICKRATE: u8 = 8;
 pub const SYS_TICKTIME: Duration = Duration::from_millis(1000 / SYS_TICKRATE as u64);
 
 // Custom types so I don't peck it up
-pub type coords = (usize, usize);
-pub type cellColors = (crossterm::style::Color, crossterm::style::Color);
+pub type vector2 = (usize, usize);
+pub type colorSet = (crossterm::style::Color, crossterm::style::Color);
 
-// region: World data
 
-    // region: General
+pub mod WORLD{
+    use super::*;
 
+    pub mod GENERAL{
         // World size in chunks
-        pub const SYS_WORLD_X: usize = 8;
-        pub const SYS_WORLD_Y: usize = 8;
+        pub const WORLD_X: usize = 8;
+        pub const WORLD_Y: usize = 8;
 
         // Chunk size
-        pub const SYS_CHUNK_X: usize = 8;
-        pub const SYS_CHUNK_Y: usize = 8;
+        pub const WORLD_CHUNK_X: usize = 8;
+        pub const WORLD_CHUNK_Y: usize = 8;
 
         // DO NOT TOUCH!!!
         // Full dimensions of the world
-        pub const SYS_GRID_X: usize = SYS_WORLD_X * SYS_CHUNK_X;
-        pub const SYS_GRID_Y: usize = SYS_WORLD_Y * SYS_CHUNK_Y;
+        pub const WORLD_GRID_X: usize = WORLD_X * WORLD_CHUNK_X;
+        pub const WORLD_GRID_Y: usize = WORLD_Y * WORLD_CHUNK_Y;
 
-    // endregion: General
+    }
 
-    // region: Generation
+    pub mod GENERATION{
+        use super::*;
+        // Amount of ponds/lakes to generate Min-Max
+        pub const GEN_POND_Q: Range<usize> = 4..6;
 
-        // region: Lakes
+        // Size of pond/lake iterations Min-Max
+        pub const GEN_POND_SIZE: Range<usize> = 3..10;
 
-            // Amount of ponds/lakes to generate Min-Max
-            pub const WORLD_POND_Q: Range<usize> = 4..6;
+        // How deep should pond/lake iterations go Min-Max
+        pub const GEN_POND_ITERS: Range<usize> = 6..8;
 
-            // Size of pond/lake iterations Min-Max
-            pub const WORLD_POND_SIZE: Range<usize> = 3..10;
+        // Amount of forests to generate Min-Max
+        pub const GEN_FOREST_Q: Range<usize> = 4..8;
 
-            // How deep should pond/lake iterations go Min-Max
-            pub const WORLD_POND_ITERS: Range<usize> = 6..8;
+        // Size of forest iterations Min-Max
+        pub const GEN_FOREST_SIZE: Range<usize> = 6..10;
 
-        // endregion: Lakes
+        // How deep should forest iterations go Min-Max
+        pub const GEN_FOREST_ITERS: Range<usize> = 5..8;
+    }
+}
 
-        // region: Forests
-
-            // Amount of forests to generate Min-Max
-            pub const WORLD_FOREST_Q: Range<usize> = 4..8;
-
-            // Size of forest iterations Min-Max
-            pub const WORLD_FOREST_SIZE: Range<usize> = 6..10;
-
-            // How deep should forest iterations go Min-Max
-            pub const WORLD_FOREST_ITERS: Range<usize> = 5..8;
-
-        // endregion: Forests
-
-    // endregion: Generation
-
-// endregion: World data
-
-
-
-// region: Renderer data
+pub mod RENDERER{
 
     // Render Buffer size
     // WARNING: Too high values may result in terminal scroll stutter
-    pub const SYS_REND_BUFFER_X: usize = 48;
-    pub const SYS_REND_BUFFER_Y: usize = 32;
+    pub const RENDER_BUFFER_X: usize = 48;
+    pub const RENDER_BUFFER_Y: usize = 32;
 
     // Radius dimensions of the world screen
-    pub const SYS_REND_WORLD_X: usize = 10;
-    pub const SYS_REND_WORLD_Y: usize = 10;
+    pub const RENDER_WORLD_X: usize = 20;
+    pub const RENDER_WORLD_Y: usize = 20;
 
     // DO NOT TOUCH!!
-    // Full size of render world
-    pub const SYS_REND_WORLDSIZE_X: usize = SYS_REND_WORLD_X * 2 + 1;
-    pub const SYS_REND_WORLDSIZE_Y: usize = SYS_REND_WORLD_Y * 2 + 1;
+    // Full size of RENDERer world
+    pub const RENDER_WORLDSIZE_X: usize = RENDER_WORLD_X * 2 + 1;
+    pub const RENDER_WORLDSIZE_Y: usize = RENDER_WORLD_Y * 2 + 1;
 
-    // Sets radius for chunks that should be loaded into Renderer at once
+    // Sets radius for chunks that should be loaded into renderer at once
     // The chunk player's in is always loaded
     // If you'll set it to 0 and report it as a bug I will punch you.
-    pub const SYS_REND_CHUNKRAD: usize = 2;
+    pub const RENDER_CHUNKRAD: usize = 4;
 
     // DO NOT TOUCH!!
-    // Full size of render chunks
-    pub const SYS_REND_CHUNKRADSIZE: usize = SYS_REND_CHUNKRAD * 2 + 1;
+    // Full size of RENDERer chunks
+    pub const RENDER_CHUNKRADSIZE: usize = RENDER_CHUNKRAD * 2 + 1;
+}
 
-// endregion: Renderer data
+pub mod MISC{
+    use super::*;
 
-// region: Misc
+    pub mod COLORS{
+        use super::*;
+        /// Default Render colors
+        pub const COLORS_DEF: (Color, Color) = (Color::White, Color::Reset);
 
-    /// Default Render colors
-    pub const SYS_DEFCOLORS: (Color, Color) = (Color::White, Color::Reset);
+        /// Default debug colors
+        pub const COLORS_DEBUG: (Color, Color) = (Color::White, Color::Yellow);
+    }
+}
 
-    /// Default debug colors
     pub const SYS_DEBUGCOLORS: (Color, Color) = (Color::White, Color:: Yellow);
 
 // endregion: Misc

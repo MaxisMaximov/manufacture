@@ -1,9 +1,8 @@
-use crate::system;
-use crate::renderer::*;
+use super::*;
 
 /// # Render border
 /// Lets you render a border at specific coords with specific size
-pub fn main(borderPos: system::coords, borderSizeInner: system::coords) {
+pub fn main(borderPos: vector2, borderSizeInner: vector2) {
     
     let w_corners = (
         borderPos, // TL

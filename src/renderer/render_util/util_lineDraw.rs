@@ -1,17 +1,16 @@
-use crate::system;
-use crate::renderer::*;
+use super::*;
 
 pub fn main(
-    IN_pos_A: system::coords,
-    IN_pos_B: system::coords,
+    IN_pos_A: vector2,
+    IN_pos_B: vector2,
     IN_char: char,
-    IN_colors: system::cellColors,
+    IN_colors: colorSet,
 ) {
     let mut BUFFER_LOCK = self::RENDER_mainBuffer.lock().unwrap();
 
     // Init start values
-    let w_startPos: system::coords;
-    let w_endPos: system::coords;
+    let w_startPos: vector2;
+    let w_endPos: vector2;
 
     // Calc delta distance between points
     let w_deltaX = IN_pos_A.0.abs_diff(IN_pos_B.0);

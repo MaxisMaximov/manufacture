@@ -24,8 +24,8 @@ mod render_util;
 
 static RENDER_mainBuffer: Lazy<Mutex<RENDER_buffer>> = Lazy::new(|| {
     Mutex::new(RENDER_buffer::new((
-        system::SYS_REND_BUFFER_X,
-        system::SYS_REND_BUFFER_Y,
+        RENDERER::RENDER_BUFFER_X,
+        RENDERER::RENDER_BUFFER_Y,
     )))
 });
 
@@ -87,8 +87,8 @@ pub fn main() {
         let DATA_LOCK = SYS_data.lock().unwrap();
 
         RENDER_mainBuffer.lock().unwrap()[(
-            (system::SYS_REND_WORLD_X + 2),
-            (system::SYS_REND_WORLD_Y + 2),
+            (RENDERER::RENDER_WORLD_X + 2),
+            (RENDERER::RENDER_WORLD_Y + 2),
         )] = TEMPLATE_wrCell {
             c_char: 'P',
             c_colors: DATA_LOCK.DATA_player.p_color,
@@ -112,7 +112,7 @@ pub fn main() {
 
         render_util::util_border::main(
             (1, 1),
-            (system::SYS_REND_WORLD_X * 2 + 1, system::SYS_REND_WORLD_Y * 2 + 1),
+            (RENDERER::RENDER_WORLD_X * 2 + 1, RENDERER::RENDER_WORLD_Y * 2 + 1),
         );
 
         DEBUG_LOCK
@@ -139,8 +139,8 @@ pub fn main() {
         );
         
         // Convert buffer to string
-        for YPOS in 0..system::SYS_REND_BUFFER_Y {
-            for XPOS in 0..system::SYS_REND_BUFFER_X {
+        for YPOS in 0..RENDERER::RENDER_BUFFER_Y {
+            for XPOS in 0..RENDERER::RENDER_BUFFER_X {
                 let RENDER_cell = BUFFER_LOCK[(XPOS, YPOS)];
                 let _ = write!(
                     STDOUT_LOCK,
@@ -191,13 +191,13 @@ pub fn main() {
 #[derive(Clone, Copy)]
 pub struct TEMPLATE_wrCell {
     pub c_char: char,
-    pub c_colors: system::cellColors,
+    pub c_colors: colorSet,
 }
 impl TEMPLATE_wrCell {
     pub fn new() -> Self {
         Self {
             c_char: ' ',
-            c_colors: system::SYS_DEFCOLORS,
+            c_colors: MISC::COLORS::COLORS_DEF,
         }
     }
 }
@@ -217,21 +217,21 @@ pub enum RENDER_position {
     POS_TR,
     POS_BL,
     POS_BR,
-    POS_custom(system::coords),
+    POS_custom(vector2),
 }
 impl RENDER_position {
-    pub fn value(&self) -> system::coords {
+    pub fn value(&self) -> vector2 {
         match *self {
             Self::None => (0, 0),
-            Self::POS_middle => (system::SYS_REND_BUFFER_X / 2, system::SYS_REND_BUFFER_Y / 2),
-            Self::POS_left => (0, system::SYS_REND_BUFFER_Y / 2),
-            Self::POS_right => (system::SYS_REND_BUFFER_X - 1, system::SYS_REND_BUFFER_Y / 2),
-            Self::POS_top => (system::SYS_REND_BUFFER_X / 2, 0),
-            Self::POS_bottom => (system::SYS_REND_BUFFER_X / 2, system::SYS_REND_BUFFER_Y - 1),
+            Self::POS_middle => (RENDERER::RENDER_BUFFER_X / 2, RENDERER::RENDER_BUFFER_Y / 2),
+            Self::POS_left => (0, RENDERER::RENDER_BUFFER_Y / 2),
+            Self::POS_right => (RENDERER::RENDER_BUFFER_X - 1, RENDERER::RENDER_BUFFER_Y / 2),
+            Self::POS_top => (RENDERER::RENDER_BUFFER_X / 2, 0),
+            Self::POS_bottom => (RENDERER::RENDER_BUFFER_X / 2, RENDERER::RENDER_BUFFER_Y - 1),
             Self::POS_TL => (0, 0),
-            Self::POS_TR => (system::SYS_REND_BUFFER_X - 1, 0),
-            Self::POS_BL => (0, system::SYS_REND_BUFFER_Y - 1),
-            Self::POS_BR => (system::SYS_REND_BUFFER_X - 1, system::SYS_REND_BUFFER_Y - 1),
+            Self::POS_TR => (RENDERER::RENDER_BUFFER_X - 1, 0),
+            Self::POS_BL => (0, RENDERER::RENDER_BUFFER_Y - 1),
+            Self::POS_BR => (RENDERER::RENDER_BUFFER_X - 1, RENDERER::RENDER_BUFFER_Y - 1),
             Self::POS_custom(POS) => POS,
         }
     }
@@ -241,11 +241,13 @@ impl RENDER_position {
 ///
 /// Holds full size cells
 struct RENDER_buffer {
+    BUFFER_dummyCell: TEMPLATE_wrCell,
     pub BUFFER_grid: Vec<TEMPLATE_wrCell>,
 }
 impl RENDER_buffer {
-    pub fn new(IN_size: system::coords) -> Self {
+    pub fn new(IN_size: vector2) -> Self {
         Self {
+            BUFFER_dummyCell: TEMPLATE_wrCell::new(),
             BUFFER_grid: vec![TEMPLATE_wrCell::new(); IN_size.0 * IN_size.1],
         }
     }
@@ -253,14 +255,22 @@ impl RENDER_buffer {
         self.BUFFER_grid.fill(TEMPLATE_wrCell::new())
     }
 }
-impl Index<system::coords> for RENDER_buffer {
+impl Index<vector2> for RENDER_buffer {
     type Output = TEMPLATE_wrCell;
-    fn index(&self, index: system::coords) -> &Self::Output {
-        &self.BUFFER_grid[index.0 + index.1 * system::SYS_REND_BUFFER_X]
+    fn index(&self, index: vector2) -> &Self::Output {
+        // Prevents writing out of bounds of the renderer
+        if index.0 >= RENDERER::RENDER_BUFFER_X || index.1 >= RENDERER::RENDER_BUFFER_Y{
+            return &self.BUFFER_dummyCell
+        }
+        &self.BUFFER_grid[index.0 + index.1 * RENDERER::RENDER_BUFFER_X]
     }
 }
-impl IndexMut<system::coords> for RENDER_buffer {
-    fn index_mut(&mut self, index: system::coords) -> &mut Self::Output {
-        &mut self.BUFFER_grid[index.0 + index.1 * system::SYS_REND_BUFFER_X]
+impl IndexMut<vector2> for RENDER_buffer {
+    fn index_mut(&mut self, index: vector2) -> &mut Self::Output {
+        // Prevents writing out of bounds of the renderer
+        if index.0 >= RENDERER::RENDER_BUFFER_X || index.1 >= RENDERER::RENDER_BUFFER_Y{
+            return &mut self.BUFFER_dummyCell
+        }
+        &mut self.BUFFER_grid[index.0 + index.1 * RENDERER::RENDER_BUFFER_X]
     }
 }

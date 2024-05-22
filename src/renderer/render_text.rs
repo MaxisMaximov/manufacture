@@ -1,6 +1,4 @@
-use crate::system;
-use crate::SYS_data;
-use crate::renderer::*;
+use super::*;
 
 /// # Render text
 /// Renders text in `RENDER_text` vector
@@ -11,41 +9,24 @@ pub fn textBox() {
     let mut DATA_LOCK = SYS_data.lock().unwrap();
     let mut BUFFER_LOCK = RENDER_mainBuffer.lock().unwrap();
 
-    let mut w_skipToNewline: bool = false;
-
     for RTEXT in DATA_LOCK.DATA_textItems.iter_mut() {
 
-        let mut RTEXT_charStartPosition: system::coords = RTEXT.t_position.value();
-        let mut RTEXT_charPosition: system::coords = RTEXT_charStartPosition;
+        let mut RTEXT_charStartPosition: vector2 = RTEXT.t_position.value();
+        let mut RTEXT_charPosition: vector2 = RTEXT_charStartPosition;
         'RENDER_textBlocks: for RTEXT_char in RTEXT.t_string.clone().chars() {
 
             if RTEXT_char == '\r' {
                 continue;
             }
             if RTEXT_char == '\n' {
-                w_skipToNewline = false;
                 RTEXT_charStartPosition.1 += 1;
                 RTEXT_charPosition = RTEXT_charStartPosition;
                 continue;
             }
 
-            if w_skipToNewline{continue}
-
-            // If X exceeds mark the skip
-            if RTEXT_charPosition.0 >= system::SYS_REND_BUFFER_X{
-                w_skipToNewline = true;
-                continue;
-            }
-
-            // If Y exceeds there's no hope for the string
-            if RTEXT_charPosition.1 >= system::SYS_REND_BUFFER_Y
-            {
-                break 'RENDER_textBlocks;
-            }
-
             BUFFER_LOCK[RTEXT_charPosition] = TEMPLATE_wrCell {
                 c_char: RTEXT_char,
-                c_colors: system::SYS_DEFCOLORS,
+                c_colors: MISC::COLORS::COLORS_DEF,
             };
             RTEXT_charPosition.0 += 1
         }
@@ -72,8 +53,8 @@ pub fn debug() {
         write!(
             STDOUT_LOCK,
             "{} {}\r\n",
-            &DEBUGSTR.t_string.clone().with(system::SYS_DEBUGCOLORS.0),
-            &DEBUGSTR.t_values.clone().with(system::SYS_DEBUGCOLORS.1)
+            &DEBUGSTR.t_string.clone().with(MISC::COLORS::COLORS_DEBUG.0),
+            &DEBUGSTR.t_values.clone().with(MISC::COLORS::COLORS_DEBUG.1)
         )
         .unwrap();
 
