@@ -5,12 +5,13 @@
             "#SSINIT_logic": "Logic initialized",
             "#SSINIT_render": "Renderer initialized",
             "#SSINIT_input": "Input manager initialized",
-            "#SSINIT_json": "Json manager initialized"
+            "#SSINIT_json": "Json manager initialized",
+            "#SSINIT_error": "Error manager initialized"
         },
         "#SYS_processSpeed": "Previous tick finished processing in:"
     },
     ".DEBUG_input":{
-        "#INPUT_whatKey": "Key pressed:"
+        "#INPUT_keyType": "Key pressed:"
     },
     ".DEBUG_render":{
         "#RENDER_frameTime": "Rendered frame in:",

@@ -9,12 +9,12 @@ pub fn init(){
     'INIT_debugStr: {
         DEBUG_LOCK.DATA_debugItems.insert(
             "#INPUT_keyType".to_string(),
-            IDDQD_textItem::newDebug(".DEBUG_input/#INPUT_whatKey", "", 255)
+            IDDQD_textItem::new(renderer::RENDER_position::None, ".DEBUG_input/#INPUT_keyType", "", 255)
         );
 
         DEBUG_LOCK.DATA_debugItems.insert(
             "#INPUT_init".to_string(),
-            IDDQD_textItem::newDebug(".DEBUG_sys/.SYS_ssInit/#SSINIT_input", "", 40)
+            IDDQD_textItem::new(renderer::RENDER_position::None, ".DEBUG_sys/.SYS_ssInit/#SSINIT_input", "", 40)
         );
     }
 }

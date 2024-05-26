@@ -101,6 +101,23 @@ pub mod MISC{
     }
 }
 
-    pub const SYS_DEBUGCOLORS: (Color, Color) = (Color::White, Color:: Yellow);
+struct SYS_COLOR{
+    r: u8,
+    g: u8,
+    b: u8
+}
 
-// endregion: Misc
+/// # Common colors
+/// Use `.raw` function to use with formatter
+pub enum SYS_COMCOLORS {
+    black,
+    white,
+    cyan,
+    darkCyan,
+    green,
+    darkGreen,
+    yellow,
+    darkYellow,
+    orange,
+    darkOrange
+}

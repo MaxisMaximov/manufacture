@@ -5,7 +5,7 @@ use super::*;
 ///
 /// # DO NOT RELY ON THIS
 /// It'll be most likely removed in favor of Window system
-pub fn textBox() {
+pub fn render_textBox() {
     let mut DATA_LOCK = SYS_data.lock().unwrap();
     let mut BUFFER_LOCK = RENDER_mainBuffer.lock().unwrap();
 
@@ -36,29 +36,47 @@ pub fn textBox() {
         RTEXT.TEXT_tickdown();
     }
 
-    DATA_LOCK
-        .DATA_textItems
-        .retain(|RTEXT| RTEXT.t_lifetime > 0)
+    DATA_LOCK.DATA_textItemCleanup()
 }
 
-pub fn debug() {
+/// # Print debug and Error stuff
+pub fn render_debug() {
     let mut DEBUG_LOCK = SYS_debug.lock().unwrap();
     let mut STDOUT_LOCK = stdout().lock();
+    let mut ERROR_LOCK = SYS_errorQueue.lock().unwrap();
+
     for DEBUGSTR in DEBUG_LOCK.DATA_debugItems.values_mut() {
-        // Ignore these
+        // Ignore these strings
         if &DEBUGSTR.t_string == "#MARK_FOR_DELETION" {
             continue;
         }
 
         write!(
             STDOUT_LOCK,
-            "{} {}\r\n",
-            &DEBUGSTR.t_string.clone().with(MISC::COLORS::COLORS_DEBUG.0),
-            &DEBUGSTR.t_values.clone().with(MISC::COLORS::COLORS_DEBUG.1)
+            "{:?}\r\n",
+            DEBUGSTR
         )
         .unwrap();
 
         DEBUGSTR.TEXT_tickdown()
     }
+
+    for ERRORSTR in ERROR_LOCK.iter_mut(){
+        if ERRORSTR.ERR_spec == SYS_ERRORTYPE::ERR_markForDel{
+            continue;
+        }
+
+        write!(
+            STDOUT_LOCK,
+            "{}\r\n",
+            ERRORSTR.ERR_spec
+        ).unwrap();
+
+        ERRORSTR.ERR_tickdown()
+    }
+
+    DEBUG_LOCK.DEBUG_cleanup();
+    ERROR_LOCK.retain(|x| x.ERR_lifetime > 0);
+
     STDOUT_LOCK.flush().unwrap();
 }

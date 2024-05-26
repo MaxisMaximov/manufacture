@@ -34,32 +34,32 @@ pub fn init() {
     'INIT_debugStr: {
         DEBUG_LOCK.DATA_debugItems.insert(
             "#RENDER_frameTime".to_string(),
-            IDDQD_textItem::newDebug(".DEBUG_render/#RENDER_frameTime", "", 255),
+            IDDQD_textItem::new(RENDER_position::None,".DEBUG_render/#RENDER_frameTime", "", 255),
         );
 
         DEBUG_LOCK.DATA_debugItems.insert(
             "#RENDER_worldTime".to_string(),
-            IDDQD_textItem::newDebug(".DEBUG_render/#RENDER_worldTime", "", 255),
+            IDDQD_textItem::new(RENDER_position::None,".DEBUG_render/#RENDER_worldTime", "", 255),
         );
 
         DEBUG_LOCK.DATA_debugItems.insert(
             "#RENDER_convTime".to_string(),
-            IDDQD_textItem::newDebug(".DEBUG_render/#RENDER_convTime", "", 255),
+            IDDQD_textItem::new(RENDER_position::None,".DEBUG_render/#RENDER_convTime", "", 255),
         );
 
         DEBUG_LOCK.DATA_debugItems.insert(
             "#RENDER_borderTime".to_string(),
-            IDDQD_textItem::newDebug(".DEBUG_render/#RENDER_borderTime", "", 255),
+            IDDQD_textItem::new(RENDER_position::None,".DEBUG_render/#RENDER_borderTime", "", 255),
         );
 
         DEBUG_LOCK.DATA_debugItems.insert(
             "#RENDER_textTime".to_string(),
-            IDDQD_textItem::newDebug(".DEBUG_render/#RENDER_textTime", "", 255),
+            IDDQD_textItem::new(RENDER_position::None,".DEBUG_render/#RENDER_textTime", "", 255),
         );
 
         DEBUG_LOCK.DATA_debugItems.insert(
             "#SSINIT_render".to_string(),
-            IDDQD_textItem::newDebug(".DEBUG_sys/.SYS_ssInit/#SSINIT_render", "", 40),
+            IDDQD_textItem::new(RENDER_position::None,".DEBUG_sys/.SYS_ssInit/#SSINIT_render", "", 40),
         );
     }
 }
@@ -98,7 +98,7 @@ pub fn main() {
     'RENDER_renderText: {
         let loopStart = Instant::now();
 
-        render_text::textBox();
+        render_text::render_textBox();
 
         DEBUG_LOCK
         .DATA_debugItems
@@ -179,7 +179,7 @@ pub fn main() {
     drop(DEBUG_LOCK);
 
     // Render debug stuff last, everything should be processed by this point
-    render_text::debug();
+    render_text::render_debug();
 }
 
 /// # Render Buffer Cell

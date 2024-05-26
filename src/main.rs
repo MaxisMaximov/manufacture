@@ -3,8 +3,7 @@
 #![warn(unused_crate_dependencies)]
 
 use crossterm::{
-    cursor, execute,
-    terminal::{enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
+    cursor, execute, style::Stylize, terminal::{enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen}
 };
 use once_cell::sync::Lazy;
 
@@ -24,24 +23,27 @@ mod player;
 mod renderer;
 mod system;
 mod world;
+mod errorManager;
 
 pub use system::*;
+pub use errorManager::*;
 
 // This is a mess.
 pub static SYS_data: Lazy<Mutex<DATA_master>> =
     Lazy::new(|| Mutex::new(DATA_master::new(player::TEMPLATE_player::new(1, None))));
 pub static SYS_debug: Lazy<Mutex<DEBUG_master>> = Lazy::new(|| Mutex::new(DEBUG_master::new()));
+pub static SYS_errorQueue: Mutex<Vec<SYS_ERROR>> = Mutex::new(Vec::new());
 
 // START HERE
 fn main() {
     SYS_debug.lock().unwrap().DATA_debugItems.insert(
         "#SSINIT_data".to_string(),
-        IDDQD_textItem::newDebug(".DEBUG_sys/.SYS_ssInit/#SSINIT_data", "", 40),
+        IDDQD_textItem::new(renderer::RENDER_position::None, ".DEBUG_sys/.SYS_ssInit/#SSINIT_data", "", 40),
     );
 
     SYS_debug.lock().unwrap().DATA_debugItems.insert(
         "#SYS_processTime".to_string(),
-        IDDQD_textItem::newDebug(".DEBUG_sys/#SYS_processSpeed", "", 255),
+        IDDQD_textItem::new(renderer::RENDER_position::None, ".DEBUG_sys/#SYS_processSpeed", "", 255),
     );
 
     // Switch to Raw Mode
@@ -60,6 +62,7 @@ fn main() {
     logic::init();
     input::init();
     jsonManager::init();
+    errorManager::init();
 
     // # THE GAME LOOP
     loop {
@@ -76,12 +79,10 @@ fn main() {
         renderer::main();
 
         // Log how long it took to process everything
-        SYS_debug
-            .lock()
-            .unwrap()
-            .DATA_debugItems
-            .get_mut("#SYS_processTime")
-            .unwrap()
+
+        let mut DEBUG_LOCK = SYS_debug.lock().unwrap();
+        let idkfa_debugString = DEBUG_LOCK.DATA_debugItems.get_mut("#SYS_processTime");
+        idkfa_debugString.unwrap()
             .t_values = format!("{:?}", loopStart.elapsed());
 
         let loop_elapsedTime: Duration = loopStart.elapsed();
@@ -113,7 +114,7 @@ impl DATA_master {
     }
     pub fn DATA_textItemCleanup(&mut self) {
         self.DATA_textItems
-            .retain(|x| x.t_string == "#MARK_FOR_DELETION")
+            .retain(|x| x.t_string != "#MARK_FOR_DELETION")
     }
 }
 
@@ -138,7 +139,7 @@ impl DEBUG_master {
     /// A.k.a. get rid of `#MARK_FOR_DELETION` entries
     pub fn DEBUG_cleanup(&mut self) {
         self.DATA_debugItems
-            .retain(|_, v| v.t_string == "#MARK_FOR_DELETION")
+            .retain(|_, v| v.t_string != "#MARK_FOR_DELETION")
     }
 }
 
@@ -157,7 +158,7 @@ pub enum CACHE_TYPE {
 ///
 /// TextItem and DebugItem struct in one
 ///
-/// Use respective `new` functions for what you want
+/// `t_position` is ignored for DebugItems
 pub struct IDDQD_textItem {
     pub t_position: renderer::RENDER_position,
     pub t_string: String,
@@ -165,29 +166,22 @@ pub struct IDDQD_textItem {
     pub t_lifetime: u16,
 }
 impl IDDQD_textItem {
-    /// # Create new DebugItem
-    ///
-    /// The text for debug at the bottom of the rendering
-    pub fn newDebug(IN_strID: &str, IN_values: &str, IN_lifetime: u16) -> Self {
-        Self {
-            t_position: renderer::RENDER_position::None,
-            t_string: match jsonManager::debugStr(IN_strID){
-                Ok(STRING) => STRING,
-                Err(_) => IN_strID.to_owned()
-            }, // Prefetch the debug string to give jsonManager some slack
-            t_values: IN_values.to_string(),
-            t_lifetime: IN_lifetime,
-        }
-    }
 
     /// # Create new TextItem
     ///
     /// The one used to place text somewhere in the game
-    pub fn newText(IN_pos: renderer::RENDER_position, IN_text: &str, IN_lifetime: u16) -> Self {
+    pub fn new(IN_pos: renderer::RENDER_position, IN_text: &str, IN_values: &str, IN_lifetime: u16) -> Self {
+        // Check if it's a debug string
+        let idkfa_string = if IN_text.starts_with('.'){
+            jsonManager::debugStr(IN_text).unwrap_or(IN_text.to_string())
+        }
+        else{
+            IN_text.to_string()
+        };
         Self {
             t_position: IN_pos,
-            t_string: IN_text.to_string(),
-            t_values: "".to_string(),
+            t_string: idkfa_string,
+            t_values: IN_values.to_string(),
             t_lifetime: IN_lifetime,
         }
     }
@@ -221,19 +215,23 @@ impl IDDQD_textItem {
         }
     }
 }
-
-pub enum SYS_ERROR{
-    jsonRead(String, String),
-    borderRender(system::coords),
-    textRender(system::coords)
-}
-impl fmt::Display for SYS_ERROR{
+impl fmt::Display for IDDQD_textItem{
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let idkfa_string = match self {
-            Self::jsonRead(ID, FILE) => format!("ERROR: jsonRead | Could not read string {ID} from {FILE}.json"),
-            Self::borderRender(COORDS) => format!("ERROR: borderRender | Could not render border at {COORDS:?}"),
-            Self::textRender(COORDS) => format!("ERROR: textRender | Text renderer outside of buffer at {COORDS:?}")
-        };
-        write!(f, "{}", idkfa_string)
+        write!(
+            f,
+            "{} {}",
+            &self.t_string.clone().with(MISC::COLORS::COLORS_DEF.0),
+            &self.t_values.clone().with(MISC::COLORS::COLORS_DEF.1)
+        )
+    }
+}
+impl fmt::Debug for IDDQD_textItem{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{} {}",
+            &self.t_string.clone().with(MISC::COLORS::COLORS_DEBUG.0),
+            &self.t_values.clone().with(MISC::COLORS::COLORS_DEBUG.1)
+        )
     }
 }

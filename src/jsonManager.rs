@@ -2,7 +2,7 @@ use std::{fs::File, io::BufReader};
 
 use serde_json;
 
-use crate::{IDDQD_textItem, SYS_debug, SYS_ERROR};
+use crate::*;
 
 // TODO: maybe switch to `json-rust` for faster speed and lower memory usage
 // Yes I'm concerned about these things early on
@@ -11,7 +11,8 @@ use crate::{IDDQD_textItem, SYS_debug, SYS_ERROR};
 pub fn init(){
     SYS_debug.lock().unwrap().DATA_debugItems.insert(
         "#SSINIT_json".to_string(), 
-        IDDQD_textItem::newDebug(
+        IDDQD_textItem::new(
+            renderer::RENDER_position::None,
             ".DEBUG_sys/.SYS_ssInit/#SSINIT_json", 
             "", 
             40)
@@ -20,7 +21,7 @@ pub fn init(){
 
 /// # Fetch debug string from `debug.json`
 /// If it finds nothing it will return `Err()`
-pub fn debugStr(IN_index: &str) -> Result<String, SYS_ERROR> {
+pub fn debugStr(IN_index: &str) -> Result<String, SYS_ERRORTYPE> {
     let idkfa_reader = BufReader::new(File::open("./src/json/debug.json").unwrap());
     let mut W_retrievedData: serde_json::Value = serde_json::from_reader(idkfa_reader).unwrap();
 
@@ -28,12 +29,25 @@ pub fn debugStr(IN_index: &str) -> Result<String, SYS_ERROR> {
     for NEXTINDEX in IN_index.split("/") {
         let idkfa_value = &W_retrievedData[NEXTINDEX];
 
-        // If nothing is found, just return the original index
+        // If nothing is found, returns an error and sends it to Error Manager
         // I gotta find a cleaner way for this
         if idkfa_value.is_null() {
-            return Ok(NEXTINDEX.to_string());
+            SYS_errorQueue.lock().unwrap().push(
+                SYS_ERROR{
+                    ERR_spec: SYS_ERRORTYPE::ERR_jsonRead(IN_index.to_string(), "debug.json".to_string()),
+                    ERR_lifetime: 40}
+                );
+            return Err(SYS_ERRORTYPE::ERR_idkfa);
         }
         W_retrievedData = idkfa_value.clone()
     }
+    if W_retrievedData == serde_json::Value::Null {
+        SYS_errorQueue.lock().unwrap().push(
+            SYS_ERROR{
+                ERR_spec: SYS_ERRORTYPE::ERR_jsonRead(IN_index.to_string(), "Debug.json".to_string()),
+                ERR_lifetime: 40}
+            );
+    }
     return Ok(W_retrievedData.as_str().unwrap().to_string());
 }
+

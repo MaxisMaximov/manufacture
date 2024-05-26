@@ -10,12 +10,12 @@ pub fn init(){
     'INIT_debugStr:{
         DEBUG_LOCK.DATA_debugItems.insert(
             "#LOGIC_interaction".to_string(),
-            IDDQD_textItem::newDebug(".DEBUG_logic/#LOGIC_interaction", "", 255)
+            IDDQD_textItem::new( renderer::RENDER_position::None, ".DEBUG_logic/#LOGIC_interaction", "", 255)
         );
 
         DEBUG_LOCK.DATA_debugItems.insert(
             "#SSINIT_logic".to_string(),
-            IDDQD_textItem::newDebug(".DEBUG_sys/.SYS_ssInit/#SSINIT_logic", "", 40)
+            IDDQD_textItem::new( renderer::RENDER_position::None, ".DEBUG_sys/.SYS_ssInit/#SSINIT_logic", "", 40)
         );
     }
 }
@@ -41,12 +41,12 @@ pub fn main() {
 
         GAME_interactions::i_printHello => 
             DATA_LOCK.DATA_textItems.push(
-                IDDQD_textItem::newText(renderer::RENDER_position::POS_TL, "Hello!\r\nHello!", 32)
+                IDDQD_textItem::new(renderer::RENDER_position::POS_TL, "Hello!\r\nHello!", "", 32)
             ),
 
         GAME_interactions::i_printDebug =>
             DATA_LOCK.DATA_textItems.push(
-                IDDQD_textItem::newText(renderer::RENDER_position::POS_right, "DEBUG", 16)
+                IDDQD_textItem::new(renderer::RENDER_position::POS_right, "DEBUG", "", 16)
             ),
 
         GAME_interactions::i_clearWorld => DATA_LOCK.DATA_world.w_clearWorld(),
