@@ -49,7 +49,7 @@ pub fn main(){
                 KeyCode::Char('h') => DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_changeWorldTile,
                 KeyCode::Char('j') => DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_clearWorld,
                 KeyCode::Esc => {
-                    let _ = execute!(stdout(), LeaveAlternateScreen);
+                    let _ = execute!(stdout(), LeaveAlternateScreen, cursor::Show);
                     exit(0)
                 },
                 _ => {DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_NULL}

@@ -99,6 +99,15 @@ pub mod MISC{
         /// Default debug colors
         pub const COLORS_DEBUG: (Color, Color) = (Color::White, Color::Yellow);
     }
+    pub mod PATHS{
+        use super::*;
+
+        /// Default path to Debugs
+        pub const PATH_DEBUG: &str = "./src/json/debug.json";
+
+        /// Default path to Errors
+        pub const PATH_ERROR: &str = "./src/json/error.json";
+    }
 }
 
 struct SYS_COLOR{

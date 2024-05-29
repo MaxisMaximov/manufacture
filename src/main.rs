@@ -173,7 +173,7 @@ impl IDDQD_textItem {
     pub fn new(IN_pos: renderer::RENDER_position, IN_text: &str, IN_values: &str, IN_lifetime: u16) -> Self {
         // Check if it's a debug string
         let idkfa_string = if IN_text.starts_with('.'){
-            jsonManager::debugStr(IN_text).unwrap_or(IN_text.to_string())
+            jsonManager::debugStr(IN_text, MISC::PATHS::PATH_DEBUG).unwrap_or(IN_text.to_string())
         }
         else{
             IN_text.to_string()

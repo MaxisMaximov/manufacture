@@ -51,26 +51,18 @@ pub fn render_debug() {
             continue;
         }
 
-        write!(
-            STDOUT_LOCK,
-            "{:?}\r\n",
-            DEBUGSTR
-        )
-        .unwrap();
+        let _ = write!(STDOUT_LOCK, "{:?}\r\n", DEBUGSTR);
 
         DEBUGSTR.TEXT_tickdown()
     }
 
     for ERRORSTR in ERROR_LOCK.iter_mut(){
-        if ERRORSTR.ERR_spec == SYS_ERRORTYPE::ERR_markForDel{
+        // Ignore these errors
+        if ERRORSTR.ERR_markForDel{
             continue;
         }
 
-        write!(
-            STDOUT_LOCK,
-            "{}\r\n",
-            ERRORSTR.ERR_spec
-        ).unwrap();
+        let _ = write!(STDOUT_LOCK, "{:?}\r\n", ERRORSTR);
 
         ERRORSTR.ERR_tickdown()
     }

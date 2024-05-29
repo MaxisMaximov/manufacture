@@ -1,0 +1,21 @@
+{
+    ".ERR_json":{
+        "!JSON_readString": "Couldn't read string {ID} from {FILE}",
+        "!JSON_noFile": "Couldn't find file in {PATH}",
+        "!JSON_write": "Couldn't write {DATA} to {FILE}"
+    },
+    ".ERR_logic":{
+        "!LOGIC_": ""
+    },
+    ".ERR_world":{
+        ".WORLD_gen":{
+
+        }
+    },
+    ".ERR_render":{
+        "!RENDER_textLocInv": "Textbox {ID}'s location {COORDS} is invalid",
+        "!RENDER_textLocOutInvis": "Textbox {ID}'s location {COORDS} is outside of Render Buffer and not visible",
+        "!RENDER_borderLocInv": "Border {ID}'s location {COORDS} is invalid",
+        "!RENDER_borderLocOutInvis": "Border {ID}'s location {COORDS} is outside of Render Buffer and not visible"
+    }
+}
