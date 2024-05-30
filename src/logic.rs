@@ -81,7 +81,6 @@ impl fmt::Display for GAME_interactions{
             Self::i_printHello => "printHello",
             Self::i_printDebug => "printDebug",
             Self::i_clearWorld => "clearWorld",
-            _ => "Unknown"
         };
         write!(f, "{}", idkfa_fmt)
     }

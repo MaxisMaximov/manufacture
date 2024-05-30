@@ -50,7 +50,7 @@ fn main() {
     enable_raw_mode().unwrap();
 
     // Hide the cursor
-    let _ = execute!(stdout(), EnterAlternateScreen, cursor::Hide,);
+    let _ = execute!(stdout(), EnterAlternateScreen, cursor::Hide);
 
     // Generate new world
     // Commented out cuz for whatever reason it gets stuck in loop
@@ -164,6 +164,7 @@ pub struct IDDQD_textItem {
     pub t_string: String,
     pub t_values: String,
     pub t_lifetime: u16,
+    pub t_markForDel: bool
 }
 impl IDDQD_textItem {
 
@@ -183,6 +184,7 @@ impl IDDQD_textItem {
             t_string: idkfa_string,
             t_values: IN_values.to_string(),
             t_lifetime: IN_lifetime,
+            t_markForDel: false
         }
     }
 
@@ -190,7 +192,7 @@ impl IDDQD_textItem {
     /// Just to make it clean
     pub fn TEXT_tickdown(&mut self) {
         // If it's marked for del just ignore
-        if self.t_string == "#MARK_FOR_DELETION" {
+        if self.t_markForDel{
             return;
         }
         // If it's ""permament"" then don't do anything
@@ -199,22 +201,13 @@ impl IDDQD_textItem {
         }
         // If lifetime is 0, mark for deletion
         if self.t_lifetime == 0 {
-            self.TEXT_markForDel();
+            self.t_markForDel = true;
             return;
         }
         self.t_lifetime -= 1;
     }
-
-    /// Mark the string for deletion
-    pub fn TEXT_markForDel(&mut self) {
-        *self = Self {
-            t_position: renderer::RENDER_position::None,
-            t_string: "#MARK_FOR_DELETION".to_string(),
-            t_values: "#MARK_FOR_DELETION".to_string(),
-            t_lifetime: 0,
-        }
-    }
 }
+// Display for normal textboxes
 impl fmt::Display for IDDQD_textItem{
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
@@ -225,6 +218,9 @@ impl fmt::Display for IDDQD_textItem{
         )
     }
 }
+// Display for debug stuff
+// TODO: Split textBox from debugItem.
+// Again.
 impl fmt::Debug for IDDQD_textItem{
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(

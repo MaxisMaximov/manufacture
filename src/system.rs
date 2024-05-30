@@ -18,7 +18,7 @@ pub const SYS_TICKTIME: Duration = Duration::from_millis(1000 / SYS_TICKRATE as 
 
 // Custom types so I don't peck it up
 pub type vector2 = (usize, usize);
-pub type colorSet = (crossterm::style::Color, crossterm::style::Color);
+pub type colorSet = (Color, Color);
 
 
 pub mod WORLD{
@@ -84,7 +84,7 @@ pub mod RENDERER{
     pub const RENDER_CHUNKRAD: usize = 4;
 
     // DO NOT TOUCH!!
-    // Full size of RENDERer chunks
+    // Full size of Renderer chunks
     pub const RENDER_CHUNKRADSIZE: usize = RENDER_CHUNKRAD * 2 + 1;
 }
 
@@ -100,7 +100,6 @@ pub mod MISC{
         pub const COLORS_DEBUG: (Color, Color) = (Color::White, Color::Yellow);
     }
     pub mod PATHS{
-        use super::*;
 
         /// Default path to Debugs
         pub const PATH_DEBUG: &str = "./src/json/debug.json";
@@ -110,10 +109,10 @@ pub mod MISC{
     }
 }
 
-struct SYS_COLOR{
-    r: u8,
-    g: u8,
-    b: u8
+pub struct SYS_COLOR{
+    pub r: u8,
+    pub g: u8,
+    pub b: u8
 }
 
 /// # Common colors
@@ -129,4 +128,20 @@ pub enum SYS_COMCOLORS {
     darkYellow,
     orange,
     darkOrange
+}
+impl SYS_COMCOLORS {
+    pub fn raw(&self) -> SYS_COLOR{
+        match *self{
+            Self::black => SYS_COLOR{r: 0, g: 0, b: 0},
+            Self::white => SYS_COLOR{r: 255, g: 255, b: 255},
+            Self::cyan => SYS_COLOR{r: 0, g: 255, b: 255},
+            Self::darkCyan => SYS_COLOR{r: 0, g: 128, b: 128},
+            Self::green => SYS_COLOR{r: 0, g: 255, b: 0},
+            Self::darkGreen => SYS_COLOR{r: 0, g: 128, b: 0},
+            Self::yellow => SYS_COLOR{r: 255, g: 255, b: 0},
+            Self::darkYellow => SYS_COLOR{r: 128, g: 128, b: 0},
+            Self::orange => SYS_COLOR{r: 255, g: 128, b: 0},
+            Self::darkOrange => SYS_COLOR{r: 128, g: 64, b: 0},
+        }
+    }
 }

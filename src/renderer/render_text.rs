@@ -8,16 +8,17 @@ use super::*;
 pub fn render_textBox() {
     let mut DATA_LOCK = SYS_data.lock().unwrap();
     let mut BUFFER_LOCK = RENDER_mainBuffer.lock().unwrap();
+    
+    let mut RTEXT_charStartPosition: vector2;
+    let mut RTEXT_charPosition: vector2;
 
     for RTEXT in DATA_LOCK.DATA_textItems.iter_mut() {
 
-        let mut RTEXT_charStartPosition: vector2 = RTEXT.t_position.value();
-        let mut RTEXT_charPosition: vector2 = RTEXT_charStartPosition;
+        RTEXT_charStartPosition = RTEXT.t_position.value();
+        RTEXT_charPosition = RTEXT_charStartPosition;
+
         'RENDER_textBlocks: for RTEXT_char in RTEXT.t_string.clone().chars() {
 
-            if RTEXT_char == '\r' {
-                continue;
-            }
             if RTEXT_char == '\n' {
                 RTEXT_charStartPosition.1 += 1;
                 RTEXT_charPosition = RTEXT_charStartPosition;
@@ -28,11 +29,14 @@ pub fn render_textBox() {
                 c_char: RTEXT_char,
                 c_colors: MISC::COLORS::COLORS_DEF,
             };
+
             RTEXT_charPosition.0 += 1
         }
+        
         if RTEXT.t_lifetime == 255 {
             continue;
         }
+
         RTEXT.TEXT_tickdown();
     }
 
@@ -41,13 +45,13 @@ pub fn render_textBox() {
 
 /// # Print debug and Error stuff
 pub fn render_debug() {
-    let mut DEBUG_LOCK = SYS_debug.lock().unwrap();
     let mut STDOUT_LOCK = stdout().lock();
+    let mut DEBUG_LOCK = SYS_debug.lock().unwrap();
     let mut ERROR_LOCK = SYS_errorQueue.lock().unwrap();
 
     for DEBUGSTR in DEBUG_LOCK.DATA_debugItems.values_mut() {
         // Ignore these strings
-        if &DEBUGSTR.t_string == "#MARK_FOR_DELETION" {
+        if DEBUGSTR.t_markForDel {
             continue;
         }
 

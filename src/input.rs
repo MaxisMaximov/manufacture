@@ -22,15 +22,20 @@ pub fn init(){
 /// # DO NOT RELY ON CURRENT VERSION OF THIS
 /// It will get updated with Window system and will read from a config file instead of single layout
 pub fn main(){
+    // Lock Data and Debug
     let mut DATA_LOCK = SYS_data.lock().unwrap();
-    if poll(Duration::from_millis(1)).unwrap() {
+    let mut DEBUG_LOCK = SYS_debug.lock().unwrap();
+
+    // Check for input right away to not slow down the whole thing
+    if poll(Duration::from_secs(0)).unwrap() {
         if let Event::Key(KeyEvent {code, modifiers: _, state: _, kind,}) = read().unwrap()
         {
+            // Gotta skip the Repeat part cuz CMDs send Press and Repeat events at same time for some reason
             if kind != KeyEventKind::Press {
                 DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_NULL;
                 return;
             }
-            SYS_debug.lock().unwrap().DATA_debugItems.get_mut("#INPUT_keyType").unwrap().t_values = format!("{:?}", code);
+            DEBUG_LOCK.DATA_debugItems.get_mut("#INPUT_keyType").unwrap().t_values = format!("{:?}", code);
             match code {
                 KeyCode::Up => {
                     DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_movPlayer(player::GAME_playerDirections::DIR_up);
@@ -57,6 +62,6 @@ pub fn main(){
             return;
         }
     }
-    SYS_debug.lock().unwrap().DATA_debugItems.get_mut("#INPUT_keyType").unwrap().t_values = "None".to_string();
+    DEBUG_LOCK.DATA_debugItems.get_mut("#INPUT_keyType").unwrap().t_values = "None".to_string();
     DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_NULL;
 }

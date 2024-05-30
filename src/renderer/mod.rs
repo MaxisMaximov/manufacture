@@ -95,6 +95,21 @@ pub fn main() {
         };
     }
 
+    'RENDER_renderWorldBorder: {
+        let loopStart = Instant::now();
+
+        render_util::util_border::main(
+            (1, 1),
+            (RENDERER::RENDER_WORLDSIZE_X, RENDERER::RENDER_WORLDSIZE_Y),
+        );
+
+        DEBUG_LOCK
+        .DATA_debugItems
+        .get_mut("#RENDER_borderTime")
+        .unwrap()
+        .t_values = format!("{:?}", loopStart.elapsed())
+    }
+
     'RENDER_renderText: {
         let loopStart = Instant::now();
 
@@ -103,21 +118,6 @@ pub fn main() {
         DEBUG_LOCK
         .DATA_debugItems
         .get_mut("#RENDER_textTime")
-        .unwrap()
-        .t_values = format!("{:?}", loopStart.elapsed())
-    }
-
-    'RENDER_renderWorldBorder: {
-        let loopStart = Instant::now();
-
-        render_util::util_border::main(
-            (1, 1),
-            (RENDERER::RENDER_WORLD_X * 2 + 1, RENDERER::RENDER_WORLD_Y * 2 + 1),
-        );
-
-        DEBUG_LOCK
-        .DATA_debugItems
-        .get_mut("#RENDER_borderTime")
         .unwrap()
         .t_values = format!("{:?}", loopStart.elapsed())
     }

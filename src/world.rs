@@ -255,6 +255,7 @@ impl TEMPLATE_world {
     }
 }
 
+// Why do I need to do 2 sepparate implementations that do same exact thing
 impl Index<vector2> for TEMPLATE_world{
     type Output = TEMPLATE_wrCell;
 
