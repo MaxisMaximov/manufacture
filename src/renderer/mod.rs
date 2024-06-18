@@ -134,9 +134,6 @@ pub fn main() {
                     STDOUT_LOCK,
                     "{}",
                     RENDER_cell
-                        .c_char
-                        .with(RENDER_cell.c_colors.0)
-                        .on(RENDER_cell.c_colors.1)
                 );
             }
             write!(STDOUT_LOCK, "\r\n").unwrap()
@@ -187,6 +184,11 @@ impl TEMPLATE_wrCell {
             c_char: ' ',
             c_colors: MISC::COLORS::COLORS_DEF,
         }
+    }
+}
+impl fmt::Display for TEMPLATE_wrCell{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.c_char.with(self.c_colors.0).on(self.c_colors.1))
     }
 }
 

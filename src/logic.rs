@@ -49,7 +49,11 @@ pub fn main() {
 
         GAME_interactions::i_movPlayer(dir) => {
             let idkfa_direction = dir;
-            DATA_LOCK.DATA_player.p_move(&idkfa_direction)}
+            DATA_LOCK.DATA_player.p_move(&idkfa_direction, PLAYER::PLAYER_STEP_SIZE)}
+
+        GAME_interactions::i_leapPlayer(dir) => {
+            let idkfa_direction = dir;
+            DATA_LOCK.DATA_player.p_move(&idkfa_direction, PLAYER::PLAYER_LEAP_SIZE)}
 
         GAME_interactions::i_NULL => {}
     }
@@ -62,6 +66,7 @@ pub fn main() {
 pub enum GAME_interactions {
     i_NULL,
     i_movPlayer(player::GAME_playerDirections),
+    i_leapPlayer(player::GAME_playerDirections),
     i_changeWorldTile,
     i_printHello,
     i_printDebug,
@@ -73,6 +78,7 @@ impl fmt::Display for GAME_interactions{
         let idkfa_fmt = match *self {
             Self::i_NULL => "NULL",
             Self::i_movPlayer(dir) => {idkfa_pDir = format!("movPlayer >> {}", dir); &idkfa_pDir},
+            Self::i_leapPlayer(dir) => {idkfa_pDir = format!("leapPlayer >> {}", dir); &idkfa_pDir},
             Self::i_changeWorldTile => "changeWorldTile",
             Self::i_printHello => "printHello",
             Self::i_printDebug => "printDebug",

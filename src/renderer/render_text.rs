@@ -77,6 +77,9 @@ pub fn render_debug() {
     // Print to screen
     STDOUT_LOCK.flush().unwrap();
 
+    // Whoops
+    drop(ERROR_LOCK);
+
     // And clean up
     DEBUG_LOCK.DEBUG_cleanup();
     ERROR_cleanup();

@@ -17,6 +17,7 @@ use crate::*;
 /// To instead use custom colors set `fp_playerNum` to 0 and `fp_color` to [`Color::Rgb`]
 pub struct TEMPLATE_player {
     pub p_pos: TYPE::vector2,
+    pub p_hp: u16,
     pub p_chunk: TYPE::vector2,
     pub p_color: TYPE::colorSet
 }
@@ -30,26 +31,31 @@ impl TEMPLATE_player {
         };
         TEMPLATE_player {
             p_pos: (10, 10),
+            p_hp: PLAYER::PLAYER_BASE_HP,
             p_chunk: (2, 2),
             p_color: (Color::White, Fp_playerColor) }
     }
 
-    pub fn p_move(&mut self, dir: &GAME_playerDirections) {
+    pub fn p_move(&mut self, dir: &GAME_playerDirections, stepSize: usize) {
         match dir {
             GAME_playerDirections::DIR_up => {
-                self.p_pos.1 = self.p_pos.1.saturating_sub(1);
+                self.p_pos.1 = self.p_pos.1.saturating_sub(stepSize);
             }
             GAME_playerDirections::DIR_down => {
-                self.p_pos.1 = self.p_pos.1.add(1).clamp(0, WORLD::GENERAL::WORLD_GRID_Y);
+                self.p_pos.1 = self.p_pos.1.add(stepSize).clamp(0, WORLD::GENERAL::WORLD_GRID_Y);
             }
             GAME_playerDirections::DIR_left => {
-                self.p_pos.0 = self.p_pos.0.saturating_sub(1);
+                self.p_pos.0 = self.p_pos.0.saturating_sub(stepSize);
             }
             GAME_playerDirections::DIR_right => {
-                self.p_pos.0 = self.p_pos.0.add(1).clamp(0, WORLD::GENERAL::WORLD_GRID_X);
+                self.p_pos.0 = self.p_pos.0.add(stepSize).clamp(0, WORLD::GENERAL::WORLD_GRID_X);
             }
         }
         // Update current chunk         // I hate when small changes like this comment flag the whole file as Modified.
+        self.p_updateChunk()
+    }
+
+    pub fn p_updateChunk(&mut self){
         self.p_chunk.0 = self.p_pos.0 / WORLD::GENERAL::WORLD_CHUNK_X;
         self.p_chunk.1 = self.p_pos.1 / WORLD::GENERAL::WORLD_CHUNK_Y;
     }

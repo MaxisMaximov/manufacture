@@ -28,7 +28,7 @@ pub fn main(){
 
     // Check for input right away to not slow down the whole thing
     if poll(Duration::from_secs(0)).unwrap() {
-        if let Event::Key(KeyEvent {code, modifiers: _, state: _, kind,}) = read().unwrap()
+        if let Event::Key(KeyEvent {code, modifiers, state: _, kind,}) = read().unwrap()
         {
             // Gotta skip the Repeat part cuz CMDs send Press and Repeat events at same time for some reason
             if kind != KeyEventKind::Press {
@@ -38,15 +38,35 @@ pub fn main(){
             DEBUG_LOCK.DEBUG_items.get_mut("#INPUT_keyType").unwrap().t_values = format!("{:?}", code);
             match code {
                 KeyCode::Up => {
+                    // Check if it should be a leap instead
+                    if modifiers == KeyModifiers::SHIFT{
+                        DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_leapPlayer(player::GAME_playerDirections::DIR_up);
+                        return;
+                    }
                     DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_movPlayer(player::GAME_playerDirections::DIR_up);
                 }
                 KeyCode::Down => {
+                    // Check if it should be a leap instead
+                    if modifiers == KeyModifiers::SHIFT{
+                        DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_leapPlayer(player::GAME_playerDirections::DIR_down);
+                        return;
+                    }
                     DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_movPlayer(player::GAME_playerDirections::DIR_down);
                 }
                 KeyCode::Left => {
+                    // Check if it should be a leap instead
+                    if modifiers == KeyModifiers::SHIFT{
+                        DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_leapPlayer(player::GAME_playerDirections::DIR_left);
+                        return;
+                    }
                     DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_movPlayer(player::GAME_playerDirections::DIR_left);
                 }
                 KeyCode::Right => {
+                    // Check if it should be a leap instead
+                    if modifiers == KeyModifiers::SHIFT{
+                        DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_leapPlayer(player::GAME_playerDirections::DIR_right);
+                        return;
+                    }
                     DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_movPlayer(player::GAME_playerDirections::DIR_right);
                 }
                 KeyCode::Char('f') => DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_printHello,
@@ -54,7 +74,11 @@ pub fn main(){
                 KeyCode::Char('h') => DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_changeWorldTile,
                 KeyCode::Char('j') => DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_clearWorld,
                 KeyCode::Esc => {
-                    let _ = execute!(stdout(), terminal::LeaveAlternateScreen, cursor::Show);
+                    let _ = execute!(stdout(), 
+                        terminal::LeaveAlternateScreen, 
+                        cursor::Show,
+                        cursor::MoveTo(0, 0)
+                    );
                     exit(0)
                 },
                 _ => {DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_NULL}

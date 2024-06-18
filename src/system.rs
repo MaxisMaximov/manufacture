@@ -110,41 +110,21 @@ pub mod MISC {
         pub const PATH_ERROR: &str = "./src/json/error.json";
     }
 }
+pub mod PLAYER{
+    // Step size while moving
+    pub const PLAYER_STEP_SIZE: usize = 1;
+
+    // Base health
+    pub const PLAYER_BASE_HP: u16 = 100;
+
+    // how far the player can 'leap'
+    pub const PLAYER_LEAP_SIZE: usize = 4;
+}
 
 /// Color struct
 /// (R, G, B)
 pub struct SYS_COLOR(u8, u8, u8);
 
-/// # Common colors
-/// Use `.raw` function to use with formatter
-pub enum SYS_COMCOLORS {
-    black,
-    white,
-    cyan,
-    darkCyan,
-    green,
-    darkGreen,
-    yellow,
-    darkYellow,
-    orange,
-    darkOrange,
-}
-impl SYS_COMCOLORS {
-    pub fn raw(&self) -> SYS_COLOR {
-        match *self {
-            Self::black => SYS_COLOR(0, 0, 0),
-            Self::white => SYS_COLOR(255, 255, 255),
-            Self::cyan => SYS_COLOR(0, 255, 255),
-            Self::darkCyan => SYS_COLOR(0, 128, 128),
-            Self::green => SYS_COLOR(0, 255, 0),
-            Self::darkGreen => SYS_COLOR(0, 128, 0),
-            Self::yellow => SYS_COLOR(255, 255, 0),
-            Self::darkYellow => SYS_COLOR(128, 128, 0),
-            Self::orange => SYS_COLOR(255, 128, 0),
-            Self::darkOrange => SYS_COLOR(128, 64, 0),
-        }
-    }
-}
 
 pub fn SYS_CHECK(){
 
