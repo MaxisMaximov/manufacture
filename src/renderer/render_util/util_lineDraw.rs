@@ -1,16 +1,16 @@
 use super::*;
 
 pub fn main(
-    IN_pos_A: vector2,
-    IN_pos_B: vector2,
+    IN_pos_A: TYPE::vector2,
+    IN_pos_B: TYPE::vector2,
     IN_char: char,
-    IN_colors: colorSet,
+    IN_colors: TYPE::colorSet,
 ) {
     let mut BUFFER_LOCK = self::RENDER_mainBuffer.lock().unwrap();
 
     // Init start values
-    let w_startPos: vector2;
-    let w_endPos: vector2;
+    let w_startPos: TYPE::vector2;
+    let w_endPos: TYPE::vector2;
 
     // Calc delta distance between points
     let w_deltaX = IN_pos_A.0.abs_diff(IN_pos_B.0);

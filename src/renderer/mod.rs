@@ -1,15 +1,3 @@
-use crossterm::{
-    cursor::MoveTo,
-    style::{Color, Stylize},
-    terminal::{BeginSynchronizedUpdate, Clear, EndSynchronizedUpdate},
-    ExecutableCommand,
-};
-use std::{
-    io::{stdout, Write},
-    ops::{Index, IndexMut},
-    time::Instant,
-};
-
 use crate::*;
 
 mod render_world;
@@ -32,32 +20,32 @@ static RENDER_mainBuffer: Lazy<Mutex<RENDER_buffer>> = Lazy::new(|| {
 pub fn init() {
     let mut DEBUG_LOCK = SYS_debug.lock().unwrap();
     'INIT_debugStr: {
-        DEBUG_LOCK.DATA_debugItems.insert(
+        DEBUG_LOCK.DEBUG_items.insert(
             "#RENDER_frameTime".to_string(),
             IDDQD_textItem::new(RENDER_position::None,".DEBUG_render/#RENDER_frameTime", "", 255),
         );
 
-        DEBUG_LOCK.DATA_debugItems.insert(
+        DEBUG_LOCK.DEBUG_items.insert(
             "#RENDER_worldTime".to_string(),
             IDDQD_textItem::new(RENDER_position::None,".DEBUG_render/#RENDER_worldTime", "", 255),
         );
 
-        DEBUG_LOCK.DATA_debugItems.insert(
+        DEBUG_LOCK.DEBUG_items.insert(
             "#RENDER_convTime".to_string(),
             IDDQD_textItem::new(RENDER_position::None,".DEBUG_render/#RENDER_convTime", "", 255),
         );
 
-        DEBUG_LOCK.DATA_debugItems.insert(
+        DEBUG_LOCK.DEBUG_items.insert(
             "#RENDER_borderTime".to_string(),
             IDDQD_textItem::new(RENDER_position::None,".DEBUG_render/#RENDER_borderTime", "", 255),
         );
 
-        DEBUG_LOCK.DATA_debugItems.insert(
+        DEBUG_LOCK.DEBUG_items.insert(
             "#RENDER_textTime".to_string(),
             IDDQD_textItem::new(RENDER_position::None,".DEBUG_render/#RENDER_textTime", "", 255),
         );
 
-        DEBUG_LOCK.DATA_debugItems.insert(
+        DEBUG_LOCK.DEBUG_items.insert(
             "#SSINIT_render".to_string(),
             IDDQD_textItem::new(RENDER_position::None,".DEBUG_sys/.SYS_ssInit/#SSINIT_render", "", 40),
         );
@@ -66,16 +54,16 @@ pub fn init() {
 
 /// # Render game
 pub fn main() {
-    let RENDER_start = Instant::now();
+    let RENDER_start = time::Instant::now();
     let mut DEBUG_LOCK = SYS_debug.lock().unwrap();
 
     'RENDER_renderWorld: {
-        let loopStart = Instant::now();
+        let loopStart = time::Instant::now();
 
         render_world::r_util_world();
 
         DEBUG_LOCK
-        .DATA_debugItems
+        .DEBUG_items
         .get_mut("#RENDER_worldTime")
         .unwrap()
         .t_values = format!("{:?}", loopStart.elapsed())
@@ -96,7 +84,7 @@ pub fn main() {
     }
 
     'RENDER_renderWorldBorder: {
-        let loopStart = Instant::now();
+        let loopStart = time::Instant::now();
 
         render_util::util_border::main(
             (1, 1),
@@ -104,19 +92,19 @@ pub fn main() {
         );
 
         DEBUG_LOCK
-        .DATA_debugItems
+        .DEBUG_items
         .get_mut("#RENDER_borderTime")
         .unwrap()
         .t_values = format!("{:?}", loopStart.elapsed())
     }
 
     'RENDER_renderText: {
-        let loopStart = Instant::now();
+        let loopStart = time::Instant::now();
 
         render_text::render_textBox();
 
         DEBUG_LOCK
-        .DATA_debugItems
+        .DEBUG_items
         .get_mut("#RENDER_textTime")
         .unwrap()
         .t_values = format!("{:?}", loopStart.elapsed())
@@ -124,18 +112,18 @@ pub fn main() {
     
     // Print frame
     'RENDER_printFrame: {
-        let loopStart = Instant::now();
+        let loopStart = time::Instant::now();
         let mut STDOUT_LOCK = stdout().lock();
         let mut BUFFER_LOCK = RENDER_mainBuffer.lock().unwrap();
         
         // Start sync
-        let _ = STDOUT_LOCK.execute(BeginSynchronizedUpdate);
+        let _ = STDOUT_LOCK.execute(terminal::BeginSynchronizedUpdate);
         
         // Clear the screen
         let _ = execute!(
             STDOUT_LOCK,
-            Clear(crossterm::terminal::ClearType::All),
-            MoveTo(0, 0)
+            terminal::Clear(crossterm::terminal::ClearType::All),
+            cursor::MoveTo(0, 0)
         );
         
         // Convert buffer to string
@@ -155,14 +143,14 @@ pub fn main() {
         }
 
         // End sync and push the frame
-        let _ = STDOUT_LOCK.execute(EndSynchronizedUpdate);
+        let _ = STDOUT_LOCK.execute(terminal::EndSynchronizedUpdate);
 
         // Reset the buffer
         BUFFER_LOCK.reset();
 
         // And log the time for conversion
         DEBUG_LOCK
-            .DATA_debugItems
+            .DEBUG_items
             .get_mut("#RENDER_convTime")
             .unwrap()
             .t_values = format!("{:?}", loopStart.elapsed());
@@ -170,7 +158,7 @@ pub fn main() {
 
     // Log how long the entire process took
     DEBUG_LOCK
-        .DATA_debugItems
+        .DEBUG_items
         .get_mut("#RENDER_frameTime")
         .unwrap()
         .t_values = format!("{:?}", RENDER_start.elapsed());
@@ -191,7 +179,7 @@ pub fn main() {
 #[derive(Clone, Copy)]
 pub struct TEMPLATE_wrCell {
     pub c_char: char,
-    pub c_colors: colorSet,
+    pub c_colors: TYPE::colorSet,
 }
 impl TEMPLATE_wrCell {
     pub fn new() -> Self {
@@ -217,10 +205,10 @@ pub enum RENDER_position {
     POS_TR,
     POS_BL,
     POS_BR,
-    POS_custom(vector2),
+    POS_custom(TYPE::vector2),
 }
 impl RENDER_position {
-    pub fn value(&self) -> vector2 {
+    pub fn value(&self) -> TYPE::vector2 {
         match *self {
             Self::None => (0, 0),
             Self::POS_middle => (RENDERER::RENDER_BUFFER_X / 2, RENDERER::RENDER_BUFFER_Y / 2),
@@ -245,7 +233,7 @@ struct RENDER_buffer {
     pub BUFFER_grid: Vec<TEMPLATE_wrCell>,
 }
 impl RENDER_buffer {
-    pub fn new(IN_size: vector2) -> Self {
+    pub fn new(IN_size: TYPE::vector2) -> Self {
         Self {
             BUFFER_dummyCell: TEMPLATE_wrCell::new(),
             BUFFER_grid: vec![TEMPLATE_wrCell::new(); IN_size.0 * IN_size.1],
@@ -255,9 +243,9 @@ impl RENDER_buffer {
         self.BUFFER_grid.fill(TEMPLATE_wrCell::new())
     }
 }
-impl Index<vector2> for RENDER_buffer {
+impl Index<TYPE::vector2> for RENDER_buffer {
     type Output = TEMPLATE_wrCell;
-    fn index(&self, index: vector2) -> &Self::Output {
+    fn index(&self, index: TYPE::vector2) -> &Self::Output {
         // Prevents writing out of bounds of the renderer
         if index.0 >= RENDERER::RENDER_BUFFER_X || index.1 >= RENDERER::RENDER_BUFFER_Y{
             return &self.BUFFER_dummyCell
@@ -265,8 +253,8 @@ impl Index<vector2> for RENDER_buffer {
         &self.BUFFER_grid[index.0 + index.1 * RENDERER::RENDER_BUFFER_X]
     }
 }
-impl IndexMut<vector2> for RENDER_buffer {
-    fn index_mut(&mut self, index: vector2) -> &mut Self::Output {
+impl IndexMut<TYPE::vector2> for RENDER_buffer {
+    fn index_mut(&mut self, index: TYPE::vector2) -> &mut Self::Output {
         // Prevents writing out of bounds of the renderer
         if index.0 >= RENDERER::RENDER_BUFFER_X || index.1 >= RENDERER::RENDER_BUFFER_Y{
             return &mut self.BUFFER_dummyCell

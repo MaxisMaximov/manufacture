@@ -12,7 +12,7 @@ pub fn r_util_world() {
 
     // Calc border offset
     // Player offset in chunk + Chunk radius offset - radius
-    let r_workingBorderOffset: vector2 = (
+    let r_workingBorderOffset: TYPE::vector2 = (
         // X
         (DATA_LOCK.DATA_player.p_pos.0 % WORLD::GENERAL::WORLD_CHUNK_X
             + RENDERER::RENDER_CHUNKRAD * WORLD::GENERAL::WORLD_CHUNK_X)

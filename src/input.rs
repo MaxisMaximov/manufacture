@@ -7,12 +7,12 @@ pub fn init(){
     let mut DEBUG_LOCK = SYS_debug.lock().unwrap();
 
     'INIT_debugStr: {
-        DEBUG_LOCK.DATA_debugItems.insert(
+        DEBUG_LOCK.DEBUG_items.insert(
             "#INPUT_keyType".to_string(),
             IDDQD_textItem::new(renderer::RENDER_position::None, ".DEBUG_input/#INPUT_keyType", "", 255)
         );
 
-        DEBUG_LOCK.DATA_debugItems.insert(
+        DEBUG_LOCK.DEBUG_items.insert(
             "#INPUT_init".to_string(),
             IDDQD_textItem::new(renderer::RENDER_position::None, ".DEBUG_sys/.SYS_ssInit/#SSINIT_input", "", 40)
         );
@@ -35,7 +35,7 @@ pub fn main(){
                 DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_NULL;
                 return;
             }
-            DEBUG_LOCK.DATA_debugItems.get_mut("#INPUT_keyType").unwrap().t_values = format!("{:?}", code);
+            DEBUG_LOCK.DEBUG_items.get_mut("#INPUT_keyType").unwrap().t_values = format!("{:?}", code);
             match code {
                 KeyCode::Up => {
                     DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_movPlayer(player::GAME_playerDirections::DIR_up);
@@ -54,7 +54,7 @@ pub fn main(){
                 KeyCode::Char('h') => DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_changeWorldTile,
                 KeyCode::Char('j') => DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_clearWorld,
                 KeyCode::Esc => {
-                    let _ = execute!(stdout(), LeaveAlternateScreen, cursor::Show);
+                    let _ = execute!(stdout(), terminal::LeaveAlternateScreen, cursor::Show);
                     exit(0)
                 },
                 _ => {DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_NULL}
@@ -62,6 +62,6 @@ pub fn main(){
             return;
         }
     }
-    DEBUG_LOCK.DATA_debugItems.get_mut("#INPUT_keyType").unwrap().t_values = "None".to_string();
+    DEBUG_LOCK.DEBUG_items.get_mut("#INPUT_keyType").unwrap().t_values = "None".to_string();
     DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_NULL;
 }

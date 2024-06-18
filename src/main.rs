@@ -2,55 +2,68 @@
 #![allow(unused_labels)]
 #![warn(unused_crate_dependencies)]
 
-use crossterm::{
-    cursor, execute, style::Stylize, terminal::{enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen}
-};
 use once_cell::sync::Lazy;
+use std::{collections::HashMap, sync::Mutex, thread::sleep};
 
-use core::fmt;
-use std::{
-    collections::HashMap,
-    io::stdout,
-    sync::Mutex,
-    thread::sleep,
-    time::{Duration, Instant},
-};
+pub use crossterm::{style::{Color, Stylize}, *};
+pub use std::{fmt, io::{stdout, Write}, time, ops::{Index, IndexMut}};
 
-mod input;
-mod jsonManager;
-mod logic;
-mod player;
-mod renderer;
+// Define all subsystems
 mod system;
+mod input;
+mod logic;
+mod renderer;
+mod player;
 mod world;
+mod jsonManager;
 mod errorManager;
 
-pub use system::*;
+// These are system stuff so yeah
 pub use errorManager::*;
+pub use system::*;
 
 // This is a mess.
 pub static SYS_data: Lazy<Mutex<DATA_master>> =
     Lazy::new(|| Mutex::new(DATA_master::new(player::TEMPLATE_player::new(1, None))));
-pub static SYS_debug: Lazy<Mutex<DEBUG_master>> = Lazy::new(|| Mutex::new(DEBUG_master::new()));
+
+pub static SYS_debug: Lazy<Mutex<DEBUG_master>> =
+    Lazy::new(|| Mutex::new(DEBUG_master::new()));
+
 pub static SYS_errorQueue: Mutex<Vec<SYS_ERROR>> = Mutex::new(Vec::new());
+
+/// Clean up the error queue
+/// A.k.a. get rid of `#MARK_FOR_DELETION` entries
+pub fn ERROR_cleanup() {
+    SYS_errorQueue.lock().unwrap().retain(|v| !v.ERR_markForDel)
+}
 
 // START HERE
 fn main() {
-    SYS_debug.lock().unwrap().DATA_debugItems.insert(
+    SYS_debug.lock().unwrap().DEBUG_items.insert(
         "#SSINIT_data".to_string(),
-        IDDQD_textItem::new(renderer::RENDER_position::None, ".DEBUG_sys/.SYS_ssInit/#SSINIT_data", "", 40),
+        IDDQD_textItem::new(
+            renderer::RENDER_position::None,
+            ".DEBUG_sys/.SYS_ssInit/#SSINIT_data",
+            "",
+            40,
+        ),
     );
 
-    SYS_debug.lock().unwrap().DATA_debugItems.insert(
+    SYS_debug.lock().unwrap().DEBUG_items.insert(
         "#SYS_processTime".to_string(),
-        IDDQD_textItem::new(renderer::RENDER_position::None, ".DEBUG_sys/#SYS_processSpeed", "", 255),
+        IDDQD_textItem::new(
+            renderer::RENDER_position::None,
+            ".DEBUG_sys/#SYS_processSpeed",
+            "",
+            255,
+        ),
     );
 
     // Switch to Raw Mode
-    enable_raw_mode().unwrap();
+    terminal::enable_raw_mode().unwrap();
 
-    // Hide the cursor
-    let _ = execute!(stdout(), EnterAlternateScreen, cursor::Hide);
+    // Enter alternate screen and hide the cursor
+    let _ = execute!(stdout(), terminal::EnterAlternateScreen, cursor::Hide);
 
     // Generate new world
     // Commented out cuz for whatever reason it gets stuck in loop
@@ -67,9 +80,9 @@ fn main() {
     // # THE GAME LOOP
     loop {
         // Start the timer
-        let loopStart: Instant = Instant::now();
+        let loopStart: time::Instant = time::Instant::now();
 
-        // Set next Player input to process
+        // Get player input
         input::main();
 
         // Process the game
@@ -79,13 +92,11 @@ fn main() {
         renderer::main();
 
         // Log how long it took to process everything
-
         let mut DEBUG_LOCK = SYS_debug.lock().unwrap();
-        let idkfa_debugString = DEBUG_LOCK.DATA_debugItems.get_mut("#SYS_processTime");
-        idkfa_debugString.unwrap()
+        DEBUG_LOCK.DEBUG_items.get_mut("#SYS_processTime").unwrap()
             .t_values = format!("{:?}", loopStart.elapsed());
 
-        let loop_elapsedTime: Duration = loopStart.elapsed();
+        let loop_elapsedTime: time::Duration = loopStart.elapsed();
         if loop_elapsedTime < system::SYS_TICKTIME {
             sleep(system::SYS_TICKTIME - loop_elapsedTime)
         }
@@ -124,22 +135,20 @@ impl DATA_master {
 /// Reason I made this?  
 /// So that Deadlocks don't happen with `SYS_data` because apparently it really likes to do that
 pub struct DEBUG_master {
-    pub DATA_debugItems: HashMap<String, IDDQD_textItem>,
-    pub DATA_debugStrs: Vec<String>,
+    pub DEBUG_items: HashMap<String, IDDQD_textItem>,
 }
 impl DEBUG_master {
     pub fn new() -> Self {
         Self {
-            DATA_debugItems: HashMap::new(),
-            DATA_debugStrs: Vec::new(),
+            DEBUG_items: HashMap::new(),
         }
     }
 
     /// Clean up the hashmap
     /// A.k.a. get rid of `#MARK_FOR_DELETION` entries
     pub fn DEBUG_cleanup(&mut self) {
-        self.DATA_debugItems
-            .retain(|_, v| v.t_string != "#MARK_FOR_DELETION")
+        self.DEBUG_items
+            .retain(|_, v| !v.t_markForDel)
     }
 }
 
@@ -150,7 +159,8 @@ impl DEBUG_master {
 pub enum CACHE_TYPE {
     CACHE_usize(usize),
     CACHE_u8(u8),
-    CACHE_coords(vector2),
+    CACHE_vec2(TYPE::vector2),
+    CACHE_vec3(TYPE::vector3),
     CACHE_interactCode(logic::GAME_interactions),
 }
 
@@ -164,19 +174,22 @@ pub struct IDDQD_textItem {
     pub t_string: String,
     pub t_values: String,
     pub t_lifetime: u16,
-    pub t_markForDel: bool
+    pub t_markForDel: bool,
 }
 impl IDDQD_textItem {
-
     /// # Create new TextItem
     ///
     /// The one used to place text somewhere in the game
-    pub fn new(IN_pos: renderer::RENDER_position, IN_text: &str, IN_values: &str, IN_lifetime: u16) -> Self {
+    pub fn new(
+        IN_pos: renderer::RENDER_position,
+        IN_text: &str,
+        IN_values: &str,
+        IN_lifetime: u16,
+    ) -> Self {
         // Check if it's a debug string
-        let idkfa_string = if IN_text.starts_with('.'){
+        let idkfa_string = if IN_text.starts_with('.') {
             jsonManager::debugStr(IN_text, MISC::PATHS::PATH_DEBUG).unwrap_or(IN_text.to_string())
-        }
-        else{
+        } else {
             IN_text.to_string()
         };
         Self {
@@ -184,7 +197,7 @@ impl IDDQD_textItem {
             t_string: idkfa_string,
             t_values: IN_values.to_string(),
             t_lifetime: IN_lifetime,
-            t_markForDel: false
+            t_markForDel: false,
         }
     }
 
@@ -192,7 +205,7 @@ impl IDDQD_textItem {
     /// Just to make it clean
     pub fn TEXT_tickdown(&mut self) {
         // If it's marked for del just ignore
-        if self.t_markForDel{
+        if self.t_markForDel {
             return;
         }
         // If it's ""permament"" then don't do anything
@@ -208,7 +221,7 @@ impl IDDQD_textItem {
     }
 }
 // Display for normal textboxes
-impl fmt::Display for IDDQD_textItem{
+impl fmt::Display for IDDQD_textItem {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
@@ -221,7 +234,7 @@ impl fmt::Display for IDDQD_textItem{
 // Display for debug stuff
 // TODO: Split textBox from debugItem.
 // Again.
-impl fmt::Debug for IDDQD_textItem{
+impl fmt::Debug for IDDQD_textItem {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,

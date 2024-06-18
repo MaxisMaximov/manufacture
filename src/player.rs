@@ -16,9 +16,9 @@ use crate::*;
 /// # Custom colors
 /// To instead use custom colors set `fp_playerNum` to 0 and `fp_color` to [`Color::Rgb`]
 pub struct TEMPLATE_player {
-    pub p_pos: vector2,
-    pub p_chunk: vector2,
-    pub p_color: colorSet
+    pub p_pos: TYPE::vector2,
+    pub p_chunk: TYPE::vector2,
+    pub p_color: TYPE::colorSet
 }
 impl TEMPLATE_player {
     pub fn new(INp_playerNum: usize, INp_color: Option<Color>) -> Self{

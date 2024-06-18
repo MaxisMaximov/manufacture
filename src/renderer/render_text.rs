@@ -9,8 +9,8 @@ pub fn render_textBox() {
     let mut DATA_LOCK = SYS_data.lock().unwrap();
     let mut BUFFER_LOCK = RENDER_mainBuffer.lock().unwrap();
     
-    let mut RTEXT_charStartPosition: vector2;
-    let mut RTEXT_charPosition: vector2;
+    let mut RTEXT_charStartPosition: TYPE::vector2;
+    let mut RTEXT_charPosition: TYPE::vector2;
 
     for RTEXT in DATA_LOCK.DATA_textItems.iter_mut() {
 
@@ -45,11 +45,13 @@ pub fn render_textBox() {
 
 /// # Print debug and Error stuff
 pub fn render_debug() {
+    // Lock and load
     let mut STDOUT_LOCK = stdout().lock();
     let mut DEBUG_LOCK = SYS_debug.lock().unwrap();
     let mut ERROR_LOCK = SYS_errorQueue.lock().unwrap();
 
-    for DEBUGSTR in DEBUG_LOCK.DATA_debugItems.values_mut() {
+    // Iterate debug stuff
+    for DEBUGSTR in DEBUG_LOCK.DEBUG_items.values_mut() {
         // Ignore these strings
         if DEBUGSTR.t_markForDel {
             continue;
@@ -60,6 +62,7 @@ pub fn render_debug() {
         DEBUGSTR.TEXT_tickdown()
     }
 
+    // Iterate error stuff
     for ERRORSTR in ERROR_LOCK.iter_mut(){
         // Ignore these errors
         if ERRORSTR.ERR_markForDel{
@@ -71,8 +74,10 @@ pub fn render_debug() {
         ERRORSTR.ERR_tickdown()
     }
 
-    DEBUG_LOCK.DEBUG_cleanup();
-    ERROR_LOCK.retain(|x| x.ERR_lifetime > 0);
-
+    // Print to screen
     STDOUT_LOCK.flush().unwrap();
+
+    // And clean up
+    DEBUG_LOCK.DEBUG_cleanup();
+    ERROR_cleanup();
 }

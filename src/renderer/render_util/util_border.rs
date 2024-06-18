@@ -2,7 +2,7 @@ use super::*;
 
 /// # Render border
 /// Lets you render a border at specific coords with specific size
-pub fn main(borderPos: vector2, borderSizeInner: vector2) {
+pub fn main(borderPos: TYPE::vector2, borderSizeInner: TYPE::vector2) {
     
     let w_corners = (
         borderPos, // TL

@@ -1,19 +1,17 @@
 use std::fmt;
 
-use crossterm::style::Color;
-
 use crate::*;
 
 /// # Game logic
 pub fn init(){
     let mut DEBUG_LOCK = SYS_debug.lock().unwrap();
     'INIT_debugStr:{
-        DEBUG_LOCK.DATA_debugItems.insert(
+        DEBUG_LOCK.DEBUG_items.insert(
             "#LOGIC_interaction".to_string(),
             IDDQD_textItem::new( renderer::RENDER_position::None, ".DEBUG_logic/#LOGIC_interaction", "", 255)
         );
 
-        DEBUG_LOCK.DATA_debugItems.insert(
+        DEBUG_LOCK.DEBUG_items.insert(
             "#SSINIT_logic".to_string(),
             IDDQD_textItem::new( renderer::RENDER_position::None, ".DEBUG_sys/.SYS_ssInit/#SSINIT_logic", "", 40)
         );
@@ -27,15 +25,13 @@ pub fn init(){
 pub fn main() {
     let mut DATA_LOCK = SYS_data.lock().unwrap();
 
-    let idkfa_interaction = DATA_LOCK.DATA_playerInput;
-    
-    SYS_debug.lock().unwrap().DATA_debugItems.get_mut("#LOGIC_interaction").unwrap().t_values = format!("{}", idkfa_interaction);
+    SYS_debug.lock().unwrap().DEBUG_items.get_mut("#LOGIC_interaction").unwrap().t_values = format!("{}", DATA_LOCK.DATA_playerInput);
 
     match DATA_LOCK.DATA_playerInput {
 
         GAME_interactions::i_changeWorldTile => {
-            let idkfa_pos: vector2 = DATA_LOCK.DATA_player.p_pos;
-            let idkfa_colors: colorSet = (Color::Black, DATA_LOCK.DATA_player.p_color.1);
+            let idkfa_pos: TYPE::vector2 = DATA_LOCK.DATA_player.p_pos;
+            let idkfa_colors: TYPE::colorSet = (Color::Black, DATA_LOCK.DATA_player.p_color.1);
             DATA_LOCK.DATA_world[idkfa_pos] = world::TEMPLATE_wrCell{c_char: 'c', c_color: idkfa_colors};
         }
 
@@ -62,7 +58,7 @@ pub fn main() {
 /// # Interactions enum
 /// # DON'T RELY ON THIS
 /// It will be replaced with introduction of Window system
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone, Copy)]
 pub enum GAME_interactions {
     i_NULL,
     i_movPlayer(player::GAME_playerDirections),
