@@ -45,22 +45,22 @@ pub mod WORLD {
     pub mod GENERATION {
 
         // Amount of ponds/lakes to generate Min-Max
-        pub const GEN_POND_Q: (usize, usize) = (4, 6);
+        pub static GEN_POND_Q: (usize, usize) = (4, 6);
 
         // Size of pond/lake iterations Min-Max
-        pub const GEN_POND_SIZE: (usize, usize) = (3, 10);
+        pub static GEN_POND_SIZE: (usize, usize) = (3, 10);
 
         // How deep should pond/lake iterations go Min-Max
-        pub const GEN_POND_ITERS: (usize, usize) = (6, 8);
+        pub static GEN_POND_ITERS: (usize, usize) = (6, 8);
 
         // Amount of forests to generate Min-Max
-        pub const GEN_FOREST_Q: (usize, usize) = (4, 8);
+        pub static GEN_FOREST_Q: (usize, usize) = (4, 8);
 
         // Size of forest iterations Min-Max
-        pub const GEN_FOREST_SIZE: (usize, usize) = (6, 10);
+        pub static GEN_FOREST_SIZE: (usize, usize) = (6, 10);
 
         // How deep should forest iterations go Min-Max
-        pub const GEN_FOREST_ITERS: (usize, usize) = (5, 8);
+        pub static GEN_FOREST_ITERS: (usize, usize) = (5, 8);
     }
 }
 
@@ -144,4 +144,33 @@ impl SYS_COMCOLORS {
             Self::darkOrange => SYS_COLOR(128, 64, 0),
         }
     }
+}
+
+pub fn SYS_CHECK(){
+
+    // Check tickrate
+    assert!(self::SYS_TICKRATE > 0);
+
+    // Check world size
+    assert!(self::WORLD::GENERAL::WORLD_X > 1);
+    assert!(self::WORLD::GENERAL::WORLD_Y > 1);
+
+    // Check chunk size
+    assert!(self::WORLD::GENERAL::WORLD_CHUNK_X > 1);
+    assert!(self::WORLD::GENERAL::WORLD_CHUNK_Y > 1);
+
+    // Check forest generation
+    assert!(self::WORLD::GENERATION::GEN_FOREST_ITERS.0 < self::WORLD::GENERATION::GEN_FOREST_ITERS.1);
+    assert!(self::WORLD::GENERATION::GEN_FOREST_Q.0 < self::WORLD::GENERATION::GEN_FOREST_Q.1);
+    assert!(self::WORLD::GENERATION::GEN_FOREST_SIZE.0 < self::WORLD::GENERATION::GEN_FOREST_SIZE.1);
+
+    // Check lake generation
+    assert!(self::WORLD::GENERATION::GEN_POND_ITERS.0 < self::WORLD::GENERATION::GEN_POND_ITERS.1);
+    assert!(self::WORLD::GENERATION::GEN_POND_ITERS.0 < self::WORLD::GENERATION::GEN_POND_ITERS.1);
+    assert!(self::WORLD::GENERATION::GEN_POND_ITERS.0 < self::WORLD::GENERATION::GEN_POND_ITERS.1);
+
+    // Check renderer stuff
+    assert!(self::RENDERER::RENDER_BUFFER_X > 0);
+    assert!(self::RENDERER::RENDER_BUFFER_Y > 0);
+    assert!(self::RENDERER::RENDER_CHUNKRAD > 2);
 }

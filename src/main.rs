@@ -63,7 +63,12 @@ fn main() {
     terminal::enable_raw_mode().unwrap();
 
     // Enter alternate screen and hide the cursor
-    let _ = execute!(stdout(), terminal::EnterAlternateScreen, cursor::Hide);
+    let _ = execute!(stdout(), 
+        terminal::EnterAlternateScreen,
+        terminal::SetSize(RENDERER::RENDER_BUFFER_X as u16, RENDERER::RENDER_BUFFER_Y as u16),
+        terminal::SetTitle("manufacture"),
+        cursor::Hide
+    );
 
     // Generate new world
     // Commented out cuz for whatever reason it gets stuck in loop
