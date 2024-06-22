@@ -1,8 +1,6 @@
-use std::{fmt, ops::Add};
+use std::ops::Add;
 
-use crossterm::style::Color;
-
-use crate::*;
+use super::*;
 
 /// # Player struct
 /// Use 1-4 in `fp_playerNum` when initializing to change the color
@@ -16,10 +14,10 @@ use crate::*;
 /// # Custom colors
 /// To instead use custom colors set `fp_playerNum` to 0 and `fp_color` to [`Color::Rgb`]
 pub struct TEMPLATE_player {
-    pub p_pos: TYPE::vector2,
+    pub p_pos: types::vector2,
     pub p_hp: u16,
-    pub p_chunk: TYPE::vector2,
-    pub p_color: TYPE::colorSet
+    pub p_chunk: types::vector2,
+    pub p_color: types::colorSet
 }
 impl TEMPLATE_player {
     pub fn new(INp_playerNum: usize, INp_color: Option<Color>) -> Self{
@@ -31,7 +29,7 @@ impl TEMPLATE_player {
         };
         TEMPLATE_player {
             p_pos: (10, 10),
-            p_hp: PLAYER::PLAYER_BASE_HP,
+            p_hp: vars::PLAYER::PLAYER_BASE_HP,
             p_chunk: (2, 2),
             p_color: (Color::White, Fp_playerColor) }
     }
@@ -42,13 +40,13 @@ impl TEMPLATE_player {
                 self.p_pos.1 = self.p_pos.1.saturating_sub(stepSize);
             }
             GAME_playerDirections::DIR_down => {
-                self.p_pos.1 = self.p_pos.1.add(stepSize).clamp(0, WORLD::GENERAL::WORLD_GRID_Y);
+                self.p_pos.1 = self.p_pos.1.add(stepSize).clamp(0, vars::WORLD::GENERAL::GRID_Y);
             }
             GAME_playerDirections::DIR_left => {
                 self.p_pos.0 = self.p_pos.0.saturating_sub(stepSize);
             }
             GAME_playerDirections::DIR_right => {
-                self.p_pos.0 = self.p_pos.0.add(stepSize).clamp(0, WORLD::GENERAL::WORLD_GRID_X);
+                self.p_pos.0 = self.p_pos.0.add(stepSize).clamp(0, vars::WORLD::GENERAL::GRID_X);
             }
         }
         // Update current chunk         // I hate when small changes like this comment flag the whole file as Modified.
@@ -56,8 +54,8 @@ impl TEMPLATE_player {
     }
 
     pub fn p_updateChunk(&mut self){
-        self.p_chunk.0 = self.p_pos.0 / WORLD::GENERAL::WORLD_CHUNK_X;
-        self.p_chunk.1 = self.p_pos.1 / WORLD::GENERAL::WORLD_CHUNK_Y;
+        self.p_chunk.0 = self.p_pos.0 / vars::WORLD::GENERAL::CHUNK_X;
+        self.p_chunk.1 = self.p_pos.1 / vars::WORLD::GENERAL::CHUNK_Y;
     }
 }
 

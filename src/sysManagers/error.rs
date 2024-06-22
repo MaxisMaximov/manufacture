@@ -1,7 +1,7 @@
-use crate::*;
+use super::*;
 
 pub fn init() {
-    SYS_debug.lock().unwrap().DEBUG_items.insert(
+    statics::SYS_debug.lock().unwrap().DEBUG_items.insert(
         "#SSINIT_error".to_string(),
         IDDQD_textItem::new(
             renderer::RENDER_position::None,
@@ -19,7 +19,6 @@ pub fn init() {
 /// ## DISCLAIMER
 /// Remember to categorize the specs in your custom error file  
 /// It'll spare the code spaghetti and you headaches
-#[derive(Default)]
 pub struct SYS_ERROR {
     pub ERR_spec: String,
     pub ERR_fullSpec: String,
@@ -35,7 +34,7 @@ impl SYS_ERROR {
         IN_lifetime: u16,
     ) -> Self {
         // Check if the error desc even exists
-        let idkfa_fmtString = match jsonManager::debugStr(IN_spec, IN_errorPath) {
+        let idkfa_fmtString = match json::debugStr(IN_spec, IN_errorPath) {
             Ok(mut DESCSTRING) => {
                 // If exists, format it
                 for VALUE in IN_values {
@@ -87,5 +86,19 @@ impl fmt::Debug for SYS_ERROR {
             "{} | {} <> {}f",
             self.ERR_fullSpec, self.ERR_desc, self.ERR_lifetime
         )
+    }
+}
+
+pub struct MASTER_errorQueue{
+    pub inner: Vec<self::SYS_ERROR>
+}
+impl MASTER_errorQueue{
+    pub fn new() -> Self{
+        Self{
+            inner: Vec::new()
+        }
+    }
+    pub fn cleanup(&mut self){
+        self.inner.retain(|v| !v.ERR_markForDel)
     }
 }

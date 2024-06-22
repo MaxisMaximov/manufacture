@@ -1,6 +1,6 @@
 #![allow(nonstandard_style)]
 
-use crate::*;
+use super::*;
 
 // # FULL FILE DISCLAIMER
 // THIS WILL BE MOVED INTO A CUSTOMIZABLE `.json` FILE LATER ON
@@ -9,21 +9,15 @@ use crate::*;
 //
 // AND SO THAT TESTING CAN BE DONE WITHOUT RECOMPILING
 
-// How fast should game process everything
-// DO NOT TOUCH SYS_TICKTIME!!!!
-pub const SYS_TICKRATE: u8 = 8;
-pub const SYS_TICKTIME: time::Duration = time::Duration::from_millis(1000 / SYS_TICKRATE as u64);
-
-// Custom types so I don't peck it up
-pub mod TYPE {
+pub mod SYS{
     use super::*;
-    /// (X, Y)
-    pub type vector2 = (usize, usize);
-    /// (X, Y, Z)
-    pub type vector3 = (usize, usize, usize);
-    /// (Foreground, Background)
-    pub type colorSet = (Color, Color);
+
+    // How fast should game process everything
+    // DO NOT TOUCH SYS_TICKTIME!!!!
+    pub const TICKRATE: u8 = 8;
+    pub const TICKTIME: time::Duration = time::Duration::from_millis(1000 / TICKRATE as u64);
 }
+
 
 pub mod WORLD {
 
@@ -33,13 +27,13 @@ pub mod WORLD {
         pub const WORLD_Y: usize = 8;
 
         // Chunk size
-        pub const WORLD_CHUNK_X: usize = 8;
-        pub const WORLD_CHUNK_Y: usize = 8;
+        pub const CHUNK_X: usize = 8;
+        pub const CHUNK_Y: usize = 8;
 
         // DO NOT TOUCH!!!
         // Full dimensions of the world
-        pub const WORLD_GRID_X: usize = WORLD_X * WORLD_CHUNK_X;
-        pub const WORLD_GRID_Y: usize = WORLD_Y * WORLD_CHUNK_Y;
+        pub const GRID_X: usize = WORLD_X * CHUNK_X;
+        pub const GRID_Y: usize = WORLD_Y * CHUNK_Y;
     }
 
     pub mod GENERATION {
@@ -96,10 +90,16 @@ pub mod MISC {
     pub mod COLORS {
         use super::*;
         /// Default Render colors
-        pub const COLORS_DEF: (Color, Color) = (Color::White, Color::Reset);
+        /// (Foreground, Background)
+        pub const COLORS_DEF: types::colorSet = (Color::White, Color::Black);
 
         /// Default debug colors
-        pub const COLORS_DEBUG: (Color, Color) = (Color::White, Color::Yellow);
+        /// (Main text, Values)
+        pub const COLORS_DEBUG: types::colorSet = (Color::White, Color::Yellow);
+
+        /// Default error colors
+        /// (ErrorSpec, Rest)
+        pub const COLORS_ERROR: types::colorSet = (Color::Red, Color::White);
     }
     pub mod PATHS {
 
@@ -117,40 +117,6 @@ pub mod PLAYER{
     // Base health
     pub const PLAYER_BASE_HP: u16 = 100;
 
-    // how far the player can 'leap'
+    // How far the player can 'leap'
     pub const PLAYER_LEAP_SIZE: usize = 4;
-}
-
-/// Color struct
-/// (R, G, B)
-pub struct SYS_COLOR(u8, u8, u8);
-
-
-pub fn SYS_CHECK(){
-
-    // Check tickrate
-    assert!(self::SYS_TICKRATE > 0);
-
-    // Check world size
-    assert!(self::WORLD::GENERAL::WORLD_X > 1);
-    assert!(self::WORLD::GENERAL::WORLD_Y > 1);
-
-    // Check chunk size
-    assert!(self::WORLD::GENERAL::WORLD_CHUNK_X > 1);
-    assert!(self::WORLD::GENERAL::WORLD_CHUNK_Y > 1);
-
-    // Check forest generation
-    assert!(self::WORLD::GENERATION::GEN_FOREST_ITERS.0 < self::WORLD::GENERATION::GEN_FOREST_ITERS.1);
-    assert!(self::WORLD::GENERATION::GEN_FOREST_Q.0 < self::WORLD::GENERATION::GEN_FOREST_Q.1);
-    assert!(self::WORLD::GENERATION::GEN_FOREST_SIZE.0 < self::WORLD::GENERATION::GEN_FOREST_SIZE.1);
-
-    // Check lake generation
-    assert!(self::WORLD::GENERATION::GEN_POND_ITERS.0 < self::WORLD::GENERATION::GEN_POND_ITERS.1);
-    assert!(self::WORLD::GENERATION::GEN_POND_ITERS.0 < self::WORLD::GENERATION::GEN_POND_ITERS.1);
-    assert!(self::WORLD::GENERATION::GEN_POND_ITERS.0 < self::WORLD::GENERATION::GEN_POND_ITERS.1);
-
-    // Check renderer stuff
-    assert!(self::RENDERER::RENDER_BUFFER_X > 0);
-    assert!(self::RENDERER::RENDER_BUFFER_Y > 0);
-    assert!(self::RENDERER::RENDER_CHUNKRAD > 2);
 }

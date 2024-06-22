@@ -1,24 +1,25 @@
-use crate::*;
+//! # Text renderer
+//! ## Disclaimer
+//! It will be replaced should I move onto Pixel renderer
+//!
+//! Although hopefully the new one will be <<compatible
 
-mod render_world;
-mod render_text;
+use super::*;
+
+mod world;
+mod text;
 mod render_util;
 
-/// # Text renderer
-/// ## Disclaimer
-/// It will be replaced should I move onto Pixel renderer
-///
-/// Although hopefully the new one will be <<compatible
 
 static RENDER_mainBuffer: Lazy<Mutex<RENDER_buffer>> = Lazy::new(|| {
     Mutex::new(RENDER_buffer::new((
-        RENDERER::RENDER_BUFFER_X,
-        RENDERER::RENDER_BUFFER_Y,
+        vars::RENDERER::RENDER_BUFFER_X,
+        vars::RENDERER::RENDER_BUFFER_Y,
     )))
 });
 
 pub fn init() {
-    let mut DEBUG_LOCK = SYS_debug.lock().unwrap();
+    let mut DEBUG_LOCK = statics::SYS_debug.lock().unwrap();
     'INIT_debugStr: {
         DEBUG_LOCK.DEBUG_items.insert(
             "#RENDER_frameTime".to_string(),
@@ -55,12 +56,12 @@ pub fn init() {
 /// # Render game
 pub fn main() {
     let RENDER_start = time::Instant::now();
-    let mut DEBUG_LOCK = SYS_debug.lock().unwrap();
+    let mut DEBUG_LOCK = statics::SYS_debug.lock().unwrap();
 
     'RENDER_renderWorld: {
         let loopStart = time::Instant::now();
 
-        render_world::r_util_world();
+        world::r_util_world();
 
         DEBUG_LOCK
         .DEBUG_items
@@ -72,11 +73,11 @@ pub fn main() {
     // Set cell for the player
     // TODO: Clean up
     'RENDER_playerSet: {
-        let DATA_LOCK = SYS_data.lock().unwrap();
+        let DATA_LOCK = statics::SYS_data.lock().unwrap();
 
         RENDER_mainBuffer.lock().unwrap()[(
-            (RENDERER::RENDER_WORLD_X + 2),
-            (RENDERER::RENDER_WORLD_Y + 2),
+            (vars::RENDERER::RENDER_WORLD_X + 2),
+            (vars::RENDERER::RENDER_WORLD_Y + 2),
         )] = TEMPLATE_wrCell {
             c_char: 'P',
             c_colors: DATA_LOCK.DATA_player.p_color,
@@ -86,28 +87,28 @@ pub fn main() {
     'RENDER_renderWorldBorder: {
         let loopStart = time::Instant::now();
 
-        render_util::util_border::main(
+        render_util::border::main(
             (1, 1),
-            (RENDERER::RENDER_WORLDSIZE_X, RENDERER::RENDER_WORLDSIZE_Y),
+            (vars::RENDERER::RENDER_WORLDSIZE_X, vars::RENDERER::RENDER_WORLDSIZE_Y),
         );
 
         DEBUG_LOCK
-        .DEBUG_items
-        .get_mut("#RENDER_borderTime")
-        .unwrap()
-        .t_values = format!("{:?}", loopStart.elapsed())
+            .DEBUG_items
+            .get_mut("#RENDER_borderTime")
+            .unwrap()
+            .t_values = format!("{:?}", loopStart.elapsed())
     }
 
     'RENDER_renderText: {
         let loopStart = time::Instant::now();
 
-        render_text::render_textBox();
+        text::render_textBox();
 
         DEBUG_LOCK
-        .DEBUG_items
-        .get_mut("#RENDER_textTime")
-        .unwrap()
-        .t_values = format!("{:?}", loopStart.elapsed())
+            .DEBUG_items
+            .get_mut("#RENDER_textTime")
+            .unwrap()
+            .t_values = format!("{:?}", loopStart.elapsed())
     }
     
     // Print frame
@@ -116,19 +117,18 @@ pub fn main() {
         let mut STDOUT_LOCK = stdout().lock();
         let mut BUFFER_LOCK = RENDER_mainBuffer.lock().unwrap();
         
-        // Start sync
-        let _ = STDOUT_LOCK.execute(terminal::BeginSynchronizedUpdate);
-        
-        // Clear the screen
         let _ = execute!(
             STDOUT_LOCK,
-            terminal::Clear(crossterm::terminal::ClearType::All),
+            // Start sync
+            terminal::BeginSynchronizedUpdate,
+            // Clear the screen and get ready to print next frame
+            terminal::Clear(terminal::ClearType::All),
             cursor::MoveTo(0, 0)
         );
         
-        // Convert buffer to string
-        for YPOS in 0..RENDERER::RENDER_BUFFER_Y {
-            for XPOS in 0..RENDERER::RENDER_BUFFER_X {
+        // Print buffer to output
+        for YPOS in 0..vars::RENDERER::RENDER_BUFFER_Y {
+            for XPOS in 0..vars::RENDERER::RENDER_BUFFER_X {
                 let RENDER_cell = BUFFER_LOCK[(XPOS, YPOS)];
                 let _ = write!(
                     STDOUT_LOCK,
@@ -145,7 +145,7 @@ pub fn main() {
         // Reset the buffer
         BUFFER_LOCK.reset();
 
-        // And log the time for conversion
+        // And log the time
         DEBUG_LOCK
             .DEBUG_items
             .get_mut("#RENDER_convTime")
@@ -164,7 +164,7 @@ pub fn main() {
     drop(DEBUG_LOCK);
 
     // Render debug stuff last, everything should be processed by this point
-    render_text::render_debug();
+    text::render_debug();
 }
 
 /// # Render Buffer Cell
@@ -176,13 +176,13 @@ pub fn main() {
 #[derive(Clone, Copy)]
 pub struct TEMPLATE_wrCell {
     pub c_char: char,
-    pub c_colors: TYPE::colorSet,
+    pub c_colors: types::colorSet,
 }
 impl TEMPLATE_wrCell {
     pub fn new() -> Self {
         Self {
             c_char: ' ',
-            c_colors: MISC::COLORS::COLORS_DEF,
+            c_colors: vars::MISC::COLORS::COLORS_DEF,
         }
     }
 }
@@ -207,21 +207,21 @@ pub enum RENDER_position {
     POS_TR,
     POS_BL,
     POS_BR,
-    POS_custom(TYPE::vector2),
+    POS_custom(types::vector2),
 }
 impl RENDER_position {
-    pub fn value(&self) -> TYPE::vector2 {
+    pub fn value(&self) -> types::vector2 {
         match *self {
             Self::None => (0, 0),
-            Self::POS_middle => (RENDERER::RENDER_BUFFER_X / 2, RENDERER::RENDER_BUFFER_Y / 2),
-            Self::POS_left => (0, RENDERER::RENDER_BUFFER_Y / 2),
-            Self::POS_right => (RENDERER::RENDER_BUFFER_X - 1, RENDERER::RENDER_BUFFER_Y / 2),
-            Self::POS_top => (RENDERER::RENDER_BUFFER_X / 2, 0),
-            Self::POS_bottom => (RENDERER::RENDER_BUFFER_X / 2, RENDERER::RENDER_BUFFER_Y - 1),
+            Self::POS_middle => (vars::RENDERER::RENDER_BUFFER_X / 2, vars::RENDERER::RENDER_BUFFER_Y / 2),
+            Self::POS_left => (0, vars::RENDERER::RENDER_BUFFER_Y / 2),
+            Self::POS_right => (vars::RENDERER::RENDER_BUFFER_X - 1, vars::RENDERER::RENDER_BUFFER_Y / 2),
+            Self::POS_top => (vars::RENDERER::RENDER_BUFFER_X / 2, 0),
+            Self::POS_bottom => (vars::RENDERER::RENDER_BUFFER_X / 2, vars::RENDERER::RENDER_BUFFER_Y - 1),
             Self::POS_TL => (0, 0),
-            Self::POS_TR => (RENDERER::RENDER_BUFFER_X - 1, 0),
-            Self::POS_BL => (0, RENDERER::RENDER_BUFFER_Y - 1),
-            Self::POS_BR => (RENDERER::RENDER_BUFFER_X - 1, RENDERER::RENDER_BUFFER_Y - 1),
+            Self::POS_TR => (vars::RENDERER::RENDER_BUFFER_X - 1, 0),
+            Self::POS_BL => (0, vars::RENDERER::RENDER_BUFFER_Y - 1),
+            Self::POS_BR => (vars::RENDERER::RENDER_BUFFER_X - 1, vars::RENDERER::RENDER_BUFFER_Y - 1),
             Self::POS_custom(POS) => POS,
         }
     }
@@ -235,7 +235,7 @@ struct RENDER_buffer {
     pub BUFFER_grid: Vec<TEMPLATE_wrCell>,
 }
 impl RENDER_buffer {
-    pub fn new(IN_size: TYPE::vector2) -> Self {
+    pub fn new(IN_size: types::vector2) -> Self {
         Self {
             BUFFER_dummyCell: TEMPLATE_wrCell::new(),
             BUFFER_grid: vec![TEMPLATE_wrCell::new(); IN_size.0 * IN_size.1],
@@ -245,22 +245,22 @@ impl RENDER_buffer {
         self.BUFFER_grid.fill(TEMPLATE_wrCell::new())
     }
 }
-impl Index<TYPE::vector2> for RENDER_buffer {
+impl Index<types::vector2> for RENDER_buffer {
     type Output = TEMPLATE_wrCell;
-    fn index(&self, index: TYPE::vector2) -> &Self::Output {
+    fn index(&self, index: types::vector2) -> &Self::Output {
         // Prevents writing out of bounds of the renderer
-        if index.0 >= RENDERER::RENDER_BUFFER_X || index.1 >= RENDERER::RENDER_BUFFER_Y{
+        if index.0 >= vars::RENDERER::RENDER_BUFFER_X || index.1 >= vars::RENDERER::RENDER_BUFFER_Y{
             return &self.BUFFER_dummyCell
         }
-        &self.BUFFER_grid[index.0 + index.1 * RENDERER::RENDER_BUFFER_X]
+        &self.BUFFER_grid[index.0 + index.1 * vars::RENDERER::RENDER_BUFFER_X]
     }
 }
-impl IndexMut<TYPE::vector2> for RENDER_buffer {
-    fn index_mut(&mut self, index: TYPE::vector2) -> &mut Self::Output {
+impl IndexMut<types::vector2> for RENDER_buffer {
+    fn index_mut(&mut self, index: types::vector2) -> &mut Self::Output {
         // Prevents writing out of bounds of the renderer
-        if index.0 >= RENDERER::RENDER_BUFFER_X || index.1 >= RENDERER::RENDER_BUFFER_Y{
+        if index.0 >= vars::RENDERER::RENDER_BUFFER_X || index.1 >= vars::RENDERER::RENDER_BUFFER_Y{
             return &mut self.BUFFER_dummyCell
         }
-        &mut self.BUFFER_grid[index.0 + index.1 * RENDERER::RENDER_BUFFER_X]
+        &mut self.BUFFER_grid[index.0 + index.1 * vars::RENDERER::RENDER_BUFFER_X]
     }
 }

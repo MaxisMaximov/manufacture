@@ -5,7 +5,7 @@
         "!JSON_write": "Couldn't write {DATA} to {FILE}"
     },
     ".ERR_logic":{
-        "!LOGIC_": ""
+        
     },
     ".ERR_world":{
         ".WORLD_gen":{

@@ -2,14 +2,14 @@ use std::{fs::File, io::BufReader};
 
 use serde_json;
 
-use crate::*;
+use super::*;
 
 // TODO: maybe switch to `json-rust` for faster speed and lower memory usage
 // Yes I'm concerned about these things early on
 // No I don't have any idea why
 
 pub fn init() {
-    SYS_debug.lock().unwrap().DEBUG_items.insert(
+    statics::SYS_debug.lock().unwrap().DEBUG_items.insert(
         "#SSINIT_json".to_string(),
         IDDQD_textItem::new(
             renderer::RENDER_position::None,
@@ -30,9 +30,9 @@ pub fn debugStr(IN_index: &str, IN_filePath: &str) -> Result<String, ()> {
             Ok(FILE) => FILE,
             Err(_) => 
             {
-                SYS_errorQueue.lock().unwrap().push(SYS_ERROR::new(
+                statics::SYS_errorQueue.lock().unwrap().inner.push(error::SYS_ERROR::new(
                     ".ERR_json/!JSON_noFile",
-                    MISC::PATHS::PATH_ERROR,
+                    vars::MISC::PATHS::PATH_ERROR,
                     &vec![("{PATH}", IN_filePath.to_string())],
                     40
                 ));
@@ -52,16 +52,14 @@ pub fn debugStr(IN_index: &str, IN_filePath: &str) -> Result<String, ()> {
         if idkfa_value.is_null() {
 
             // Just not to Deadlock
-            if IN_index == ".ERR_json/!JSON_readString"{
-                return Err(())
-            }
-            
-            SYS_errorQueue.lock().unwrap().push(SYS_ERROR::new(
+            if let Ok(mut ERRQUEUE) = statics::SYS_errorQueue.try_lock(){
+                ERRQUEUE.inner.push(error::SYS_ERROR::new(
                     ".ERR_json/!JSON_readString",
-                    MISC::PATHS::PATH_ERROR,
+                    vars::MISC::PATHS::PATH_ERROR,
                     &vec![("{ID}", IN_index.to_string()), ("{FILE}", IN_filePath.rsplit_once('/').unwrap().1.to_owned())],
                     40,
                 ));
+            }
             return Err(());
         }
 

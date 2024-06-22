@@ -4,7 +4,7 @@ use crate::*;
 
 /// # Game logic
 pub fn init(){
-    let mut DEBUG_LOCK = SYS_debug.lock().unwrap();
+    let mut DEBUG_LOCK = statics::SYS_debug.lock().unwrap();
     'INIT_debugStr:{
         DEBUG_LOCK.DEBUG_items.insert(
             "#LOGIC_interaction".to_string(),
@@ -17,22 +17,23 @@ pub fn init(){
         );
     }
 }
+
 /// # Interaction manager
 /// # DO NOT RELY ON CURRENT VERSION OF THIS
 /// While I'm not sure how it will change exactly it does "global" interactions for now
 /// 
 /// Window system will have different way of managing those
 pub fn main() {
-    let mut DATA_LOCK = SYS_data.lock().unwrap();
+    let mut DATA_LOCK = statics::SYS_data.lock().unwrap();
 
-    SYS_debug.lock().unwrap().DEBUG_items.get_mut("#LOGIC_interaction").unwrap().t_values = format!("{}", DATA_LOCK.DATA_playerInput);
+    statics::SYS_debug.lock().unwrap().DEBUG_items.get_mut("#LOGIC_interaction").unwrap().t_values = format!("{}", DATA_LOCK.DATA_playerInput);
 
     match DATA_LOCK.DATA_playerInput {
 
         GAME_interactions::i_changeWorldTile => {
-            let idkfa_pos: TYPE::vector2 = DATA_LOCK.DATA_player.p_pos;
-            let idkfa_colors: TYPE::colorSet = (Color::Black, DATA_LOCK.DATA_player.p_color.1);
-            DATA_LOCK.DATA_world[idkfa_pos] = world::TEMPLATE_wrCell{c_char: 'c', c_color: idkfa_colors};
+            let idkfa_pos: types::vector2 = DATA_LOCK.DATA_player.p_pos;
+            let idkfa_colors: types::colorSet = (Color::Black, DATA_LOCK.DATA_player.p_color.1);
+            DATA_LOCK.DATA_world[idkfa_pos] = data::world::TEMPLATE_wrCell{c_char: 'c', c_color: idkfa_colors};
         }
 
         GAME_interactions::i_printHello => 
@@ -49,11 +50,11 @@ pub fn main() {
 
         GAME_interactions::i_movPlayer(dir) => {
             let idkfa_direction = dir;
-            DATA_LOCK.DATA_player.p_move(&idkfa_direction, PLAYER::PLAYER_STEP_SIZE)}
+            DATA_LOCK.DATA_player.p_move(&idkfa_direction, vars::PLAYER::PLAYER_STEP_SIZE)}
 
         GAME_interactions::i_leapPlayer(dir) => {
             let idkfa_direction = dir;
-            DATA_LOCK.DATA_player.p_move(&idkfa_direction, PLAYER::PLAYER_LEAP_SIZE)}
+            DATA_LOCK.DATA_player.p_move(&idkfa_direction, vars::PLAYER::PLAYER_LEAP_SIZE)}
 
         GAME_interactions::i_NULL => {}
     }
@@ -65,8 +66,8 @@ pub fn main() {
 #[derive(Clone, Copy)]
 pub enum GAME_interactions {
     i_NULL,
-    i_movPlayer(player::GAME_playerDirections),
-    i_leapPlayer(player::GAME_playerDirections),
+    i_movPlayer(data::player::GAME_playerDirections),
+    i_leapPlayer(data::player::GAME_playerDirections),
     i_changeWorldTile,
     i_printHello,
     i_printDebug,

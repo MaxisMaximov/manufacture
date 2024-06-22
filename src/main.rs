@@ -2,44 +2,26 @@
 #![allow(unused_labels)]
 #![warn(unused_crate_dependencies)]
 
-use once_cell::sync::Lazy;
-use std::{collections::HashMap, sync::Mutex, thread::sleep};
+use std::thread::sleep;
 
+pub use once_cell::sync::Lazy;
 pub use crossterm::{style::{Color, Stylize}, *};
-pub use std::{fmt, io::{stdout, Write}, time, ops::{Index, IndexMut}};
+pub use std::{collections::HashMap, sync::Mutex, fmt, io::{stdout, Write}, time, ops::{Index, IndexMut}};
 
 // Define all subsystems
 mod system;
-mod input;
 mod logic;
 mod renderer;
-mod player;
-mod world;
-mod jsonManager;
-mod errorManager;
+mod data;
+mod sysManagers;
 
 // These are system stuff so yeah
-pub use errorManager::*;
+pub use sysManagers::*;
 pub use system::*;
-
-// This is a mess.
-pub static SYS_data: Lazy<Mutex<DATA_master>> =
-    Lazy::new(|| Mutex::new(DATA_master::new(player::TEMPLATE_player::new(1, None))));
-
-pub static SYS_debug: Lazy<Mutex<DEBUG_master>> =
-    Lazy::new(|| Mutex::new(DEBUG_master::new()));
-
-pub static SYS_errorQueue: Mutex<Vec<SYS_ERROR>> = Mutex::new(Vec::new());
-
-/// Clean up the error queue
-/// A.k.a. get rid of `#MARK_FOR_DELETION` entries
-pub fn ERROR_cleanup() {
-    SYS_errorQueue.lock().unwrap().retain(|v| !v.ERR_markForDel)
-}
 
 // START HERE
 fn main() {
-    SYS_debug.lock().unwrap().DEBUG_items.insert(
+    statics::SYS_debug.lock().unwrap().DEBUG_items.insert(
         "#SSINIT_data".to_string(),
         IDDQD_textItem::new(
             renderer::RENDER_position::None,
@@ -49,7 +31,7 @@ fn main() {
         ),
     );
 
-    SYS_debug.lock().unwrap().DEBUG_items.insert(
+    statics::SYS_debug.lock().unwrap().DEBUG_items.insert(
         "#SYS_processTime".to_string(),
         IDDQD_textItem::new(
             renderer::RENDER_position::None,
@@ -65,7 +47,7 @@ fn main() {
     // Enter alternate screen and hide the cursor
     let _ = execute!(stdout(), 
         terminal::EnterAlternateScreen,
-        terminal::SetSize(RENDERER::RENDER_BUFFER_X as u16, RENDERER::RENDER_BUFFER_Y as u16),
+        terminal::SetSize(vars::RENDERER::RENDER_BUFFER_X as u16, vars::RENDERER::RENDER_BUFFER_Y as u16),
         terminal::SetTitle("manufacture"),
         cursor::Hide
     );
@@ -79,8 +61,8 @@ fn main() {
     renderer::init();
     logic::init();
     input::init();
-    jsonManager::init();
-    errorManager::init();
+    error::init();
+    json::init();
 
     // # THE GAME LOOP
     loop {
@@ -97,63 +79,14 @@ fn main() {
         renderer::main();
 
         // Log how long it took to process everything
-        let mut DEBUG_LOCK = SYS_debug.lock().unwrap();
+        let mut DEBUG_LOCK = statics::SYS_debug.lock().unwrap();
         DEBUG_LOCK.DEBUG_items.get_mut("#SYS_processTime").unwrap()
             .t_values = format!("{:?}", loopStart.elapsed());
 
         let loop_elapsedTime: time::Duration = loopStart.elapsed();
-        if loop_elapsedTime < system::SYS_TICKTIME {
-            sleep(system::SYS_TICKTIME - loop_elapsedTime)
+        if loop_elapsedTime < vars::SYS::TICKTIME {
+            sleep(vars::SYS::TICKTIME - loop_elapsedTime)
         }
-    }
-}
-
-/// # Master Data struct
-/// Holds every required data of the game such as player and world, soon buildings
-pub struct DATA_master {
-    pub DATA_player: player::TEMPLATE_player,
-    pub DATA_world: world::TEMPLATE_world,
-    pub DATA_textItems: Vec<IDDQD_textItem>,
-    pub DATA_playerInput: logic::GAME_interactions,
-    #[allow(unused)]
-    DATA_cache: HashMap<String, CACHE_TYPE>,
-}
-impl DATA_master {
-    pub fn new(IN_player: player::TEMPLATE_player) -> Self {
-        Self {
-            DATA_player: IN_player,
-            DATA_world: world::TEMPLATE_world::new(),
-            DATA_textItems: Vec::new(),
-            DATA_playerInput: logic::GAME_interactions::i_NULL,
-            DATA_cache: HashMap::new(),
-        }
-    }
-    pub fn DATA_textItemCleanup(&mut self) {
-        self.DATA_textItems
-            .retain(|x| x.t_string != "#MARK_FOR_DELETION")
-    }
-}
-
-/// # Master Debug Struct
-/// Holds the Debug info from subsystems
-///
-/// Reason I made this?  
-/// So that Deadlocks don't happen with `SYS_data` because apparently it really likes to do that
-pub struct DEBUG_master {
-    pub DEBUG_items: HashMap<String, IDDQD_textItem>,
-}
-impl DEBUG_master {
-    pub fn new() -> Self {
-        Self {
-            DEBUG_items: HashMap::new(),
-        }
-    }
-
-    /// Clean up the hashmap
-    /// A.k.a. get rid of `#MARK_FOR_DELETION` entries
-    pub fn DEBUG_cleanup(&mut self) {
-        self.DEBUG_items
-            .retain(|_, v| !v.t_markForDel)
     }
 }
 
@@ -164,8 +97,8 @@ impl DEBUG_master {
 pub enum CACHE_TYPE {
     CACHE_usize(usize),
     CACHE_u8(u8),
-    CACHE_vec2(TYPE::vector2),
-    CACHE_vec3(TYPE::vector3),
+    CACHE_vec2(types::vector2),
+    CACHE_vec3(types::vector3),
     CACHE_interactCode(logic::GAME_interactions),
 }
 
@@ -193,7 +126,7 @@ impl IDDQD_textItem {
     ) -> Self {
         // Check if it's a debug string
         let idkfa_string = if IN_text.starts_with('.') {
-            jsonManager::debugStr(IN_text, MISC::PATHS::PATH_DEBUG).unwrap_or(IN_text.to_string())
+            json::debugStr(IN_text, vars::MISC::PATHS::PATH_DEBUG).unwrap_or(IN_text.to_string())
         } else {
             IN_text.to_string()
         };
@@ -231,8 +164,8 @@ impl fmt::Display for IDDQD_textItem {
         write!(
             f,
             "{} {}",
-            &self.t_string.clone().with(MISC::COLORS::COLORS_DEF.0),
-            &self.t_values.clone().with(MISC::COLORS::COLORS_DEF.1)
+            &self.t_string.clone().with(vars::MISC::COLORS::COLORS_DEF.0),
+            &self.t_values.clone().with(vars::MISC::COLORS::COLORS_DEF.1)
         )
     }
 }
@@ -244,8 +177,8 @@ impl fmt::Debug for IDDQD_textItem {
         write!(
             f,
             "{} {}",
-            &self.t_string.clone().with(MISC::COLORS::COLORS_DEBUG.0),
-            &self.t_values.clone().with(MISC::COLORS::COLORS_DEBUG.1)
+            &self.t_string.clone().with(vars::MISC::COLORS::COLORS_DEBUG.0),
+            &self.t_values.clone().with(vars::MISC::COLORS::COLORS_DEBUG.1)
         )
     }
 }
