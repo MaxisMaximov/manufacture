@@ -8,12 +8,22 @@ pub fn init(){
     'INIT_debugStr:{
         DEBUG_LOCK.DEBUG_items.insert(
             "#LOGIC_interaction".to_string(),
-            IDDQD_textItem::new( renderer::RENDER_position::None, ".DEBUG_logic/#LOGIC_interaction", "", 255)
+            debug::DEBUG_item::new(
+                ".DEBUG_logic/#LOGIC_interaction",
+                MISC::PATHS::PATH_DEBUG,
+                "", 
+                255
+            )
         );
 
         DEBUG_LOCK.DEBUG_items.insert(
             "#SSINIT_logic".to_string(),
-            IDDQD_textItem::new( renderer::RENDER_position::None, ".DEBUG_sys/.SYS_ssInit/#SSINIT_logic", "", 40)
+            debug::DEBUG_item::new(
+                ".DEBUG_sys/.SYS_ssInit/#SSINIT_logic",
+                MISC::PATHS::PATH_DEBUG,
+                "", 
+                40
+            )
         );
     }
 }
@@ -26,7 +36,7 @@ pub fn init(){
 pub fn main() {
     let mut DATA_LOCK = statics::SYS_data.lock().unwrap();
 
-    statics::SYS_debug.lock().unwrap().DEBUG_items.get_mut("#LOGIC_interaction").unwrap().t_values = format!("{}", DATA_LOCK.DATA_playerInput);
+    statics::SYS_debug.lock().unwrap().DEBUG_items.get_mut("#LOGIC_interaction").unwrap().values = format!("{}", DATA_LOCK.DATA_playerInput);
 
     match DATA_LOCK.DATA_playerInput {
 

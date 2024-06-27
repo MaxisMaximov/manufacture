@@ -9,12 +9,22 @@ pub fn init(){
     'INIT_debugStr: {
         DEBUG_LOCK.DEBUG_items.insert(
             "#INPUT_keyType".to_string(),
-            IDDQD_textItem::new(renderer::RENDER_position::None, ".DEBUG_input/#INPUT_keyType", "", 255)
+            debug::DEBUG_item::new(
+                ".DEBUG_input/#INPUT_keyType",
+                MISC::PATHS::PATH_DEBUG,
+                "",
+                255
+            )
         );
 
         DEBUG_LOCK.DEBUG_items.insert(
             "#INPUT_init".to_string(),
-            IDDQD_textItem::new(renderer::RENDER_position::None, ".DEBUG_sys/.SYS_ssInit/#SSINIT_input", "", 40)
+            debug::DEBUG_item::new(
+                ".DEBUG_sys/.SYS_ssInit/#SSINIT_input",
+                MISC::PATHS::PATH_DEBUG,
+                "",
+                40
+            )
         );
     }
 }
@@ -35,7 +45,7 @@ pub fn main(){
                 DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_NULL;
                 return;
             }
-            DEBUG_LOCK.DEBUG_items.get_mut("#INPUT_keyType").unwrap().t_values = format!("{:?}", code);
+            DEBUG_LOCK.DEBUG_items.get_mut("#INPUT_keyType").unwrap().values = format!("{:?}", code);
             match code {
                 KeyCode::Up => {
                     // Check if it should be a leap instead
@@ -87,6 +97,6 @@ pub fn main(){
             return;
         }
     }
-    DEBUG_LOCK.DEBUG_items.get_mut("#INPUT_keyType").unwrap().t_values = "None".to_string();
+    DEBUG_LOCK.DEBUG_items.get_mut("#INPUT_keyType").unwrap().values = "None".to_string();
     DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_NULL;
 }

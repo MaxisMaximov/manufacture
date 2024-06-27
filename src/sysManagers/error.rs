@@ -3,9 +3,9 @@ use super::*;
 pub fn init() {
     statics::SYS_debug.lock().unwrap().DEBUG_items.insert(
         "#SSINIT_error".to_string(),
-        IDDQD_textItem::new(
-            renderer::RENDER_position::None,
+        debug::DEBUG_item::new(
             ".DEBUG_sys/.SYS_ssInit/#SSINIT_error",
+            MISC::PATHS::PATH_DEBUG,
             "",
             40,
         ),

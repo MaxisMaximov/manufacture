@@ -6,6 +6,7 @@ use std::thread::sleep;
 
 pub use once_cell::sync::Lazy;
 pub use crossterm::{style::{Color, Stylize}, *};
+use vars::MISC;
 pub use std::{collections::HashMap, sync::Mutex, fmt, io::{stdout, Write}, time, ops::{Index, IndexMut}};
 
 // Define all subsystems
@@ -23,9 +24,9 @@ pub use system::*;
 fn main() {
     statics::SYS_debug.lock().unwrap().DEBUG_items.insert(
         "#SSINIT_data".to_string(),
-        IDDQD_textItem::new(
-            renderer::RENDER_position::None,
+        debug::DEBUG_item::new(
             ".DEBUG_sys/.SYS_ssInit/#SSINIT_data",
+            MISC::PATHS::PATH_DEBUG,
             "",
             40,
         ),
@@ -33,9 +34,9 @@ fn main() {
 
     statics::SYS_debug.lock().unwrap().DEBUG_items.insert(
         "#SYS_processTime".to_string(),
-        IDDQD_textItem::new(
-            renderer::RENDER_position::None,
+        debug::DEBUG_item::new(
             ".DEBUG_sys/#SYS_processSpeed",
+            MISC::PATHS::PATH_DEBUG,
             "",
             255,
         ),
@@ -81,7 +82,7 @@ fn main() {
         // Log how long it took to process everything
         let mut DEBUG_LOCK = statics::SYS_debug.lock().unwrap();
         DEBUG_LOCK.DEBUG_items.get_mut("#SYS_processTime").unwrap()
-            .t_values = format!("{:?}", loopStart.elapsed());
+            .values = format!("{:?}", loopStart.elapsed());
 
         let loop_elapsedTime: time::Duration = loopStart.elapsed();
         if loop_elapsedTime < vars::SYS::TICKTIME {
@@ -166,19 +167,6 @@ impl fmt::Display for IDDQD_textItem {
             "{} {}",
             &self.t_string.clone().with(vars::MISC::COLORS::COLORS_DEF.0),
             &self.t_values.clone().with(vars::MISC::COLORS::COLORS_DEF.1)
-        )
-    }
-}
-// Display for debug stuff
-// TODO: Split textBox from debugItem.
-// Again.
-impl fmt::Debug for IDDQD_textItem {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "{} {}",
-            &self.t_string.clone().with(vars::MISC::COLORS::COLORS_DEBUG.0),
-            &self.t_values.clone().with(vars::MISC::COLORS::COLORS_DEBUG.1)
         )
     }
 }

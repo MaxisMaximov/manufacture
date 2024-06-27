@@ -20,35 +20,67 @@ static RENDER_mainBuffer: Lazy<Mutex<RENDER_buffer>> = Lazy::new(|| {
 
 pub fn init() {
     let mut DEBUG_LOCK = statics::SYS_debug.lock().unwrap();
+
+    // Bloody hell this is long
     'INIT_debugStr: {
         DEBUG_LOCK.DEBUG_items.insert(
             "#RENDER_frameTime".to_string(),
-            IDDQD_textItem::new(RENDER_position::None,".DEBUG_render/#RENDER_frameTime", "", 255),
+            debug::DEBUG_item::new(
+                ".DEBUG_render/#RENDER_frameTime",
+                MISC::PATHS::PATH_DEBUG,
+                "",
+                255
+            ),
         );
 
         DEBUG_LOCK.DEBUG_items.insert(
             "#RENDER_worldTime".to_string(),
-            IDDQD_textItem::new(RENDER_position::None,".DEBUG_render/#RENDER_worldTime", "", 255),
+            debug::DEBUG_item::new(
+                ".DEBUG_render/#RENDER_worldTime",
+                MISC::PATHS::PATH_DEBUG,
+                "",
+                255
+            ),
         );
 
         DEBUG_LOCK.DEBUG_items.insert(
             "#RENDER_convTime".to_string(),
-            IDDQD_textItem::new(RENDER_position::None,".DEBUG_render/#RENDER_convTime", "", 255),
+            debug::DEBUG_item::new(
+                ".DEBUG_render/#RENDER_convTime",
+                MISC::PATHS::PATH_DEBUG,
+                "",
+                255
+            ),
         );
 
         DEBUG_LOCK.DEBUG_items.insert(
             "#RENDER_borderTime".to_string(),
-            IDDQD_textItem::new(RENDER_position::None,".DEBUG_render/#RENDER_borderTime", "", 255),
+            debug::DEBUG_item::new(
+                ".DEBUG_render/#RENDER_borderTime",
+                MISC::PATHS::PATH_DEBUG,
+                "",
+                255
+            ),
         );
 
         DEBUG_LOCK.DEBUG_items.insert(
             "#RENDER_textTime".to_string(),
-            IDDQD_textItem::new(RENDER_position::None,".DEBUG_render/#RENDER_textTime", "", 255),
+            debug::DEBUG_item::new(
+                ".DEBUG_render/#RENDER_textTime",
+                MISC::PATHS::PATH_DEBUG,
+                "",
+                255
+            ),
         );
 
         DEBUG_LOCK.DEBUG_items.insert(
             "#SSINIT_render".to_string(),
-            IDDQD_textItem::new(RENDER_position::None,".DEBUG_sys/.SYS_ssInit/#SSINIT_render", "", 40),
+            debug::DEBUG_item::new(
+                ".DEBUG_sys/.SYS_ssInit/#SSINIT_render",
+                MISC::PATHS::PATH_DEBUG,
+                "",
+                40
+            ),
         );
     }
 }
@@ -67,7 +99,7 @@ pub fn main() {
         .DEBUG_items
         .get_mut("#RENDER_worldTime")
         .unwrap()
-        .t_values = format!("{:?}", loopStart.elapsed())
+        .values = format!("{:?}", loopStart.elapsed())
     }
 
     // Set cell for the player
@@ -96,7 +128,7 @@ pub fn main() {
             .DEBUG_items
             .get_mut("#RENDER_borderTime")
             .unwrap()
-            .t_values = format!("{:?}", loopStart.elapsed())
+            .values = format!("{:?}", loopStart.elapsed())
     }
 
     'RENDER_renderText: {
@@ -108,7 +140,7 @@ pub fn main() {
             .DEBUG_items
             .get_mut("#RENDER_textTime")
             .unwrap()
-            .t_values = format!("{:?}", loopStart.elapsed())
+            .values = format!("{:?}", loopStart.elapsed())
     }
     
     // Print frame
@@ -150,7 +182,7 @@ pub fn main() {
             .DEBUG_items
             .get_mut("#RENDER_convTime")
             .unwrap()
-            .t_values = format!("{:?}", loopStart.elapsed());
+            .values = format!("{:?}", loopStart.elapsed());
     }
 
     // Log how long the entire process took
@@ -158,7 +190,7 @@ pub fn main() {
         .DEBUG_items
         .get_mut("#RENDER_frameTime")
         .unwrap()
-        .t_values = format!("{:?}", RENDER_start.elapsed());
+        .values = format!("{:?}", RENDER_start.elapsed());
 
     // Drop the Debug lock, we're done here
     drop(DEBUG_LOCK);

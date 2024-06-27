@@ -53,13 +53,13 @@ pub fn render_debug() {
     // Iterate debug stuff
     for DEBUGSTR in DEBUG_LOCK.DEBUG_items.values_mut() {
         // Ignore these strings
-        if DEBUGSTR.t_markForDel {
+        if DEBUGSTR.markForDel {
             continue;
         }
 
-        let _ = write!(STDOUT_LOCK, "{:?}\r\n", DEBUGSTR);
+        let _ = write!(STDOUT_LOCK, "{}\r\n", DEBUGSTR);
 
-        DEBUGSTR.TEXT_tickdown()
+        DEBUGSTR.DEBUG_tickdown()
     }
 
     // Iterate error stuff
