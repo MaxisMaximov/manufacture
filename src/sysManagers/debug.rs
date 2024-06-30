@@ -24,8 +24,9 @@ impl DEBUG_master {
 }
 
 pub struct DEBUG_item {
+    pub class: DEBUG_class,
     pub string: String,
-    pub values: String,
+    pub values: Vec<(&'static str, String)>,
     pub lifetime: u16,
     pub markForDel: bool,
 }
@@ -34,16 +35,18 @@ impl DEBUG_item {
     ///
     /// The one used to place text somewhere in the game
     pub fn new(
+        IN_class: DEBUG_class,
         IN_spec: &str,
         IN_debugPath: &str,
-        IN_values: &str,
+        IN_values: &[(&'static str, String)],
         IN_lifetime: u16,
     ) -> Self {
         // Check if it's a debug string
         
         Self {
+            class: IN_class,
             string: json::debugStr(IN_spec, IN_debugPath).unwrap_or(IN_spec.to_string()),
-            values: IN_values.to_string(),
+            values: IN_values.to_vec(),
             lifetime: IN_lifetime,
             markForDel: false,
         }
@@ -69,13 +72,24 @@ impl DEBUG_item {
     }
 }
 
-impl fmt::Display for DEBUG_item {
+pub enum DEBUG_class{
+    idkfa,
+    info,
+    warn,
+    error,
+    fatal
+}
+
+impl fmt:: Display for DEBUG_class{
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "{} {}",
-            &self.string.clone().with(vars::MISC::COLORS::COLORS_DEBUG.0),
-            &self.values.clone().with(vars::MISC::COLORS::COLORS_DEBUG.1)
-        )
+        let idkfa_fmtString = match self{
+            Self::idkfa => "*idkfa".with(Color::White),
+            Self::info => "#info".with(Color::Yellow),
+            Self::warn => "$warn".with(Color::Rgb {r: 255, g: 153, b: 0}),
+            Self::error => "!error".with(Color::Magenta),
+            Self::fatal => "%FATAL".with(Color::Red),
+        };
+
+        f.write_str(&idkfa_fmtString.to_string())
     }
 }

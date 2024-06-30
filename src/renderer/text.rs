@@ -32,10 +32,6 @@ pub fn render_textBox() {
 
             RTEXT_charPosition.0 += 1
         }
-        
-        if RTEXT.t_lifetime == 255 {
-            continue;
-        }
 
         RTEXT.TEXT_tickdown();
     }
@@ -43,12 +39,11 @@ pub fn render_textBox() {
     DATA_LOCK.DATA_textItemCleanup()
 }
 
-/// # Print debug and Error stuff
+/// # Print debug and error stuff
 pub fn render_debug() {
     // Lock and load
     let mut STDOUT_LOCK = stdout().lock();
     let mut DEBUG_LOCK = statics::SYS_debug.lock().unwrap();
-    let mut ERROR_LOCK = statics::SYS_errorQueue.lock().unwrap();
 
     // Iterate debug stuff
     for DEBUGSTR in DEBUG_LOCK.DEBUG_items.values_mut() {
@@ -57,21 +52,13 @@ pub fn render_debug() {
             continue;
         }
 
-        let _ = write!(STDOUT_LOCK, "{}\r\n", DEBUGSTR);
+        let _ = write!(STDOUT_LOCK, "{} | {} <> {}\r\n",
+            DEBUGSTR.class,
+            render_util::misc::runtimeFmt(&DEBUGSTR.string, &DEBUGSTR.values),
+            DEBUGSTR.lifetime
+        );
 
         DEBUGSTR.DEBUG_tickdown()
-    }
-
-    // Iterate error stuff
-    for ERRORSTR in ERROR_LOCK.inner.iter_mut(){
-        // Ignore these errors
-        if ERRORSTR.ERR_markForDel{
-            continue;
-        }
-
-        let _ = write!(STDOUT_LOCK, "{:?}\r\n", ERRORSTR);
-
-        ERRORSTR.ERR_tickdown()
     }
 
     // Print everything to screen
@@ -79,5 +66,4 @@ pub fn render_debug() {
 
     // And clean up
     DEBUG_LOCK.cleanup();
-    ERROR_LOCK.cleanup();
 }

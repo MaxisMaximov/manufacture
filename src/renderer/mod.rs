@@ -10,7 +10,6 @@ mod world;
 mod text;
 mod render_util;
 
-
 static RENDER_mainBuffer: Lazy<Mutex<RENDER_buffer>> = Lazy::new(|| {
     Mutex::new(RENDER_buffer::new((
         vars::RENDERER::RENDER_BUFFER_X,
@@ -24,61 +23,67 @@ pub fn init() {
     // Bloody hell this is long
     'INIT_debugStr: {
         DEBUG_LOCK.DEBUG_items.insert(
-            "#RENDER_frameTime".to_string(),
+            ">RENDER_frameTime".to_string(),
             debug::DEBUG_item::new(
-                ".DEBUG_render/#RENDER_frameTime",
+                debug::DEBUG_class::info,
+                ".RENDER/#frameTime",
                 MISC::PATHS::PATH_DEBUG,
-                "",
+                &[("{time}", "".to_owned())],
                 255
             ),
         );
 
         DEBUG_LOCK.DEBUG_items.insert(
-            "#RENDER_worldTime".to_string(),
+            ">RENDER_worldTime".to_string(),
             debug::DEBUG_item::new(
-                ".DEBUG_render/#RENDER_worldTime",
+                debug::DEBUG_class::info,
+                ".RENDER/#worldTime",
                 MISC::PATHS::PATH_DEBUG,
-                "",
+                &[("{time}", "".to_owned())],
                 255
             ),
         );
 
         DEBUG_LOCK.DEBUG_items.insert(
-            "#RENDER_convTime".to_string(),
+            ">RENDER_convTime".to_string(),
             debug::DEBUG_item::new(
-                ".DEBUG_render/#RENDER_convTime",
+                debug::DEBUG_class::info,
+                ".RENDER/#convTime",
                 MISC::PATHS::PATH_DEBUG,
-                "",
+                &[("{time}", "".to_owned())],
                 255
             ),
         );
 
         DEBUG_LOCK.DEBUG_items.insert(
-            "#RENDER_borderTime".to_string(),
+            ">RENDER_borderTime".to_string(),
             debug::DEBUG_item::new(
-                ".DEBUG_render/#RENDER_borderTime",
+                debug::DEBUG_class::info,
+                ".RENDER/#borderTime",
                 MISC::PATHS::PATH_DEBUG,
-                "",
+                &[("{time}", "".to_owned())],
                 255
             ),
         );
 
         DEBUG_LOCK.DEBUG_items.insert(
-            "#RENDER_textTime".to_string(),
+            ">RENDER_textTime".to_string(),
             debug::DEBUG_item::new(
-                ".DEBUG_render/#RENDER_textTime",
+                debug::DEBUG_class::info,
+                ".RENDER/#textTime",
                 MISC::PATHS::PATH_DEBUG,
-                "",
+                &[("{time}", "".to_owned())],
                 255
             ),
         );
 
         DEBUG_LOCK.DEBUG_items.insert(
-            "#SSINIT_render".to_string(),
+            ">SYS_SSINIT_render".to_string(),
             debug::DEBUG_item::new(
-                ".DEBUG_sys/.SYS_ssInit/#SSINIT_render",
+                debug::DEBUG_class::info,
+                ".SYS/.SYS_ssInit/#SSINIT_render",
                 MISC::PATHS::PATH_DEBUG,
-                "",
+                &[],
                 40
             ),
         );
@@ -97,9 +102,9 @@ pub fn main() {
 
         DEBUG_LOCK
         .DEBUG_items
-        .get_mut("#RENDER_worldTime")
+        .get_mut(">RENDER_worldTime")
         .unwrap()
-        .values = format!("{:?}", loopStart.elapsed())
+        .values[0].1 = format!("{:?}", loopStart.elapsed())
     }
 
     // Set cell for the player
@@ -126,9 +131,9 @@ pub fn main() {
 
         DEBUG_LOCK
             .DEBUG_items
-            .get_mut("#RENDER_borderTime")
+            .get_mut(">RENDER_borderTime")
             .unwrap()
-            .values = format!("{:?}", loopStart.elapsed())
+            .values[0].1 = format!("{:?}", loopStart.elapsed())
     }
 
     'RENDER_renderText: {
@@ -138,9 +143,9 @@ pub fn main() {
 
         DEBUG_LOCK
             .DEBUG_items
-            .get_mut("#RENDER_textTime")
+            .get_mut(">RENDER_textTime")
             .unwrap()
-            .values = format!("{:?}", loopStart.elapsed())
+            .values[0].1 = format!("{:?}", loopStart.elapsed())
     }
     
     // Print frame
@@ -168,7 +173,7 @@ pub fn main() {
                     RENDER_cell
                 );
             }
-            write!(STDOUT_LOCK, "\r\n").unwrap()
+            let _ = write!(STDOUT_LOCK, "\r\n");
         }
 
         // End sync and push the frame
@@ -177,20 +182,23 @@ pub fn main() {
         // Reset the buffer
         BUFFER_LOCK.reset();
 
+        // Reset the colors
+        let _ = write!(STDOUT_LOCK, "{}", "".with(vars::MISC::COLORS::COLORS_DEF.0).on(vars::MISC::COLORS::COLORS_DEF.1));
+
         // And log the time
         DEBUG_LOCK
             .DEBUG_items
-            .get_mut("#RENDER_convTime")
+            .get_mut(">RENDER_convTime")
             .unwrap()
-            .values = format!("{:?}", loopStart.elapsed());
+            .values[0].1 = format!("{:?}", loopStart.elapsed());
     }
 
     // Log how long the entire process took
     DEBUG_LOCK
         .DEBUG_items
-        .get_mut("#RENDER_frameTime")
+        .get_mut(">RENDER_frameTime")
         .unwrap()
-        .values = format!("{:?}", RENDER_start.elapsed());
+        .values[0].1 = format!("{:?}", RENDER_start.elapsed());
 
     // Drop the Debug lock, we're done here
     drop(DEBUG_LOCK);

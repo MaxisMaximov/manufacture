@@ -8,21 +8,23 @@ pub fn init(){
 
     'INIT_debugStr: {
         DEBUG_LOCK.DEBUG_items.insert(
-            "#INPUT_keyType".to_string(),
+            ">INPUT_keyType".to_string(),
             debug::DEBUG_item::new(
-                ".DEBUG_input/#INPUT_keyType",
+                debug::DEBUG_class::info,
+                ".INPUT/#keyType",
                 MISC::PATHS::PATH_DEBUG,
-                "",
+                &[("{key}", "".to_owned())],
                 255
             )
         );
 
         DEBUG_LOCK.DEBUG_items.insert(
-            "#INPUT_init".to_string(),
+            ">SYS_SSINIT_input".to_string(),
             debug::DEBUG_item::new(
+                debug::DEBUG_class::info,
                 ".DEBUG_sys/.SYS_ssInit/#SSINIT_input",
                 MISC::PATHS::PATH_DEBUG,
-                "",
+                &[],
                 40
             )
         );
@@ -45,39 +47,39 @@ pub fn main(){
                 DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_NULL;
                 return;
             }
-            DEBUG_LOCK.DEBUG_items.get_mut("#INPUT_keyType").unwrap().values = format!("{:?}", code);
+            DEBUG_LOCK.DEBUG_items.get_mut(">INPUT_keyType").unwrap().values[0].1 = format!("{:?}", code);
             match code {
                 KeyCode::Up => {
                     // Check if it should be a leap instead
                     if modifiers == KeyModifiers::SHIFT{
-                        DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_leapPlayer(data::player::GAME_playerDirections::DIR_up);
+                        DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_leapPlayer(logic::GAME_playerDirections::DIR_up);
                         return;
                     }
-                    DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_movPlayer(data::player::GAME_playerDirections::DIR_up);
+                    DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_movPlayer(logic::GAME_playerDirections::DIR_up);
                 }
                 KeyCode::Down => {
                     // Check if it should be a leap instead
                     if modifiers == KeyModifiers::SHIFT{
-                        DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_leapPlayer(data::player::GAME_playerDirections::DIR_down);
+                        DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_leapPlayer(logic::GAME_playerDirections::DIR_down);
                         return;
                     }
-                    DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_movPlayer(data::player::GAME_playerDirections::DIR_down);
+                    DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_movPlayer(logic::GAME_playerDirections::DIR_down);
                 }
                 KeyCode::Left => {
                     // Check if it should be a leap instead
                     if modifiers == KeyModifiers::SHIFT{
-                        DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_leapPlayer(data::player::GAME_playerDirections::DIR_left);
+                        DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_leapPlayer(logic::GAME_playerDirections::DIR_left);
                         return;
                     }
-                    DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_movPlayer(data::player::GAME_playerDirections::DIR_left);
+                    DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_movPlayer(logic::GAME_playerDirections::DIR_left);
                 }
                 KeyCode::Right => {
                     // Check if it should be a leap instead
                     if modifiers == KeyModifiers::SHIFT{
-                        DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_leapPlayer(data::player::GAME_playerDirections::DIR_right);
+                        DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_leapPlayer(logic::GAME_playerDirections::DIR_right);
                         return;
                     }
-                    DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_movPlayer(data::player::GAME_playerDirections::DIR_right);
+                    DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_movPlayer(logic::GAME_playerDirections::DIR_right);
                 }
                 KeyCode::Char('f') => DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_printHello,
                 KeyCode::Char('g') => DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_printDebug,
@@ -97,6 +99,6 @@ pub fn main(){
             return;
         }
     }
-    DEBUG_LOCK.DEBUG_items.get_mut("#INPUT_keyType").unwrap().values = "None".to_string();
+    DEBUG_LOCK.DEBUG_items.get_mut(">INPUT_keyType").unwrap().values[0].1 = "None".to_owned();
     DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_NULL;
 }

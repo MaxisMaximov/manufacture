@@ -1,35 +1,45 @@
 {
-    ".DEBUG_sys":{
-        ".SYS_ssInit":{
-            "#SSINIT_data": "Data Container initialized",
-            "#SSINIT_logic": "Logic initialized",
-            "#SSINIT_render": "Renderer initialized",
-            "#SSINIT_input": "Input manager initialized",
-            "#SSINIT_json": "Json manager initialized",
-            "#SSINIT_error": "Error manager initialized"
+    ".SYS":{
+        ".SSINIT":{
+            "#data": "Data Container initialized",
+            "#logic": "Logic initialized",
+            "#render": "Renderer initialized",
+            "#input": "Input manager initialized",
+            "#json": "Json manager initialized",
+            "#error": "Error manager initialized"
         },
-        "#SYS_processSpeed": "Previous tick finished processing in:"
+        "#processSpeed": "Previous tick finished processing in {time}"
     },
-    ".DEBUG_input":{
-        "#INPUT_keyType": "Key pressed:"
+    ".INPUT":{
+        "#keyType": "Key pressed: {key}"
     },
-    ".DEBUG_render":{
-        "#RENDER_frameTime": "Rendered frame in:",
-        "#RENDER_textItem": "Rendered text item (id/position):",
-        "#RENDER_worldTime": "Render world function time:",
-        "#RENDER_convTime": "Converted buffer to string in:",
-        "#RENDER_borderTime": "Renderer border in:",
-        "#RENDER_textTime": "Rendered all text in: "
+    ".RENDER":{
+        "#frameTime": "Rendered frame in {time}",
+        "#textItem": "Rendered text item {id} at {loc}",
+        "#worldTime": "Rendered world in {time}",
+        "#convTime": "Converted buffer to string in {time}",
+        "#borderTime": "Renderer border in {time}",
+        "#textTime": "Rendered all text in {time}",
+
+        "$textLocOutInvis": "Textbox {id}'s location {coords} is outside of Render Buffer and not visible",
+        "$borderLocOutInvis": "Border {id}'s location {coords} is outside of Render Buffer and not visible",
+        "$screenSize": "Terminals size is too small!\nRecommended size: {defSize}\nCurrent size: {curSize}"
     },
-    ".DEBUG_logic":{
-        "#LOGIC_interaction": "Current interaction:"
+    ".LOGIC":{
+        "#interaction": "Current interaction {inter}"
     },
-    ".DEBUG_world":{
-        ".WORLD_gen": {
-            "#GEN_done": "Finished generating world",
-            "#GEN_lake": "Generated lake (location/iters):",
-            "#GEN_forest": "Generated forest at (location/iters):"
+    ".WORLD":{
+        ".GEN": {
+            "#done": "Finished generating world",
+            "#lake": "Generated lake at {loc} with {iters} iters",
+            "#forest": "Generated forest at {loc} with {iters} iters"
         },
-        "#WORLD_clear": "Cleared world"
+        "#clear": "Cleared world"
+
+    },
+    ".JSON":{
+        "!read": "Couldn't read {data} from {file}",
+        "!noFile": "Couldn't find file in {path}",
+        "!write": "Couldn't write {data} to {file}"
     }
 }

@@ -23,21 +23,23 @@ pub use system::*;
 // START HERE
 fn main() {
     statics::SYS_debug.lock().unwrap().DEBUG_items.insert(
-        "#SSINIT_data".to_string(),
+        ">SYS_SSINIT_data".to_string(),
         debug::DEBUG_item::new(
-            ".DEBUG_sys/.SYS_ssInit/#SSINIT_data",
+            debug::DEBUG_class::info,
+            ".SYS/.SSINIT/#data",
             MISC::PATHS::PATH_DEBUG,
-            "",
+            &[],
             40,
         ),
     );
 
     statics::SYS_debug.lock().unwrap().DEBUG_items.insert(
-        "#SYS_processTime".to_string(),
+        ">SYS_processSpeed".to_string(),
         debug::DEBUG_item::new(
-            ".DEBUG_sys/#SYS_processSpeed",
+            debug::DEBUG_class::info,
+            ".SYS/#processSpeed",
             MISC::PATHS::PATH_DEBUG,
-            "",
+            &[("{time}", "".to_owned())],
             255,
         ),
     );
@@ -62,7 +64,6 @@ fn main() {
     renderer::init();
     logic::init();
     input::init();
-    error::init();
     json::init();
 
     // # THE GAME LOOP
@@ -81,8 +82,10 @@ fn main() {
 
         // Log how long it took to process everything
         let mut DEBUG_LOCK = statics::SYS_debug.lock().unwrap();
-        DEBUG_LOCK.DEBUG_items.get_mut("#SYS_processTime").unwrap()
-            .values = format!("{:?}", loopStart.elapsed());
+        DEBUG_LOCK.DEBUG_items
+            .get_mut(">SYS_processSpeed")
+            .unwrap()
+            .values[0].1 = format!("{:?}", loopStart.elapsed());
 
         let loop_elapsedTime: time::Duration = loopStart.elapsed();
         if loop_elapsedTime < vars::SYS::TICKTIME {

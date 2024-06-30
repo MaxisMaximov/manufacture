@@ -105,9 +105,7 @@ pub mod MISC {
 
         /// Default path to Debugs
         pub const PATH_DEBUG: &str = "./src/json/debug.json";
-
-        /// Default path to Errors
-        pub const PATH_ERROR: &str = "./src/json/error.json";
+        
     }
 }
 pub mod PLAYER{

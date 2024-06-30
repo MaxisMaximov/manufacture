@@ -10,11 +10,12 @@ use super::*;
 
 pub fn init() {
     statics::SYS_debug.lock().unwrap().DEBUG_items.insert(
-        "#SSINIT_json".to_string(),
+        ">SYS_SSINIT_json".to_string(),
         debug::DEBUG_item::new(
+            debug::DEBUG_class::info,
             ".DEBUG_sys/.SYS_ssInit/#SSINIT_json",
             MISC::PATHS::PATH_DEBUG,
-            "",
+            &[],
             40,
         ),
     );
@@ -30,10 +31,13 @@ pub fn debugStr(IN_index: &str, IN_filePath: &str) -> Result<String, ()> {
             Ok(FILE) => FILE,
             Err(_) => 
             {
-                statics::SYS_errorQueue.lock().unwrap().inner.push(error::SYS_ERROR::new(
+                statics::SYS_debug.lock().unwrap().DEBUG_items.insert(
+                    "idkfa".to_string(),
+                    debug::DEBUG_item::new(
+                        debug::DEBUG_class::error,
                     ".ERR_json/!JSON_noFile",
-                    vars::MISC::PATHS::PATH_ERROR,
-                    &vec![("{PATH}", IN_filePath.to_string())],
+                    vars::MISC::PATHS::PATH_DEBUG,
+                    &[("{path}", IN_filePath.to_owned())],
                     40
                 ));
                 return Err(());
@@ -52,11 +56,14 @@ pub fn debugStr(IN_index: &str, IN_filePath: &str) -> Result<String, ()> {
         if idkfa_value.is_null() {
 
             // Just not to Deadlock
-            if let Ok(mut ERRQUEUE) = statics::SYS_errorQueue.try_lock(){
-                ERRQUEUE.inner.push(error::SYS_ERROR::new(
-                    ".ERR_json/!JSON_readString",
-                    vars::MISC::PATHS::PATH_ERROR,
-                    &vec![("{ID}", IN_index.to_string()), ("{FILE}", IN_filePath.rsplit_once('/').unwrap().1.to_owned())],
+            if let Ok(mut DEBUG) = statics::SYS_debug.try_lock(){
+                DEBUG.DEBUG_items.insert(
+                    "iddqd".to_owned(),
+                    debug::DEBUG_item::new(
+                        debug::DEBUG_class::error,
+                    ".JSON/!readString",
+                    vars::MISC::PATHS::PATH_DEBUG,
+                    &[("{id}", IN_index.to_owned()), ("{file}", IN_filePath.rsplit_once('/').unwrap().1.to_owned())],
                     40,
                 ));
             }

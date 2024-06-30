@@ -34,18 +34,18 @@ impl TEMPLATE_player {
             p_color: (Color::White, Fp_playerColor) }
     }
 
-    pub fn p_move(&mut self, dir: &GAME_playerDirections, stepSize: usize) {
+    pub fn p_move(&mut self, dir: &logic::GAME_playerDirections, stepSize: usize) {
         match dir {
-            GAME_playerDirections::DIR_up => {
+            logic::GAME_playerDirections::DIR_up => {
                 self.p_pos.1 = self.p_pos.1.saturating_sub(stepSize);
             }
-            GAME_playerDirections::DIR_down => {
+            logic::GAME_playerDirections::DIR_down => {
                 self.p_pos.1 = self.p_pos.1.add(stepSize).clamp(0, vars::WORLD::GENERAL::GRID_Y);
             }
-            GAME_playerDirections::DIR_left => {
+            logic::GAME_playerDirections::DIR_left => {
                 self.p_pos.0 = self.p_pos.0.saturating_sub(stepSize);
             }
-            GAME_playerDirections::DIR_right => {
+            logic::GAME_playerDirections::DIR_right => {
                 self.p_pos.0 = self.p_pos.0.add(stepSize).clamp(0, vars::WORLD::GENERAL::GRID_X);
             }
         }
@@ -68,26 +68,3 @@ const GAME_playerColors: [Color;4] = [
     Color::Yellow,
     Color::Rgb {r: 255, g: 153, b: 0}
 ];
-
-/// # Player direction enum
-/// This exists solely for readbility
-///
-/// But also if I'd like to have more "advanced" movement
-#[derive(Debug, Clone, Copy)]
-pub enum GAME_playerDirections {
-    DIR_up,
-    DIR_down,
-    DIR_left,
-    DIR_right
-}
-impl fmt::Display for GAME_playerDirections{
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let idkfa_string = match *self {
-            GAME_playerDirections::DIR_up => "Up",
-            GAME_playerDirections::DIR_down => "Down",
-            GAME_playerDirections::DIR_left => "Left",
-            GAME_playerDirections::DIR_right => "Right"
-        };
-        write!(f, "{}", idkfa_string)
-    }
-}

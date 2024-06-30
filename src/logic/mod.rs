@@ -7,21 +7,23 @@ pub fn init(){
     let mut DEBUG_LOCK = statics::SYS_debug.lock().unwrap();
     'INIT_debugStr:{
         DEBUG_LOCK.DEBUG_items.insert(
-            "#LOGIC_interaction".to_string(),
+            ">LOGIC_interaction".to_string(),
             debug::DEBUG_item::new(
-                ".DEBUG_logic/#LOGIC_interaction",
+                debug::DEBUG_class::info,
+                ".LOGIC/#interaction",
                 MISC::PATHS::PATH_DEBUG,
-                "", 
+                &[("{inter}", "".to_owned())], 
                 255
             )
         );
 
         DEBUG_LOCK.DEBUG_items.insert(
-            "#SSINIT_logic".to_string(),
+            ">SSINIT_logic".to_string(),
             debug::DEBUG_item::new(
-                ".DEBUG_sys/.SYS_ssInit/#SSINIT_logic",
+                debug::DEBUG_class::info,
+                ".SYS/.SSINIT/#logic",
                 MISC::PATHS::PATH_DEBUG,
-                "", 
+                &[], 
                 40
             )
         );
@@ -36,7 +38,13 @@ pub fn init(){
 pub fn main() {
     let mut DATA_LOCK = statics::SYS_data.lock().unwrap();
 
-    statics::SYS_debug.lock().unwrap().DEBUG_items.get_mut("#LOGIC_interaction").unwrap().values = format!("{}", DATA_LOCK.DATA_playerInput);
+    statics::SYS_debug
+        .lock()
+        .unwrap()
+        .DEBUG_items
+        .get_mut(">LOGIC_interaction")
+        .unwrap()
+        .values[0].1 = format!("{}", DATA_LOCK.DATA_playerInput);
 
     match DATA_LOCK.DATA_playerInput {
 
@@ -76,8 +84,8 @@ pub fn main() {
 #[derive(Clone, Copy)]
 pub enum GAME_interactions {
     i_NULL,
-    i_movPlayer(data::player::GAME_playerDirections),
-    i_leapPlayer(data::player::GAME_playerDirections),
+    i_movPlayer(GAME_playerDirections),
+    i_leapPlayer(GAME_playerDirections),
     i_changeWorldTile,
     i_printHello,
     i_printDebug,
@@ -96,5 +104,28 @@ impl fmt::Display for GAME_interactions{
             Self::i_clearWorld => "clearWorld",
         };
         write!(f, "{}", idkfa_fmt)
+    }
+}
+
+/// # Player direction enum
+/// This exists solely for readbility
+///
+/// But also if I'd like to have more "advanced" movement
+#[derive(Debug, Clone, Copy)]
+pub enum GAME_playerDirections {
+    DIR_up,
+    DIR_down,
+    DIR_left,
+    DIR_right
+}
+impl fmt::Display for GAME_playerDirections{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let idkfa_string = match *self {
+            GAME_playerDirections::DIR_up => "Up",
+            GAME_playerDirections::DIR_down => "Down",
+            GAME_playerDirections::DIR_left => "Left",
+            GAME_playerDirections::DIR_right => "Right"
+        };
+        write!(f, "{}", idkfa_string)
     }
 }
