@@ -13,7 +13,6 @@ pub use std::{collections::HashMap, sync::Mutex, fmt, io::{stdout, Write}, time,
 mod system;
 mod logic;
 mod renderer;
-mod data;
 
 // These are system stuff so yeah
 pub use system::*;
