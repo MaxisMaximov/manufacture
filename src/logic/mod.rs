@@ -4,12 +4,12 @@ use crate::*;
 
 /// # Game logic
 pub fn init(){
-    let mut DEBUG_LOCK = statics::SYS_debug.lock().unwrap();
+    let mut DEBUG_LOCK = statics::debug.lock().unwrap();
     'INIT_debugStr:{
         DEBUG_LOCK.DEBUG_items.insert(
             ">LOGIC_interaction".to_string(),
-            debug::DEBUG_item::new(
-                debug::DEBUG_class::info,
+            debug::debug_item::new(
+                debug::class::info,
                 ".LOGIC/#interaction",
                 MISC::PATHS::PATH_DEBUG,
                 &[("{inter}", "".to_owned())], 
@@ -19,8 +19,8 @@ pub fn init(){
 
         DEBUG_LOCK.DEBUG_items.insert(
             ">SSINIT_logic".to_string(),
-            debug::DEBUG_item::new(
-                debug::DEBUG_class::info,
+            debug::debug_item::new(
+                debug::class::info,
                 ".SYS/.SSINIT/#logic",
                 MISC::PATHS::PATH_DEBUG,
                 &[], 
@@ -36,9 +36,9 @@ pub fn init(){
 /// 
 /// Window system will have different way of managing those
 pub fn main() {
-    let mut DATA_LOCK = statics::SYS_data.lock().unwrap();
+    let mut DATA_LOCK = statics::data.lock().unwrap();
 
-    statics::SYS_debug
+    statics::debug
         .lock()
         .unwrap()
         .DEBUG_items

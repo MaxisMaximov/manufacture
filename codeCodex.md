@@ -219,7 +219,7 @@ Naming for miscellaneous things
 Syntax: `[NAME]_LOCK`
 
 ```rust
-  let mut DATA_LOCK = SYS_data.lock().unwrap()
+  let mut DATA_LOCK = data.lock().unwrap()
 ```
 
 ### Uncategorized stuff

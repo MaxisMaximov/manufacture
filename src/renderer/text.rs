@@ -6,7 +6,7 @@ use super::*;
 /// # DO NOT RELY ON THIS
 /// It'll be most likely removed in favor of Window system
 pub fn render_textBox() {
-    let mut DATA_LOCK = statics::SYS_data.lock().unwrap();
+    let mut DATA_LOCK = statics::data.lock().unwrap();
     let mut BUFFER_LOCK = RENDER_mainBuffer.lock().unwrap();
     
     let mut RTEXT_charStartPosition: types::vector2;
@@ -43,7 +43,7 @@ pub fn render_textBox() {
 pub fn render_debug() {
     // Lock and load
     let mut STDOUT_LOCK = stdout().lock();
-    let mut DEBUG_LOCK = statics::SYS_debug.lock().unwrap();
+    let mut DEBUG_LOCK = statics::debug.lock().unwrap();
 
     // Iterate debug stuff
     for DEBUGSTR in DEBUG_LOCK.DEBUG_items.values_mut() {
@@ -57,8 +57,8 @@ pub fn render_debug() {
             render_util::misc::runtimeFmt(&DEBUGSTR.string, &DEBUGSTR.values),
             DEBUGSTR.lifetime
         );
-
-        DEBUGSTR.DEBUG_tickdown()
+        
+        DEBUGSTR.tickdown()
     }
 
     // Print everything to screen

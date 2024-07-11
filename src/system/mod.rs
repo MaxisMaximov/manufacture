@@ -3,11 +3,14 @@ use super::*;
 pub mod vars;
 pub mod types;
 pub mod statics;
+pub mod debug;
+pub mod json;
+pub mod input;
 
 pub fn SYS_CHECK(){
 
     // Check tickrate
-    assert!(vars::SYS::TICKRATE > 0);
+    assert!((vars::SYS::TICKRATE > 8) && (vars::SYS::TICKRATE < 32));
 
     // Check world size
     assert!(vars::WORLD::GENERAL::WORLD_X > 1);

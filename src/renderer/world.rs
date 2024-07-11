@@ -3,7 +3,7 @@ use super::*;
 /// # Render the world
 pub fn r_util_world() {
     let mut BUFFER_LOCK = RENDER_mainBuffer.lock().unwrap();
-    let DATA_LOCK = statics::SYS_data.lock().unwrap();
+    let DATA_LOCK = statics::data.lock().unwrap();
     // First get vec of chunk references to not overload the system
     let r_workingChunkArray = DATA_LOCK.DATA_world.w_returnChunkArray(
         DATA_LOCK.DATA_player.p_chunk,

@@ -4,13 +4,13 @@ use crossterm::event::*;
 use super::*;
 
 pub fn init(){
-    let mut DEBUG_LOCK = statics::SYS_debug.lock().unwrap();
+    let mut DEBUG_LOCK = statics::debug.lock().unwrap();
 
     'INIT_debugStr: {
         DEBUG_LOCK.DEBUG_items.insert(
             ">INPUT_keyType".to_string(),
-            debug::DEBUG_item::new(
-                debug::DEBUG_class::info,
+            debug::debug_item::new(
+                debug::class::info,
                 ".INPUT/#keyType",
                 MISC::PATHS::PATH_DEBUG,
                 &[("{key}", "".to_owned())],
@@ -20,8 +20,8 @@ pub fn init(){
 
         DEBUG_LOCK.DEBUG_items.insert(
             ">SYS_SSINIT_input".to_string(),
-            debug::DEBUG_item::new(
-                debug::DEBUG_class::info,
+            debug::debug_item::new(
+                debug::class::info,
                 ".DEBUG_sys/.SYS_ssInit/#SSINIT_input",
                 MISC::PATHS::PATH_DEBUG,
                 &[],
@@ -35,8 +35,8 @@ pub fn init(){
 /// It will get updated with Window system and will read from a config file instead of single layout
 pub fn main(){
     // Lock Data and Debug
-    let mut DATA_LOCK = statics::SYS_data.lock().unwrap();
-    let mut DEBUG_LOCK = statics::SYS_debug.lock().unwrap();
+    let mut DATA_LOCK = statics::data.lock().unwrap();
+    let mut DEBUG_LOCK = statics::debug.lock().unwrap();
 
     // Check for input right away to not slow down the whole thing
     if poll(Duration::from_secs(0)).unwrap() {

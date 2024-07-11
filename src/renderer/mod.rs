@@ -18,14 +18,14 @@ static RENDER_mainBuffer: Lazy<Mutex<RENDER_buffer>> = Lazy::new(|| {
 });
 
 pub fn init() {
-    let mut DEBUG_LOCK = statics::SYS_debug.lock().unwrap();
+    let mut DEBUG_LOCK = statics::debug.lock().unwrap();
 
     // Bloody hell this is long
     'INIT_debugStr: {
         DEBUG_LOCK.DEBUG_items.insert(
             ">RENDER_frameTime".to_string(),
-            debug::DEBUG_item::new(
-                debug::DEBUG_class::info,
+            debug::debug_item::new(
+                debug::class::info,
                 ".RENDER/#frameTime",
                 MISC::PATHS::PATH_DEBUG,
                 &[("{time}", "".to_owned())],
@@ -35,8 +35,8 @@ pub fn init() {
 
         DEBUG_LOCK.DEBUG_items.insert(
             ">RENDER_worldTime".to_string(),
-            debug::DEBUG_item::new(
-                debug::DEBUG_class::info,
+            debug::debug_item::new(
+                debug::class::info,
                 ".RENDER/#worldTime",
                 MISC::PATHS::PATH_DEBUG,
                 &[("{time}", "".to_owned())],
@@ -46,8 +46,8 @@ pub fn init() {
 
         DEBUG_LOCK.DEBUG_items.insert(
             ">RENDER_convTime".to_string(),
-            debug::DEBUG_item::new(
-                debug::DEBUG_class::info,
+            debug::debug_item::new(
+                debug::class::info,
                 ".RENDER/#convTime",
                 MISC::PATHS::PATH_DEBUG,
                 &[("{time}", "".to_owned())],
@@ -57,8 +57,8 @@ pub fn init() {
 
         DEBUG_LOCK.DEBUG_items.insert(
             ">RENDER_borderTime".to_string(),
-            debug::DEBUG_item::new(
-                debug::DEBUG_class::info,
+            debug::debug_item::new(
+                debug::class::info,
                 ".RENDER/#borderTime",
                 MISC::PATHS::PATH_DEBUG,
                 &[("{time}", "".to_owned())],
@@ -68,8 +68,8 @@ pub fn init() {
 
         DEBUG_LOCK.DEBUG_items.insert(
             ">RENDER_textTime".to_string(),
-            debug::DEBUG_item::new(
-                debug::DEBUG_class::info,
+            debug::debug_item::new(
+                debug::class::info,
                 ".RENDER/#textTime",
                 MISC::PATHS::PATH_DEBUG,
                 &[("{time}", "".to_owned())],
@@ -79,8 +79,8 @@ pub fn init() {
 
         DEBUG_LOCK.DEBUG_items.insert(
             ">SYS_SSINIT_render".to_string(),
-            debug::DEBUG_item::new(
-                debug::DEBUG_class::info,
+            debug::debug_item::new(
+                debug::class::info,
                 ".SYS/.SYS_ssInit/#SSINIT_render",
                 MISC::PATHS::PATH_DEBUG,
                 &[],
@@ -93,7 +93,7 @@ pub fn init() {
 /// # Render game
 pub fn main() {
     let RENDER_start = time::Instant::now();
-    let mut DEBUG_LOCK = statics::SYS_debug.lock().unwrap();
+    let mut DEBUG_LOCK = statics::debug.lock().unwrap();
 
     'RENDER_renderWorld: {
         let loopStart = time::Instant::now();
@@ -110,7 +110,7 @@ pub fn main() {
     // Set cell for the player
     // TODO: Clean up
     'RENDER_playerSet: {
-        let DATA_LOCK = statics::SYS_data.lock().unwrap();
+        let DATA_LOCK = statics::data.lock().unwrap();
 
         RENDER_mainBuffer.lock().unwrap()[(
             (vars::RENDERER::RENDER_WORLD_X + 2),

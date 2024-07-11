@@ -9,10 +9,10 @@ use super::*;
 // No I don't have any idea why
 
 pub fn init() {
-    statics::SYS_debug.lock().unwrap().DEBUG_items.insert(
+    statics::debug.lock().unwrap().DEBUG_items.insert(
         ">SYS_SSINIT_json".to_string(),
-        debug::DEBUG_item::new(
-            debug::DEBUG_class::info,
+        debug::debug_item::new(
+            debug::class::info,
             ".DEBUG_sys/.SYS_ssInit/#SSINIT_json",
             MISC::PATHS::PATH_DEBUG,
             &[],
@@ -31,10 +31,10 @@ pub fn debugStr(IN_index: &str, IN_filePath: &str) -> Result<String, ()> {
             Ok(FILE) => FILE,
             Err(_) => 
             {
-                statics::SYS_debug.lock().unwrap().DEBUG_items.insert(
+                statics::debug.lock().unwrap().DEBUG_items.insert(
                     "idkfa".to_string(),
-                    debug::DEBUG_item::new(
-                        debug::DEBUG_class::error,
+                    debug::debug_item::new(
+                        debug::class::error,
                     ".ERR_json/!JSON_noFile",
                     vars::MISC::PATHS::PATH_DEBUG,
                     &[("{path}", IN_filePath.to_owned())],
@@ -56,11 +56,11 @@ pub fn debugStr(IN_index: &str, IN_filePath: &str) -> Result<String, ()> {
         if idkfa_value.is_null() {
 
             // Just not to Deadlock
-            if let Ok(mut DEBUG) = statics::SYS_debug.try_lock(){
+            if let Ok(mut DEBUG) = statics::debug.try_lock(){
                 DEBUG.DEBUG_items.insert(
                     "iddqd".to_owned(),
-                    debug::DEBUG_item::new(
-                        debug::DEBUG_class::error,
+                    debug::debug_item::new(
+                        debug::class::error,
                     ".JSON/!readString",
                     vars::MISC::PATHS::PATH_DEBUG,
                     &[("{id}", IN_index.to_owned()), ("{file}", IN_filePath.rsplit_once('/').unwrap().1.to_owned())],

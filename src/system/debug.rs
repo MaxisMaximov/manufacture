@@ -4,11 +4,11 @@ use super::*;
 /// Holds the Debug info from subsystems
 ///
 /// Reason I made this?  
-/// So that Deadlocks don't happen with `SYS_data` because apparently it really likes to do that
-pub struct DEBUG_master {
-    pub DEBUG_items: HashMap<String, DEBUG_item>,
+/// So that Deadlocks don't happen with `data` because apparently it really likes to do that
+pub struct debug_master {
+    pub DEBUG_items: HashMap<String, debug_item>,
 }
-impl DEBUG_master {
+impl debug_master {
     pub fn new() -> Self {
         Self {
             DEBUG_items: HashMap::new(),
@@ -23,26 +23,24 @@ impl DEBUG_master {
     }
 }
 
-pub struct DEBUG_item {
-    pub class: DEBUG_class,
+pub struct debug_item {
+    pub class: self::class,
     pub string: String,
     pub values: Vec<(&'static str, String)>,
     pub lifetime: u16,
     pub markForDel: bool,
 }
-impl DEBUG_item {
+impl debug_item {
     /// # Create new TextItem
     ///
     /// The one used to place text somewhere in the game
     pub fn new(
-        IN_class: DEBUG_class,
+        IN_class: self::class,
         IN_spec: &str,
         IN_debugPath: &str,
         IN_values: &[(&'static str, String)],
         IN_lifetime: u16,
     ) -> Self {
-        // Check if it's a debug string
-        
         Self {
             class: IN_class,
             string: json::debugStr(IN_spec, IN_debugPath).unwrap_or(IN_spec.to_string()),
@@ -54,7 +52,7 @@ impl DEBUG_item {
 
     /// Tickdown lifetime  
     /// Just to make it clean
-    pub fn DEBUG_tickdown(&mut self) {
+    pub fn tickdown(&mut self) {
         // If it's marked for del just ignore
         if self.markForDel {
             return;
@@ -72,7 +70,7 @@ impl DEBUG_item {
     }
 }
 
-pub enum DEBUG_class{
+pub enum class{
     idkfa,
     info,
     warn,
@@ -80,7 +78,7 @@ pub enum DEBUG_class{
     fatal
 }
 
-impl fmt:: Display for DEBUG_class{
+impl fmt:: Display for class{
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let idkfa_fmtString = match self{
             Self::idkfa => "*idkfa".with(Color::White),
