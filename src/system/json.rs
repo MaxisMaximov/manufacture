@@ -9,7 +9,7 @@ use super::*;
 // No I don't have any idea why
 
 pub fn init() {
-    statics::debug.lock().unwrap().DEBUG_items.insert(
+    statics::debug.lock().unwrap().inner.insert(
         ">SYS_SSINIT_json".to_string(),
         debug::debug_item::new(
             debug::class::info,
@@ -31,7 +31,7 @@ pub fn debugStr(IN_index: &str, IN_filePath: &str) -> Result<String, ()> {
             Ok(FILE) => FILE,
             Err(_) => 
             {
-                statics::debug.lock().unwrap().DEBUG_items.insert(
+                statics::debug.lock().unwrap().inner.insert(
                     "idkfa".to_string(),
                     debug::debug_item::new(
                         debug::class::error,
@@ -57,7 +57,7 @@ pub fn debugStr(IN_index: &str, IN_filePath: &str) -> Result<String, ()> {
 
             // Just not to Deadlock
             if let Ok(mut DEBUG) = statics::debug.try_lock(){
-                DEBUG.DEBUG_items.insert(
+                DEBUG.inner.insert(
                     "iddqd".to_owned(),
                     debug::debug_item::new(
                         debug::class::error,

@@ -7,7 +7,7 @@ pub fn init(){
     let mut DEBUG_LOCK = statics::debug.lock().unwrap();
 
     'INIT_debugStr: {
-        DEBUG_LOCK.DEBUG_items.insert(
+        DEBUG_LOCK.inner.insert(
             ">INPUT_keyType".to_string(),
             debug::debug_item::new(
                 debug::class::info,
@@ -18,7 +18,7 @@ pub fn init(){
             )
         );
 
-        DEBUG_LOCK.DEBUG_items.insert(
+        DEBUG_LOCK.inner.insert(
             ">SYS_SSINIT_input".to_string(),
             debug::debug_item::new(
                 debug::class::info,
@@ -47,7 +47,10 @@ pub fn main(){
                 DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_NULL;
                 return;
             }
-            DEBUG_LOCK.DEBUG_items.get_mut(">INPUT_keyType").unwrap().values[0].1 = format!("{:?}", code);
+
+            // Record
+            DEBUG_LOCK.inner.get_mut(">INPUT_keyType").unwrap().values[0].1 = format!("{:?}", code);
+
             match code {
                 KeyCode::Up => {
                     // Check if it should be a leap instead
@@ -99,6 +102,6 @@ pub fn main(){
             return;
         }
     }
-    DEBUG_LOCK.DEBUG_items.get_mut(">INPUT_keyType").unwrap().values[0].1 = "None".to_owned();
+    DEBUG_LOCK.inner.get_mut(">INPUT_keyType").unwrap().values[0].1 = "None".to_owned();
     DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_NULL;
 }

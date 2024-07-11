@@ -6,6 +6,7 @@ pub mod statics;
 pub mod debug;
 pub mod json;
 pub mod input;
+pub mod cache;
 
 pub fn SYS_CHECK(){
 

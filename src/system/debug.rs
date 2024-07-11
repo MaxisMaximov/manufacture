@@ -6,20 +6,19 @@ use super::*;
 /// Reason I made this?  
 /// So that Deadlocks don't happen with `data` because apparently it really likes to do that
 pub struct debug_master {
-    pub DEBUG_items: HashMap<String, debug_item>,
+    pub inner: HashMap<String, debug_item>,
 }
 impl debug_master {
     pub fn new() -> Self {
         Self {
-            DEBUG_items: HashMap::new(),
+            inner: HashMap::new(),
         }
     }
 
     /// Clean up the hashmap
     /// A.k.a. get rid of `#MARK_FOR_DELETION` entries
     pub fn cleanup(&mut self) {
-        self.DEBUG_items
-            .retain(|_, v| !v.markForDel)
+        self.inner.retain(|_, v| !v.markForDel)
     }
 }
 

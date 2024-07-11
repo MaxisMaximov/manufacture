@@ -20,7 +20,7 @@ pub use system::*;
 
 // START HERE
 fn main() {
-    statics::debug.lock().unwrap().DEBUG_items.insert(
+    statics::debug.lock().unwrap().inner.insert(
         ">SYS_SSINIT_data".to_string(),
         debug::debug_item::new(
             debug::class::info,
@@ -31,7 +31,7 @@ fn main() {
         ),
     );
 
-    statics::debug.lock().unwrap().DEBUG_items.insert(
+    statics::debug.lock().unwrap().inner.insert(
         ">SYS_processSpeed".to_string(),
         debug::debug_item::new(
             debug::class::info,
@@ -79,7 +79,7 @@ fn main() {
         renderer::main();
 
         // Log how long it took to process everything
-        statics::debug.lock().unwrap().DEBUG_items
+        statics::debug.lock().unwrap().inner
             .get_mut(">SYS_processSpeed")
             .unwrap()
             .values[0].1 = format!("{:?}", loopStart.elapsed());
@@ -89,18 +89,6 @@ fn main() {
             sleep(vars::SYS::TICKTIME - loop_elapsedTime)
         }
     }
-}
-
-/// # Cache type
-/// Allows you to store a selected type of cache
-///
-/// Can be extended for any other cache type you want
-pub enum CACHE_TYPE {
-    usize(usize),
-    u8(u8),
-    vec2(types::vector2),
-    vec3(types::vector3),
-    interactCode(logic::GAME_interactions),
 }
 
 /// # Text/Debug struct

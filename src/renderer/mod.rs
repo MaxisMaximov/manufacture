@@ -22,7 +22,7 @@ pub fn init() {
 
     // Bloody hell this is long
     'INIT_debugStr: {
-        DEBUG_LOCK.DEBUG_items.insert(
+        DEBUG_LOCK.inner.insert(
             ">RENDER_frameTime".to_string(),
             debug::debug_item::new(
                 debug::class::info,
@@ -33,7 +33,7 @@ pub fn init() {
             ),
         );
 
-        DEBUG_LOCK.DEBUG_items.insert(
+        DEBUG_LOCK.inner.insert(
             ">RENDER_worldTime".to_string(),
             debug::debug_item::new(
                 debug::class::info,
@@ -44,7 +44,7 @@ pub fn init() {
             ),
         );
 
-        DEBUG_LOCK.DEBUG_items.insert(
+        DEBUG_LOCK.inner.insert(
             ">RENDER_convTime".to_string(),
             debug::debug_item::new(
                 debug::class::info,
@@ -55,7 +55,7 @@ pub fn init() {
             ),
         );
 
-        DEBUG_LOCK.DEBUG_items.insert(
+        DEBUG_LOCK.inner.insert(
             ">RENDER_borderTime".to_string(),
             debug::debug_item::new(
                 debug::class::info,
@@ -66,7 +66,7 @@ pub fn init() {
             ),
         );
 
-        DEBUG_LOCK.DEBUG_items.insert(
+        DEBUG_LOCK.inner.insert(
             ">RENDER_textTime".to_string(),
             debug::debug_item::new(
                 debug::class::info,
@@ -77,7 +77,7 @@ pub fn init() {
             ),
         );
 
-        DEBUG_LOCK.DEBUG_items.insert(
+        DEBUG_LOCK.inner.insert(
             ">SYS_SSINIT_render".to_string(),
             debug::debug_item::new(
                 debug::class::info,
@@ -101,7 +101,7 @@ pub fn main() {
         world::r_util_world();
 
         DEBUG_LOCK
-        .DEBUG_items
+        .inner
         .get_mut(">RENDER_worldTime")
         .unwrap()
         .values[0].1 = format!("{:?}", loopStart.elapsed())
@@ -130,7 +130,7 @@ pub fn main() {
         );
 
         DEBUG_LOCK
-            .DEBUG_items
+            .inner
             .get_mut(">RENDER_borderTime")
             .unwrap()
             .values[0].1 = format!("{:?}", loopStart.elapsed())
@@ -142,7 +142,7 @@ pub fn main() {
         text::render_textBox();
 
         DEBUG_LOCK
-            .DEBUG_items
+            .inner
             .get_mut(">RENDER_textTime")
             .unwrap()
             .values[0].1 = format!("{:?}", loopStart.elapsed())
@@ -187,7 +187,7 @@ pub fn main() {
 
         // And log the time
         DEBUG_LOCK
-            .DEBUG_items
+            .inner
             .get_mut(">RENDER_convTime")
             .unwrap()
             .values[0].1 = format!("{:?}", loopStart.elapsed());
@@ -195,7 +195,7 @@ pub fn main() {
 
     // Log how long the entire process took
     DEBUG_LOCK
-        .DEBUG_items
+        .inner
         .get_mut(">RENDER_frameTime")
         .unwrap()
         .values[0].1 = format!("{:?}", RENDER_start.elapsed());

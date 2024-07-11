@@ -6,7 +6,7 @@ use crate::*;
 pub fn init(){
     let mut DEBUG_LOCK = statics::debug.lock().unwrap();
     'INIT_debugStr:{
-        DEBUG_LOCK.DEBUG_items.insert(
+        DEBUG_LOCK.inner.insert(
             ">LOGIC_interaction".to_string(),
             debug::debug_item::new(
                 debug::class::info,
@@ -17,7 +17,7 @@ pub fn init(){
             )
         );
 
-        DEBUG_LOCK.DEBUG_items.insert(
+        DEBUG_LOCK.inner.insert(
             ">SSINIT_logic".to_string(),
             debug::debug_item::new(
                 debug::class::info,
@@ -41,7 +41,7 @@ pub fn main() {
     statics::debug
         .lock()
         .unwrap()
-        .DEBUG_items
+        .inner
         .get_mut(">LOGIC_interaction")
         .unwrap()
         .values[0].1 = format!("{}", DATA_LOCK.DATA_playerInput);

@@ -46,7 +46,7 @@ pub fn render_debug() {
     let mut DEBUG_LOCK = statics::debug.lock().unwrap();
 
     // Iterate debug stuff
-    for DEBUGSTR in DEBUG_LOCK.DEBUG_items.values_mut() {
+    for DEBUGSTR in DEBUG_LOCK.inner.values_mut() {
         // Ignore these strings
         if DEBUGSTR.markForDel {
             continue;
