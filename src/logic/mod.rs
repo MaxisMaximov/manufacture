@@ -11,7 +11,7 @@ pub fn init(){
             debug::debug_item::new(
                 debug::class::info,
                 ".LOGIC/#interaction",
-                MISC::PATHS::PATH_DEBUG,
+                vars::MISC::PATHS::PATH_DEBUG,
                 &[("{inter}", "".to_owned())], 
                 255
             )
@@ -22,7 +22,7 @@ pub fn init(){
             debug::debug_item::new(
                 debug::class::info,
                 ".SYS/.SSINIT/#logic",
-                MISC::PATHS::PATH_DEBUG,
+                vars::MISC::PATHS::PATH_DEBUG,
                 &[], 
                 40
             )
@@ -36,26 +36,28 @@ pub fn init(){
 /// 
 /// Window system will have different way of managing those
 pub fn main() {
+    // Lock and load
     let mut DATA_LOCK = statics::data.lock().unwrap();
     let mut WIDGET_LOCK = renderer::widgets::widgetsMap.lock().unwrap();
 
+    // Holy hell this is long
     statics::debug
         .lock()
         .unwrap()
         .inner
         .get_mut(">LOGIC_interaction")
         .unwrap()
-        .values[0].1 = format!("{}", DATA_LOCK.DATA_playerInput);
+        .values[0].1 = format!("{}", DATA_LOCK.playerInput);
 
-    match DATA_LOCK.DATA_playerInput {
+    match DATA_LOCK.playerInput {
 
-        GAME_interactions::i_changeWorldTile => {
-            let idkfa_pos: types::vector2 = DATA_LOCK.DATA_player.p_pos;
-            let idkfa_colors: types::colorSet = (Color::Black, DATA_LOCK.DATA_player.p_color.1);
-            DATA_LOCK.DATA_world[idkfa_pos] = data::world::TEMPLATE_wrCell{c_char: 'c', c_color: idkfa_colors};
+        interactions::changeWorldTile => {
+            let idkfa_pos: types::vector2 = DATA_LOCK.player.loc;
+            let idkfa_colors: types::colorSet = (Color::Black, DATA_LOCK.player.color.1);
+            DATA_LOCK.world[idkfa_pos] = data::world::world_cell{char: 'c', color: idkfa_colors};
         }
 
-        GAME_interactions::i_printHello => 
+        interactions::printHello => 
             WIDGET_LOCK.textBoxes.push(
                 renderer::widgets::textBox::new(
                     renderer::widgets::position::TL,
@@ -65,7 +67,7 @@ pub fn main() {
                 )
             ),
 
-        GAME_interactions::i_printDebug =>
+        interactions::printDebug =>
             WIDGET_LOCK.textBoxes.push(
                 renderer::widgets::textBox::new(
                     renderer::widgets::position::right,
@@ -75,17 +77,17 @@ pub fn main() {
                 )
             ),
 
-        GAME_interactions::i_clearWorld => DATA_LOCK.DATA_world.w_clearWorld(),
+        interactions::clearWorld => DATA_LOCK.world.clearWorld(),
 
-        GAME_interactions::i_movPlayer(dir) => {
+        interactions::movPlayer(dir) => {
             let idkfa_direction = dir;
-            DATA_LOCK.DATA_player.p_move(&idkfa_direction, vars::PLAYER::PLAYER_STEP_SIZE)}
+            DATA_LOCK.player.walk(&idkfa_direction, vars::PLAYER::PLAYER_STEP_SIZE)}
 
-        GAME_interactions::i_leapPlayer(dir) => {
+        interactions::leapPlayer(dir) => {
             let idkfa_direction = dir;
-            DATA_LOCK.DATA_player.p_move(&idkfa_direction, vars::PLAYER::PLAYER_LEAP_SIZE)}
+            DATA_LOCK.player.walk(&idkfa_direction, vars::PLAYER::PLAYER_LEAP_SIZE)}
 
-        GAME_interactions::i_NULL => {}
+        interactions::NULL => {}
     }
 }
 
@@ -93,26 +95,26 @@ pub fn main() {
 /// # DON'T RELY ON THIS
 /// It will be replaced with introduction of Window system
 #[derive(Clone, Copy)]
-pub enum GAME_interactions {
-    i_NULL,
-    i_movPlayer(GAME_playerDirections),
-    i_leapPlayer(GAME_playerDirections),
-    i_changeWorldTile,
-    i_printHello,
-    i_printDebug,
-    i_clearWorld,
+pub enum interactions {
+    NULL,
+    movPlayer(playerDirections),
+    leapPlayer(playerDirections),
+    changeWorldTile,
+    printHello,
+    printDebug,
+    clearWorld,
 }
-impl fmt::Display for GAME_interactions{
+impl fmt::Display for interactions{
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let idkfa_pDir;
         let idkfa_fmt = match *self {
-            Self::i_NULL => "NULL",
-            Self::i_movPlayer(dir) => {idkfa_pDir = format!("movPlayer >> {}", dir); &idkfa_pDir},
-            Self::i_leapPlayer(dir) => {idkfa_pDir = format!("leapPlayer >> {}", dir); &idkfa_pDir},
-            Self::i_changeWorldTile => "changeWorldTile",
-            Self::i_printHello => "printHello",
-            Self::i_printDebug => "printDebug",
-            Self::i_clearWorld => "clearWorld",
+            Self::NULL => "NULL",
+            Self::movPlayer(dir) => {idkfa_pDir = format!("movPlayer >> {}", dir); &idkfa_pDir},
+            Self::leapPlayer(dir) => {idkfa_pDir = format!("leapPlayer >> {}", dir); &idkfa_pDir},
+            Self::changeWorldTile => "changeWorldTile",
+            Self::printHello => "printHello",
+            Self::printDebug => "printDebug",
+            Self::clearWorld => "clearWorld",
         };
         write!(f, "{}", idkfa_fmt)
     }
@@ -123,19 +125,19 @@ impl fmt::Display for GAME_interactions{
 ///
 /// But also if I'd like to have more "advanced" movement
 #[derive(Debug, Clone, Copy)]
-pub enum GAME_playerDirections {
-    DIR_up,
-    DIR_down,
-    DIR_left,
-    DIR_right
+pub enum playerDirections {
+    up,
+    down,
+    left,
+    right
 }
-impl fmt::Display for GAME_playerDirections{
+impl fmt::Display for playerDirections{
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let idkfa_string = match *self {
-            GAME_playerDirections::DIR_up => "Up",
-            GAME_playerDirections::DIR_down => "Down",
-            GAME_playerDirections::DIR_left => "Left",
-            GAME_playerDirections::DIR_right => "Right"
+            playerDirections::up => "Up",
+            playerDirections::down => "Down",
+            playerDirections::left => "Left",
+            playerDirections::right => "Right"
         };
         write!(f, "{}", idkfa_string)
     }

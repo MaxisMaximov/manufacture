@@ -1,5 +1,3 @@
-use std::ops::Add;
-
 use super::*;
 
 /// # Player struct
@@ -13,56 +11,56 @@ use super::*;
 /// 
 /// # Custom colors
 /// To instead use custom colors set `fp_playerNum` to 0 and `fp_color` to [`Color::Rgb`]
-pub struct TEMPLATE_player {
-    pub p_pos: types::vector2,
-    pub p_hp: u16,
-    pub p_chunk: types::vector2,
-    pub p_color: types::colorSet
+pub struct obj_player {
+    pub hp: u16,
+    pub loc: types::vector2,
+    pub chunk: types::vector2,
+    pub color: types::colorSet
 }
-impl TEMPLATE_player {
-    pub fn new(INp_playerNum: usize, INp_color: Option<Color>) -> Self{
-        let Fp_playerColor: Color = if INp_playerNum == 0{
-            INp_color.unwrap()
+impl obj_player {
+    pub fn new(IN_playerNum: usize, IN_color: Option<Color>) -> Self{
+        let Fp_playerColor: Color = if IN_playerNum == 0{
+            IN_color.unwrap()
         }
         else {
-            GAME_playerColors[INp_playerNum]
+            player_colors[IN_playerNum]
         };
-        TEMPLATE_player {
-            p_pos: (10, 10),
-            p_hp: vars::PLAYER::PLAYER_BASE_HP,
-            p_chunk: (2, 2),
-            p_color: (Color::White, Fp_playerColor) }
+        Self {
+            hp: vars::PLAYER::PLAYER_BASE_HP,
+            loc: (10, 10),
+            chunk: (2, 2),
+            color: (Color::White, Fp_playerColor) }
     }
 
-    pub fn p_move(&mut self, dir: &logic::GAME_playerDirections, stepSize: usize) {
-        match dir {
-            logic::GAME_playerDirections::DIR_up => {
-                self.p_pos.1 = self.p_pos.1.saturating_sub(stepSize);
+    pub fn walk(&mut self, IN_dir: &logic::playerDirections, IN_stepSize: usize) {
+        match IN_dir {
+            logic::playerDirections::up => {
+                self.loc.1 = self.loc.1.saturating_sub(IN_stepSize);
             }
-            logic::GAME_playerDirections::DIR_down => {
-                self.p_pos.1 = self.p_pos.1.add(stepSize).clamp(0, vars::WORLD::GENERAL::GRID_Y);
+            logic::playerDirections::down => {
+                self.loc.1 = (self.loc.1 + IN_stepSize).clamp(0, vars::WORLD::GENERAL::GRID_Y);
             }
-            logic::GAME_playerDirections::DIR_left => {
-                self.p_pos.0 = self.p_pos.0.saturating_sub(stepSize);
+            logic::playerDirections::left => {
+                self.loc.0 = self.loc.0.saturating_sub(IN_stepSize);
             }
-            logic::GAME_playerDirections::DIR_right => {
-                self.p_pos.0 = self.p_pos.0.add(stepSize).clamp(0, vars::WORLD::GENERAL::GRID_X);
+            logic::playerDirections::right => {
+                self.loc.0 = (self.loc.0 + IN_stepSize).clamp(0, vars::WORLD::GENERAL::GRID_X);
             }
         }
         // Update current chunk         // I hate when small changes like this comment flag the whole file as Modified.
-        self.p_updateChunk()
+        self.updateChunk()
     }
 
-    pub fn p_updateChunk(&mut self){
-        self.p_chunk.0 = self.p_pos.0 / vars::WORLD::GENERAL::CHUNK_X;
-        self.p_chunk.1 = self.p_pos.1 / vars::WORLD::GENERAL::CHUNK_Y;
+    pub fn updateChunk(&mut self){
+        self.chunk.0 = self.loc.0 / vars::WORLD::GENERAL::CHUNK_X;
+        self.chunk.1 = self.loc.1 / vars::WORLD::GENERAL::CHUNK_Y;
     }
 }
 
 /// # Player color "enum"
 /// ## Disclaimer:
 /// Is only for Player 1-4 colors
-const GAME_playerColors: [Color;4] = [
+const player_colors: [Color;4] = [
     Color::Cyan,
     Color::Green,
     Color::Yellow,

@@ -12,7 +12,7 @@ pub fn init(){
             debug::debug_item::new(
                 debug::class::info,
                 ".INPUT/#keyType",
-                MISC::PATHS::PATH_DEBUG,
+                vars::MISC::PATHS::PATH_DEBUG,
                 &[("{key}", "".to_owned())],
                 255
             )
@@ -23,7 +23,7 @@ pub fn init(){
             debug::debug_item::new(
                 debug::class::info,
                 ".DEBUG_sys/.SYS_ssInit/#SSINIT_input",
-                MISC::PATHS::PATH_DEBUG,
+                vars::MISC::PATHS::PATH_DEBUG,
                 &[],
                 40
             )
@@ -44,7 +44,7 @@ pub fn main(){
         {
             // Gotta skip the Repeat part cuz CMDs send Press and Repeat events at same time for some reason
             if kind != KeyEventKind::Press {
-                DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_NULL;
+                DATA_LOCK.playerInput = logic::interactions::NULL;
                 return;
             }
 
@@ -55,39 +55,39 @@ pub fn main(){
                 KeyCode::Up => {
                     // Check if it should be a leap instead
                     if modifiers == KeyModifiers::SHIFT{
-                        DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_leapPlayer(logic::GAME_playerDirections::DIR_up);
+                        DATA_LOCK.playerInput = logic::interactions::leapPlayer(logic::playerDirections::up);
                         return;
                     }
-                    DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_movPlayer(logic::GAME_playerDirections::DIR_up);
+                    DATA_LOCK.playerInput = logic::interactions::movPlayer(logic::playerDirections::up);
                 }
                 KeyCode::Down => {
                     // Check if it should be a leap instead
                     if modifiers == KeyModifiers::SHIFT{
-                        DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_leapPlayer(logic::GAME_playerDirections::DIR_down);
+                        DATA_LOCK.playerInput = logic::interactions::leapPlayer(logic::playerDirections::down);
                         return;
                     }
-                    DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_movPlayer(logic::GAME_playerDirections::DIR_down);
+                    DATA_LOCK.playerInput = logic::interactions::movPlayer(logic::playerDirections::down);
                 }
                 KeyCode::Left => {
                     // Check if it should be a leap instead
                     if modifiers == KeyModifiers::SHIFT{
-                        DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_leapPlayer(logic::GAME_playerDirections::DIR_left);
+                        DATA_LOCK.playerInput = logic::interactions::leapPlayer(logic::playerDirections::left);
                         return;
                     }
-                    DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_movPlayer(logic::GAME_playerDirections::DIR_left);
+                    DATA_LOCK.playerInput = logic::interactions::movPlayer(logic::playerDirections::left);
                 }
                 KeyCode::Right => {
                     // Check if it should be a leap instead
                     if modifiers == KeyModifiers::SHIFT{
-                        DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_leapPlayer(logic::GAME_playerDirections::DIR_right);
+                        DATA_LOCK.playerInput = logic::interactions::leapPlayer(logic::playerDirections::right);
                         return;
                     }
-                    DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_movPlayer(logic::GAME_playerDirections::DIR_right);
+                    DATA_LOCK.playerInput = logic::interactions::movPlayer(logic::playerDirections::right);
                 }
-                KeyCode::Char('f') => DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_printHello,
-                KeyCode::Char('g') => DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_printDebug,
-                KeyCode::Char('h') => DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_changeWorldTile,
-                KeyCode::Char('j') => DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_clearWorld,
+                KeyCode::Char('f') => DATA_LOCK.playerInput = logic::interactions::printHello,
+                KeyCode::Char('g') => DATA_LOCK.playerInput = logic::interactions::printDebug,
+                KeyCode::Char('h') => DATA_LOCK.playerInput = logic::interactions::changeWorldTile,
+                KeyCode::Char('j') => DATA_LOCK.playerInput = logic::interactions::clearWorld,
                 KeyCode::Esc => {
                     let _ = execute!(stdout(),
                         cursor::MoveTo(0, 0),
@@ -97,11 +97,11 @@ pub fn main(){
                     );
                     exit(0)
                 },
-                _ => {DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_NULL}
+                _ => {DATA_LOCK.playerInput = logic::interactions::NULL}
             }
             return;
         }
     }
     DEBUG_LOCK.inner.get_mut(">INPUT_keyType").unwrap().values[0].1 = "None".to_owned();
-    DATA_LOCK.DATA_playerInput = logic::GAME_interactions::i_NULL;
+    DATA_LOCK.playerInput = logic::interactions::NULL;
 }

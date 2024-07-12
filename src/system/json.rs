@@ -14,7 +14,7 @@ pub fn init() {
         debug::debug_item::new(
             debug::class::info,
             ".DEBUG_sys/.SYS_ssInit/#SSINIT_json",
-            MISC::PATHS::PATH_DEBUG,
+            vars::MISC::PATHS::PATH_DEBUG,
             &[],
             40,
         ),
@@ -23,7 +23,7 @@ pub fn init() {
 
 /// # Fetch data from `.json` file
 /// If it finds nothing it will return `Err()`
-pub fn debugStr(IN_index: &str, IN_filePath: &str) -> Result<String, ()> {
+pub fn fetch(IN_index: &str, IN_filePath: &str) -> Result<String, ()> {
 
     // Check of file even exists
     let idkfa_reader = BufReader::new(

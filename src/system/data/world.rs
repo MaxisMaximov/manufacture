@@ -9,21 +9,21 @@ use crate::*;
 ///
 /// TODO: Make it store buildings as well
 #[derive(Clone, Copy)]
-pub struct TEMPLATE_wrCell {
-    pub c_char: char,
-    pub c_color: types::colorSet,
+pub struct world_cell {
+    pub char: char,
+    pub color: types::colorSet,
 }
-impl TEMPLATE_wrCell {
+impl world_cell {
     pub fn new() -> Self {
-        TEMPLATE_wrCell {
-            c_char: ' ',
-            c_color: vars::MISC::COLORS::COLORS_DEF,
+        world_cell {
+            char: ' ',
+            color: vars::MISC::COLORS::COLORS_DEF,
         }
     }
     pub fn newDummy() -> Self {
-        TEMPLATE_wrCell {
-            c_char: '0',
-            c_color: (Color::Black, Color::White),
+        world_cell {
+            char: '0',
+            color: (Color::Black, Color::White),
         }
     }
 }
@@ -31,32 +31,30 @@ impl TEMPLATE_wrCell {
 /// # World Chunk struct
 /// For now holds only cells, dunno what else to add to it
 #[derive(Clone, Copy)]
-pub struct TEMPLATE_wChunk {
-    pub ch_cells: [TEMPLATE_wrCell; vars::WORLD::GENERAL::CHUNK_X * vars::WORLD::GENERAL::CHUNK_Y],
+pub struct world_chunk {
+    pub cells: [world_cell; vars::WORLD::GENERAL::CHUNK_X * vars::WORLD::GENERAL::CHUNK_Y],
 }
-impl TEMPLATE_wChunk {
+impl world_chunk {
     pub fn new() -> Self {
-        TEMPLATE_wChunk {
-            ch_cells: [TEMPLATE_wrCell::new();
-                vars::WORLD::GENERAL::CHUNK_X * vars::WORLD::GENERAL::CHUNK_Y],
+        world_chunk {
+            cells: [world_cell::new(); vars::WORLD::GENERAL::CHUNK_X * vars::WORLD::GENERAL::CHUNK_Y],
         }
     }
     pub fn newDummy() -> Self {
-        TEMPLATE_wChunk {
-            ch_cells: [TEMPLATE_wrCell::newDummy();
-                vars::WORLD::GENERAL::CHUNK_X * vars::WORLD::GENERAL::CHUNK_Y],
+        world_chunk {
+            cells: [world_cell::newDummy(); vars::WORLD::GENERAL::CHUNK_X * vars::WORLD::GENERAL::CHUNK_Y],
         }
     }
 }
-impl Index<types::vector2> for TEMPLATE_wChunk {
-    type Output = TEMPLATE_wrCell;
+impl Index<types::vector2> for world_chunk {
+    type Output = world_cell;
     fn index(&self, index: types::vector2) -> &Self::Output {
-        &self.ch_cells[index.0 + index.1 * vars::WORLD::GENERAL::CHUNK_X]
+        &self.cells[index.0 + index.1 * vars::WORLD::GENERAL::CHUNK_X]
     }
 }
-impl IndexMut<types::vector2> for TEMPLATE_wChunk {
+impl IndexMut<types::vector2> for world_chunk {
     fn index_mut(&mut self, index: types::vector2) -> &mut Self::Output {
-        &mut self.ch_cells[index.0 + index.1 * vars::WORLD::GENERAL::CHUNK_X]
+        &mut self.cells[index.0 + index.1 * vars::WORLD::GENERAL::CHUNK_X]
     }
 }
 
@@ -66,15 +64,15 @@ impl IndexMut<types::vector2> for TEMPLATE_wChunk {
 /// TODO: Make it handle buildings and chunks
 ///
 /// `w_clearWorld` function is for debug purposes for now
-pub struct TEMPLATE_world {
-    pub w_chunks: [TEMPLATE_wChunk; vars::WORLD::GENERAL::WORLD_X * vars::WORLD::GENERAL::WORLD_Y],
-    pub w_dummyChunk: TEMPLATE_wChunk,
+pub struct world_master {
+    pub chunks: [world_chunk; vars::WORLD::GENERAL::WORLD_X * vars::WORLD::GENERAL::WORLD_Y],
+    pub dummyChunk: world_chunk,
 }
-impl TEMPLATE_world {
+impl world_master {
     pub fn new() -> Self {
-        TEMPLATE_world {
-            w_chunks: [TEMPLATE_wChunk::new(); vars::WORLD::GENERAL::WORLD_X * vars::WORLD::GENERAL::WORLD_Y],
-            w_dummyChunk: TEMPLATE_wChunk::newDummy(),
+        world_master {
+            chunks: [world_chunk::new(); vars::WORLD::GENERAL::WORLD_X * vars::WORLD::GENERAL::WORLD_Y],
+            dummyChunk: world_chunk::newDummy(),
         }
     }
 
@@ -212,7 +210,7 @@ impl TEMPLATE_world {
             w_genLakeTiles.dedup();
         }
         for COORDS in w_genLakeTiles {
-            self[COORDS] = TEMPLATE_wrCell {
+            self[COORDS] = world_cell {
                 c_char: 'W',
                 c_color: (Color::White, Color::Blue),
             }
@@ -243,7 +241,7 @@ impl TEMPLATE_world {
             if self[COORDS].c_char != ' ' {
                 continue;
             }
-            self[COORDS] = TEMPLATE_wrCell {
+            self[COORDS] = world_cell {
                 c_char: 'F',
                 c_color: (Color::White, Color::DarkGreen),
             }
@@ -254,64 +252,66 @@ impl TEMPLATE_world {
     /// Returns array of chunk references
     ///
     /// Any area that is out of bounds gets filled with Dummy Chunks
-    pub fn w_returnChunkArray(&self, w_centerCoords: types::vector2, INw_radius: usize) -> Vec<&TEMPLATE_wChunk> {
+    pub fn returnChunkArray(&self, IN_centerCoords: types::vector2, IN_radius: usize) -> Vec<&world_chunk> {
 
         // Calc size quickly
-        let w_size: usize = INw_radius * 2 + 1;
+        let w_size: usize = IN_radius * 2 + 1;
 
         // Set positions
         let w_startPosition: types::vector2 = (
-            w_centerCoords.0.saturating_sub(INw_radius),
-            w_centerCoords.1.saturating_sub(INw_radius),
+            IN_centerCoords.0.saturating_sub(IN_radius),
+            IN_centerCoords.1.saturating_sub(IN_radius),
         );
 
         // WORLDSIZE - 1 to prevent overflows
         let w_endPosition: types::vector2 = (
-            (w_centerCoords.0 + INw_radius).clamp(0, vars::WORLD::GENERAL::WORLD_X - 1),
-            (w_centerCoords.1 + INw_radius).clamp(0, vars::WORLD::GENERAL::WORLD_Y - 1),
+            (IN_centerCoords.0 + IN_radius).clamp(0, vars::WORLD::GENERAL::WORLD_X - 1),
+            (IN_centerCoords.1 + IN_radius).clamp(0, vars::WORLD::GENERAL::WORLD_Y - 1),
         );
 
         // Init vector of refs to return
-        let mut OUTw_chunkVec: Vec<&TEMPLATE_wChunk> = vec![&self.w_dummyChunk; w_size.pow(2)];
+        let mut OUT_chunkVec: Vec<&world_chunk> = vec![&self.dummyChunk; w_size.pow(2)];
 
         // Calc positions in vec with offset
-        let mut w_vecX: usize = INw_radius - w_centerCoords.0.abs_diff(w_startPosition.0);
+        let mut w_vecX: usize = IN_radius - IN_centerCoords.0.abs_diff(w_startPosition.0);
+        let mut w_vecY: usize;
 
         for XPOS in w_startPosition.0..=w_endPosition.0 {
             // Reset Y position on every X iter
-            let mut w_vecY: usize = INw_radius - w_centerCoords.1.abs_diff(w_startPosition.1);
+
+            w_vecY = IN_radius - IN_centerCoords.1.abs_diff(w_startPosition.1);
 
             for YPOS in w_startPosition.1..=w_endPosition.1 {
-                OUTw_chunkVec[w_vecX + w_vecY * w_size] =
-                    &self.w_chunks[XPOS + YPOS * vars::WORLD::GENERAL::WORLD_X];
+                OUT_chunkVec[w_vecX + w_vecY * w_size] =
+                    &self.chunks[XPOS + YPOS * vars::WORLD::GENERAL::WORLD_X];
                 w_vecY += 1
             }
 
             w_vecX += 1
         }
-        return OUTw_chunkVec;
+        return OUT_chunkVec;
     }
 
-    pub fn w_clearWorld(&mut self) {
-        self.w_chunks.fill(TEMPLATE_wChunk::new())
+    pub fn clearWorld(&mut self) {
+        self.chunks.fill(world_chunk::new())
     }
 }
 
 // Why do I need to do 2 sepparate implementations that do same exact thing
-impl Index<types::vector2> for TEMPLATE_world {
-    type Output = TEMPLATE_wrCell;
+impl Index<types::vector2> for world_master {
+    type Output = world_cell;
 
     fn index(&self, index: types::vector2) -> &Self::Output {
-        &self.w_chunks[index.0 / vars::WORLD::GENERAL::CHUNK_X
+        &self.chunks[index.0 / vars::WORLD::GENERAL::CHUNK_X
             + index.1 / vars::WORLD::GENERAL::CHUNK_Y * vars::WORLD::GENERAL::WORLD_X][(
             index.0 % vars::WORLD::GENERAL::CHUNK_X,
             index.1 % vars::WORLD::GENERAL::CHUNK_Y,
         )]
     }
 }
-impl IndexMut<types::vector2> for TEMPLATE_world {
+impl IndexMut<types::vector2> for world_master {
     fn index_mut(&mut self, index: types::vector2) -> &mut Self::Output {
-        &mut self.w_chunks[index.0 / vars::WORLD::GENERAL::CHUNK_X
+        &mut self.chunks[index.0 / vars::WORLD::GENERAL::CHUNK_X
             + index.1 / vars::WORLD::GENERAL::CHUNK_Y * vars::WORLD::GENERAL::WORLD_X][(
             index.0 % vars::WORLD::GENERAL::CHUNK_X,
             index.1 % vars::WORLD::GENERAL::CHUNK_Y,

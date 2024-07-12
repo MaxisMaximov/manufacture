@@ -42,7 +42,7 @@ impl debug_item {
     ) -> Self {
         Self {
             class: IN_class,
-            string: json::debugStr(IN_spec, IN_debugPath).unwrap_or(IN_spec.to_string()),
+            string: json::fetch(IN_spec, IN_debugPath).unwrap_or(IN_spec.to_string()),
             values: IN_values.to_vec(),
             lifetime: IN_lifetime,
             markForDel: false,

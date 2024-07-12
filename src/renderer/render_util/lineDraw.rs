@@ -6,7 +6,7 @@ pub fn main(
     IN_char: char,
     IN_colors: types::colorSet,
 ) {
-    let mut BUFFER_LOCK = self::RENDER_mainBuffer.lock().unwrap();
+    let mut BUFFER_LOCK = buffer.lock().unwrap();
 
     // Init start values
     let w_startPos: types::vector2;
@@ -36,7 +36,7 @@ pub fn main(
 
         // Iterate
         for XPOS in w_startPos.0..=w_endPos.0{
-            BUFFER_LOCK[(XPOS, w_curY)] = TEMPLATE_wrCell{ c_char: IN_char, c_colors: IN_colors };
+            BUFFER_LOCK[(XPOS, w_curY)] = render_cell{ char: IN_char, colors: IN_colors };
 
             // Idk who made this equation but why does it work
             // SubaxisDelta * 2 > SuperaxisDelta
@@ -66,7 +66,7 @@ pub fn main(
 
         // Iterate
         for YPOS in w_startPos.1..=w_endPos.1{
-            BUFFER_LOCK[(w_curX, YPOS)] = TEMPLATE_wrCell{ c_char: IN_char, c_colors: IN_colors };
+            BUFFER_LOCK[(w_curX, YPOS)] = render_cell{ char: IN_char, colors: IN_colors };
 
             // Idk who made this equation but why does it work
             // SubaxisDelta * 2 > SuperaxisDelta

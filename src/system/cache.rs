@@ -20,5 +20,5 @@ pub enum cache_item {
     u8(u8),
     vec2(types::vector2),
     vec3(types::vector3),
-    interactCode(logic::GAME_interactions),
+    interactCode(logic::interactions),
 }

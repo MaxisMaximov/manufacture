@@ -6,8 +6,7 @@ use std::thread::sleep;
 
 pub use once_cell::sync::Lazy;
 pub use crossterm::{style::{Color, Stylize}, *};
-use vars::MISC;
-pub use std::{collections::HashMap, sync::Mutex, fmt, io::{stdout, Write}, time, ops::{Index, IndexMut}};
+pub use std::{collections::HashMap, sync::Mutex, fmt::{self, Write as fmtWrite}, io::{stdout, Write as ioWrite}, time, ops::{Index, IndexMut}};
 
 // Define all subsystems
 mod system;
@@ -24,7 +23,7 @@ fn main() {
         debug::debug_item::new(
             debug::class::info,
             ".SYS/.SSINIT/#data",
-            MISC::PATHS::PATH_DEBUG,
+            vars::MISC::PATHS::PATH_DEBUG,
             &[],
             40,
         ),
@@ -35,7 +34,7 @@ fn main() {
         debug::debug_item::new(
             debug::class::info,
             ".SYS/#processSpeed",
-            MISC::PATHS::PATH_DEBUG,
+            vars::MISC::PATHS::PATH_DEBUG,
             &[("{time}", "".to_owned())],
             255,
         ),
