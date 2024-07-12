@@ -37,6 +37,7 @@ pub fn init(){
 /// Window system will have different way of managing those
 pub fn main() {
     let mut DATA_LOCK = statics::data.lock().unwrap();
+    let mut WIDGET_LOCK = renderer::widgets::widgetsMap.lock().unwrap();
 
     statics::debug
         .lock()
@@ -55,13 +56,23 @@ pub fn main() {
         }
 
         GAME_interactions::i_printHello => 
-            DATA_LOCK.DATA_textItems.push(
-                IDDQD_textItem::new(renderer::RENDER_position::POS_TL, "Hello!\r\nHello!", "", 32)
+            WIDGET_LOCK.textBoxes.push(
+                renderer::widgets::textBox::new(
+                    renderer::widgets::position::TL,
+                    "Hello!\nHello!",
+                    "",
+                    32
+                )
             ),
 
         GAME_interactions::i_printDebug =>
-            DATA_LOCK.DATA_textItems.push(
-                IDDQD_textItem::new(renderer::RENDER_position::POS_right, "DEBUG", "", 16)
+            WIDGET_LOCK.textBoxes.push(
+                renderer::widgets::textBox::new(
+                    renderer::widgets::position::right,
+                    "DEBUG",
+                    "",
+                    16
+                )
             ),
 
         GAME_interactions::i_clearWorld => DATA_LOCK.DATA_world.w_clearWorld(),

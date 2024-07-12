@@ -10,6 +10,8 @@ mod world;
 mod text;
 mod render_util;
 
+pub mod widgets;
+
 static RENDER_mainBuffer: Lazy<Mutex<RENDER_buffer>> = Lazy::new(|| {
     Mutex::new(RENDER_buffer::new((
         vars::RENDERER::RENDER_BUFFER_X,
@@ -214,7 +216,7 @@ pub fn main() {
 /// * Character
 /// * Colors for character and background
 #[derive(Clone, Copy)]
-pub struct TEMPLATE_wrCell {
+struct TEMPLATE_wrCell {
     pub c_char: char,
     pub c_colors: types::colorSet,
 }
@@ -229,41 +231,6 @@ impl TEMPLATE_wrCell {
 impl fmt::Display for TEMPLATE_wrCell{
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.c_char.with(self.c_colors.0).on(self.c_colors.1))
-    }
-}
-
-/// # Position in Render Buffer
-/// A selection of common positions for useage
-///
-/// You can also use your custom position with `POS_custom`
-pub enum RENDER_position {
-    None,
-    POS_middle,
-    POS_right,
-    POS_left,
-    POS_top,
-    POS_bottom,
-    POS_TL,
-    POS_TR,
-    POS_BL,
-    POS_BR,
-    POS_custom(types::vector2),
-}
-impl RENDER_position {
-    pub fn value(&self) -> types::vector2 {
-        match *self {
-            Self::None => (0, 0),
-            Self::POS_middle => (vars::RENDERER::RENDER_BUFFER_X / 2, vars::RENDERER::RENDER_BUFFER_Y / 2),
-            Self::POS_left => (0, vars::RENDERER::RENDER_BUFFER_Y / 2),
-            Self::POS_right => (vars::RENDERER::RENDER_BUFFER_X - 1, vars::RENDERER::RENDER_BUFFER_Y / 2),
-            Self::POS_top => (vars::RENDERER::RENDER_BUFFER_X / 2, 0),
-            Self::POS_bottom => (vars::RENDERER::RENDER_BUFFER_X / 2, vars::RENDERER::RENDER_BUFFER_Y - 1),
-            Self::POS_TL => (0, 0),
-            Self::POS_TR => (vars::RENDERER::RENDER_BUFFER_X - 1, 0),
-            Self::POS_BL => (0, vars::RENDERER::RENDER_BUFFER_Y - 1),
-            Self::POS_BR => (vars::RENDERER::RENDER_BUFFER_X - 1, vars::RENDERER::RENDER_BUFFER_Y - 1),
-            Self::POS_custom(POS) => POS,
-        }
     }
 }
 

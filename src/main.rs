@@ -14,7 +14,7 @@ mod system;
 mod logic;
 mod renderer;
 
-// These are system stuff so yeah
+// This is system stuff so yeah
 pub use system::*;
 
 // START HERE
@@ -87,73 +87,5 @@ fn main() {
         if loop_elapsedTime < vars::SYS::TICKTIME {
             sleep(vars::SYS::TICKTIME - loop_elapsedTime)
         }
-    }
-}
-
-/// # Text/Debug struct
-///
-/// TextItem and DebugItem struct in one
-///
-/// `t_position` is ignored for DebugItems
-pub struct IDDQD_textItem {
-    pub t_position: renderer::RENDER_position,
-    pub t_string: String,
-    pub t_values: String,
-    pub t_lifetime: u16,
-    pub t_markForDel: bool,
-}
-impl IDDQD_textItem {
-    /// # Create new TextItem
-    ///
-    /// The one used to place text somewhere in the game
-    pub fn new(
-        IN_pos: renderer::RENDER_position,
-        IN_text: &str,
-        IN_values: &str,
-        IN_lifetime: u16,
-    ) -> Self {
-        // Check if it's a debug string
-        let idkfa_string = if IN_text.starts_with('.') {
-            json::debugStr(IN_text, vars::MISC::PATHS::PATH_DEBUG).unwrap_or(IN_text.to_string())
-        } else {
-            IN_text.to_string()
-        };
-        Self {
-            t_position: IN_pos,
-            t_string: idkfa_string,
-            t_values: IN_values.to_string(),
-            t_lifetime: IN_lifetime,
-            t_markForDel: false,
-        }
-    }
-
-    /// Tickdown lifetime  
-    /// Just to make it clean
-    pub fn TEXT_tickdown(&mut self) {
-        // If it's marked for del just ignore
-        if self.t_markForDel {
-            return;
-        }
-        // If it's ""permament"" then don't do anything
-        if self.t_lifetime == 255 {
-            return;
-        }
-        // If lifetime is 0, mark for deletion
-        if self.t_lifetime == 0 {
-            self.t_markForDel = true;
-            return;
-        }
-        self.t_lifetime -= 1;
-    }
-}
-// Display for normal textboxes
-impl fmt::Display for IDDQD_textItem {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "{} {}",
-            &self.t_string.clone().with(vars::MISC::COLORS::COLORS_DEF.0),
-            &self.t_values.clone().with(vars::MISC::COLORS::COLORS_DEF.1)
-        )
     }
 }

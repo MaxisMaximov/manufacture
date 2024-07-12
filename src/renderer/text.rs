@@ -6,18 +6,19 @@ use super::*;
 /// # DO NOT RELY ON THIS
 /// It'll be most likely removed in favor of Window system
 pub fn render_textBox() {
-    let mut DATA_LOCK = statics::data.lock().unwrap();
+    // Lock and load
     let mut BUFFER_LOCK = RENDER_mainBuffer.lock().unwrap();
+    let mut WIDGET_LOCK = widgets::widgetsMap.lock().unwrap();
     
     let mut RTEXT_charStartPosition: types::vector2;
     let mut RTEXT_charPosition: types::vector2;
 
-    for RTEXT in DATA_LOCK.DATA_textItems.iter_mut() {
+    for RTEXT in WIDGET_LOCK.textBoxes.iter_mut() {
 
-        RTEXT_charStartPosition = RTEXT.t_position.value();
+        RTEXT_charStartPosition = RTEXT.position.value();
         RTEXT_charPosition = RTEXT_charStartPosition;
 
-        'RENDER_textBlocks: for RTEXT_char in RTEXT.t_string.clone().chars() {
+        'RENDER_textBlocks: for RTEXT_char in RTEXT.string.clone().chars() {
 
             if RTEXT_char == '\n' {
                 RTEXT_charStartPosition.1 += 1;
@@ -33,10 +34,10 @@ pub fn render_textBox() {
             RTEXT_charPosition.0 += 1
         }
 
-        RTEXT.TEXT_tickdown();
+        RTEXT.tickdown();
     }
 
-    DATA_LOCK.DATA_textItemCleanup()
+    WIDGET_LOCK.cleanup_textBoxes()
 }
 
 /// # Print debug and error stuff

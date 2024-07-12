@@ -8,7 +8,6 @@ pub mod world;
 pub struct DATA_master {
     pub DATA_player: player::TEMPLATE_player,
     pub DATA_world: world::TEMPLATE_world,
-    pub DATA_textItems: Vec<IDDQD_textItem>,
     pub DATA_playerInput: logic::GAME_interactions,
 }
 impl DATA_master {
@@ -16,11 +15,7 @@ impl DATA_master {
         Self {
             DATA_player: IN_player,
             DATA_world: world::TEMPLATE_world::new(),
-            DATA_textItems: Vec::new(),
             DATA_playerInput: logic::GAME_interactions::i_NULL,
         }
-    }
-    pub fn DATA_textItemCleanup(&mut self) {
-        self.DATA_textItems.retain(|x| x.t_string != "#MARK_FOR_DELETION")
     }
 }
