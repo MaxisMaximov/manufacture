@@ -1,0 +1,45 @@
+{
+    ".SYS":{
+        ".SSINIT":{
+            "#data": "Data Container initialized",
+            "#logic": "Logic initialized",
+            "#render": "Renderer initialized",
+            "#input": "Input manager initialized",
+            "#json": "Json manager initialized",
+            "#error": "Error manager initialized"
+        },
+        "#processSpeed": "Previous tick finished processing in {time}"
+    },
+    ".INPUT":{
+        "#keyType": "Key pressed: {key}"
+    },
+    ".RENDER":{
+        "#frameTime": "Rendered frame in {time}",
+        "#textItem": "Rendered text item {id} at {loc}",
+        "#worldTime": "Rendered world in {time}",
+        "#convTime": "Converted buffer to string in {time}",
+        "#borderTime": "Renderer border in {time}",
+        "#textTime": "Rendered all text in {time}",
+
+        "$textLocOutInvis": "Textbox {id}'s location {coords} is outside of Render Buffer and not visible",
+        "$borderLocOutInvis": "Border {id}'s location {coords} is outside of Render Buffer and not visible",
+        "$screenSize": "Terminals size is too small!\nRecommended size: {defSize}\nCurrent size: {curSize}"
+    },
+    ".LOGIC":{
+        "#interaction": "Current interaction {inter}"
+    },
+    ".WORLD":{
+        ".GEN": {
+            "#done": "Finished generating world",
+            "#lake": "Generated lake at {loc} with {iters} iters",
+            "#forest": "Generated forest at {loc} with {iters} iters"
+        },
+        "#clear": "Cleared world"
+
+    },
+    ".JSON":{
+        "!read": "Couldn't read {data} from {file}",
+        "!noFile": "Couldn't find file in {path}",
+        "!write": "Couldn't write {data} to {file}"
+    }
+}
