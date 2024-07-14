@@ -97,6 +97,22 @@ pub fn main(){
                     );
                     exit(0)
                 },
+                KeyCode::Char('t') => {
+                    if modifiers == KeyModifiers::CONTROL{
+                        DATA_LOCK.playerInput = logic::interactions::invAddDel(true);
+                        return;
+                    }
+                    DATA_LOCK.playerInput = logic::interactions::invSelect(true)
+                },
+                KeyCode::Char('y') =>{
+                    if modifiers == KeyModifiers::CONTROL{
+                        DATA_LOCK.playerInput = logic::interactions::invAddDel(false);
+                        return;
+                    }
+                    DATA_LOCK.playerInput = logic::interactions::invSelect(false)
+                }
+                KeyCode::Char('T') => DATA_LOCK.playerInput = logic::interactions::invMod(true),
+                KeyCode::Char('Y') => DATA_LOCK.playerInput = logic::interactions::invMod(false),
                 _ => {DATA_LOCK.playerInput = logic::interactions::NULL}
             }
             return;

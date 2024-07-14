@@ -117,4 +117,7 @@ pub mod PLAYER{
 
     // How far the player can 'leap'
     pub const PLAYER_LEAP_SIZE: usize = 4;
+
+    // Base player inventory size
+    pub const PLAYER_INV_SIZE: usize = 8;
 }

@@ -15,7 +15,10 @@ pub struct obj_player {
     pub hp: u16,
     pub loc: types::vector2,
     pub chunk: types::vector2,
-    pub color: types::colorSet
+    pub color: types::colorSet,
+
+    pub inv: Vec<u8>,
+    pub invIndex: usize
 }
 impl obj_player {
     pub fn new(IN_playerNum: usize, IN_color: Option<Color>) -> Self{
@@ -29,7 +32,11 @@ impl obj_player {
             hp: vars::PLAYER::PLAYER_BASE_HP,
             loc: (10, 10),
             chunk: (2, 2),
-            color: (Color::White, Fp_playerColor) }
+            color: (Color::White, Fp_playerColor),
+
+            inv: vec![0; vars::PLAYER::PLAYER_INV_SIZE],
+            invIndex: 0,
+        }
     }
 
     pub fn walk(&mut self, IN_dir: &logic::playerDirections, IN_stepSize: usize) {
@@ -54,6 +61,49 @@ impl obj_player {
     pub fn updateChunk(&mut self){
         self.chunk.0 = self.loc.0 / vars::WORLD::GENERAL::CHUNK_X;
         self.chunk.1 = self.loc.1 / vars::WORLD::GENERAL::CHUNK_Y;
+    }
+
+    /// 0 - Backward | 1 - Forward
+    pub fn invSelect(&mut self, IN_dir: bool){
+
+        // Forward
+        if self.invIndex < vars::PLAYER::PLAYER_INV_SIZE && IN_dir{
+            self.invIndex += 1;
+            return;
+        }
+
+        // Backward
+        if self.invIndex > 0{
+            self.invIndex -= 1
+        }
+    }
+
+    /// 0 - Decr | 1 - Incr
+    pub fn invMod(&mut self, IN_op: bool){
+
+        // Incr
+        if self.inv[self.invIndex] < 255 && IN_op{
+            self.inv[self.invIndex] += 1;
+            return;
+        }
+
+        // Decr
+        if self.inv[self.invIndex] > 0{
+            self.inv[self.invIndex] -= 1;
+            return;
+        }
+    }
+
+    /// 0 - "Remove" | 1 - Add
+    /// By those I mean Remove - Set 0 | Add - Set 255
+    pub fn invAddDel(&mut self, IN_op: bool){
+
+        if IN_op{ // Add
+            self.inv[self.invIndex] = 255;
+            return;
+        }
+        // "Remove"
+        self.inv[self.invIndex] = 0
     }
 }
 

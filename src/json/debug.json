@@ -26,7 +26,8 @@
         "$screenSize": "Terminals size is too small!\nRecommended size: {defSize}\nCurrent size: {curSize}"
     },
     ".LOGIC":{
-        "#interaction": "Current interaction {inter}"
+        "#interaction": "Current interaction {inter}",
+        "#invValue": "Current slot: {slot}, value: {value}"
     },
     ".WORLD":{
         ".GEN": {
