@@ -6,7 +6,7 @@
             "#render": "Renderer initialized",
             "#input": "Input manager initialized",
             "#json": "Json manager initialized",
-            "#error": "Error manager initialized"
+            "#debug": "Debug manager initialized"
         },
         "#processSpeed": "Previous tick finished processing in {time}"
     },
@@ -27,7 +27,8 @@
     },
     ".LOGIC":{
         "#interaction": "Current interaction {inter}",
-        "#invValue": "Current slot: {slot}, value: {value}"
+        "#invValue": "Current slot: {slot}, value: {value}",
+        "#invDet": "Inventory size, current: {curSize}, max: {maxSize}"
     },
     ".WORLD":{
         ".GEN": {

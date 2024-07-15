@@ -85,7 +85,7 @@ pub fn init() {
             ">SYS_SSINIT_render".to_string(),
             debug::debug_item::new(
                 debug::class::info,
-                ".SYS/.SYS_ssInit/#SSINIT_render",
+                ".SYS/.SSINIT/#render",
                 vars::MISC::PATHS::PATH_DEBUG,
                 &[],
                 40

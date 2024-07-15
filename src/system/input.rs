@@ -22,7 +22,7 @@ pub fn init(){
             ">SYS_SSINIT_input".to_string(),
             debug::debug_item::new(
                 debug::class::info,
-                ".DEBUG_sys/.SYS_ssInit/#SSINIT_input",
+                ".SYS/.SSINIT/#input",
                 vars::MISC::PATHS::PATH_DEBUG,
                 &[],
                 40
@@ -99,20 +99,20 @@ pub fn main(){
                 },
                 KeyCode::Char('t') => {
                     if modifiers == KeyModifiers::CONTROL{
-                        DATA_LOCK.playerInput = logic::interactions::invAddDel(true);
+                        DATA_LOCK.playerInput = logic::interactions::invOp(data::player::invOps::modify(true));
                         return;
                     }
-                    DATA_LOCK.playerInput = logic::interactions::invSelect(true)
+                    DATA_LOCK.playerInput = logic::interactions::invOp(data::player::invOps::select(true))
                 },
                 KeyCode::Char('y') =>{
                     if modifiers == KeyModifiers::CONTROL{
-                        DATA_LOCK.playerInput = logic::interactions::invAddDel(false);
+                        DATA_LOCK.playerInput = logic::interactions::invOp(data::player::invOps::modify(false));
                         return;
                     }
-                    DATA_LOCK.playerInput = logic::interactions::invSelect(false)
+                    DATA_LOCK.playerInput = logic::interactions::invOp(data::player::invOps::select(false))
                 }
-                KeyCode::Char('T') => DATA_LOCK.playerInput = logic::interactions::invMod(true),
-                KeyCode::Char('Y') => DATA_LOCK.playerInput = logic::interactions::invMod(false),
+                KeyCode::Char('T') => DATA_LOCK.playerInput = logic::interactions::invOp(data::player::invOps::addDel(true)),
+                KeyCode::Char('Y') => DATA_LOCK.playerInput = logic::interactions::invOp(data::player::invOps::addDel(false)),
                 _ => {DATA_LOCK.playerInput = logic::interactions::NULL}
             }
             return;

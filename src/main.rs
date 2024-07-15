@@ -18,27 +18,40 @@ pub use system::*;
 
 // START HERE
 fn main() {
-    statics::debug.lock().unwrap().inner.insert(
-        ">SYS_SSINIT_data".to_string(),
-        debug::debug_item::new(
-            debug::class::info,
-            ".SYS/.SSINIT/#data",
-            vars::MISC::PATHS::PATH_DEBUG,
-            &[],
-            40,
-        ),
-    );
+    if let DEBUG_LOCK = &mut statics::debug.lock().unwrap(){
+        DEBUG_LOCK.inner.insert(
+            ">SYS_SSINIT_data".to_string(),
+            debug::debug_item::new(
+                debug::class::info,
+                ".SYS/.SSINIT/#data",
+                vars::MISC::PATHS::PATH_DEBUG,
+                &[],
+                40,
+            ),
+        );
 
-    statics::debug.lock().unwrap().inner.insert(
-        ">SYS_processSpeed".to_string(),
-        debug::debug_item::new(
-            debug::class::info,
-            ".SYS/#processSpeed",
-            vars::MISC::PATHS::PATH_DEBUG,
-            &[("{time}", "".to_owned())],
-            255,
-        ),
-    );
+        DEBUG_LOCK.inner.insert(
+            ">SYS_SSINIT_debug".to_string(),
+            debug::debug_item::new(
+                debug::class::info,
+                ".SYS/.SSINIT/#debug",
+                vars::MISC::PATHS::PATH_DEBUG,
+                &[],
+                255,
+            ),
+        );
+
+        DEBUG_LOCK.inner.insert(
+            ">SYS_processSpeed".to_string(),
+            debug::debug_item::new(
+                debug::class::info,
+                ".SYS/#processSpeed",
+                vars::MISC::PATHS::PATH_DEBUG,
+                &[("{time}", "".to_owned())],
+                255,
+            ),
+        );
+    }
 
     // Switch to Raw Mode
     terminal::enable_raw_mode().unwrap();

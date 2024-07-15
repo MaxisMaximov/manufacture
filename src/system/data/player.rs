@@ -18,6 +18,7 @@ pub struct obj_player {
     pub color: types::colorSet,
 
     pub inv: Vec<u8>,
+    pub invMaxSize: usize,
     pub invIndex: usize
 }
 impl obj_player {
@@ -35,6 +36,7 @@ impl obj_player {
             color: (Color::White, Fp_playerColor),
 
             inv: vec![0; vars::PLAYER::PLAYER_INV_SIZE],
+            invMaxSize: vars::PLAYER::PLAYER_INV_SIZE,
             invIndex: 0,
         }
     }
@@ -63,47 +65,51 @@ impl obj_player {
         self.chunk.1 = self.loc.1 / vars::WORLD::GENERAL::CHUNK_Y;
     }
 
-    /// 0 - Backward | 1 - Forward
-    pub fn invSelect(&mut self, IN_dir: bool){
+    pub fn invOp(&mut self, IN_op: invOps){
+        match IN_op {
+            invOps::select(OPMODE) => {
+                // If it's empty just set it to 0
+                if self.inv.is_empty(){
+                    self.invIndex = 0;
+                    return;
+                }
 
-        // Forward
-        if self.invIndex < vars::PLAYER::PLAYER_INV_SIZE && IN_dir{
-            self.invIndex += 1;
-            return;
+                // Forward & Check overflow
+                if OPMODE && self.invIndex < (self.inv.len() - 1){
+                    self.invIndex += 1;
+                    return;
+                }
+                // Backward & Check underflow
+                if !OPMODE && self.invIndex > 0{
+                    self.invIndex -= 1
+                }
+            },
+            invOps::modify(OPMODE) => {
+                // Increase & Check overflow
+                if OPMODE && self.inv[self.invIndex] < 255{
+                    self.inv[self.invIndex] += 1;
+                    return;
+                }
+                // Decrease & Check underflow
+                if !OPMODE && self.inv[self.invIndex] > 0{
+                    self.inv[self.invIndex] -= 1;
+                    return;
+                }
+            },
+            invOps::addDel(OPMODE) => {
+                // Add & Check overflow
+                if OPMODE && self.inv.len() < self.invMaxSize{
+                    self.inv.insert(self.invIndex, 255);
+                    return
+                }
+
+                if !OPMODE && !self.inv.is_empty(){
+                    self.inv.remove(self.invIndex);
+                    self.invOp(invOps::select(false));
+                    return;
+                }
+            },
         }
-
-        // Backward
-        if self.invIndex > 0{
-            self.invIndex -= 1
-        }
-    }
-
-    /// 0 - Decr | 1 - Incr
-    pub fn invMod(&mut self, IN_op: bool){
-
-        // Incr
-        if self.inv[self.invIndex] < 255 && IN_op{
-            self.inv[self.invIndex] += 1;
-            return;
-        }
-
-        // Decr
-        if self.inv[self.invIndex] > 0{
-            self.inv[self.invIndex] -= 1;
-            return;
-        }
-    }
-
-    /// 0 - "Remove" | 1 - Add
-    /// By those I mean Remove - Set 0 | Add - Set 255
-    pub fn invAddDel(&mut self, IN_op: bool){
-
-        if IN_op{ // Add
-            self.inv[self.invIndex] = 255;
-            return;
-        }
-        // "Remove"
-        self.inv[self.invIndex] = 0
     }
 }
 
@@ -116,3 +122,13 @@ const player_colors: [Color;4] = [
     Color::Yellow,
     Color::Rgb {r: 255, g: 153, b: 0}
 ];
+
+#[derive(Debug, Clone, Copy)]
+pub enum invOps{
+    /// 1 - Forward | 0 - Backward
+    select(bool),
+    /// 1 - Increment | 0 - Decrement
+    modify(bool),
+    /// 1 - Add (255) | 0 - Delete (0)
+    addDel(bool)
+}

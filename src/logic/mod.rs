@@ -29,6 +29,17 @@ pub fn init(){
         );
 
         DEBUG_LOCK.inner.insert(
+            ">LOGIC_invDet".to_string(),
+            debug::debug_item::new(
+                debug::class::info,
+                ".LOGIC/#invDet",
+                vars::MISC::PATHS::PATH_DEBUG,
+                &[("{curSize}", "".to_owned()), ("{maxSize}", "".to_owned())], 
+                255
+            )
+        );
+
+        DEBUG_LOCK.inner.insert(
             ">SSINIT_logic".to_string(),
             debug::debug_item::new(
                 debug::class::info,
@@ -62,7 +73,13 @@ pub fn main() {
     // Bandaid fix
     if let idkfa = &mut DEBUG_LOCK.inner.get_mut(">LOGIC_invValue").unwrap().values{
         idkfa[0].1 = format!("{}", DATA_LOCK.player.invIndex);
-        idkfa[1].1 = format!("{}", DATA_LOCK.player.inv[DATA_LOCK.player.invIndex])
+        // If it's all empty put 64, another bandaid fix
+        idkfa[1].1 = format!("{}", if DATA_LOCK.player.inv.is_empty(){64}else{DATA_LOCK.player.inv[DATA_LOCK.player.invIndex]})
+    }
+
+    if let idkfa = &mut DEBUG_LOCK.inner.get_mut(">LOGIC_invDet").unwrap().values{
+        idkfa[0].1 = format!("{}", DATA_LOCK.player.inv.len());
+        idkfa[1].1 = format!("{}", DATA_LOCK.player.invMaxSize)
     }
 
     match DATA_LOCK.playerInput {
@@ -105,9 +122,7 @@ pub fn main() {
             DATA_LOCK.player.walk(&idkfa_direction, vars::PLAYER::PLAYER_LEAP_SIZE)
         }
         
-        interactions::invSelect(DIR) => DATA_LOCK.player.invSelect(DIR),
-        interactions::invMod(OP) => DATA_LOCK.player.invMod(OP),
-        interactions::invAddDel(OP) => DATA_LOCK.player.invAddDel(OP),
+        interactions::invOp(OP) => DATA_LOCK.player.invOp(OP),
         interactions::NULL => {}
     }
 }
@@ -124,9 +139,7 @@ pub enum interactions {
     printHello,
     printDebug,
     clearWorld,
-    invSelect(bool),
-    invMod(bool),
-    invAddDel(bool)
+    invOp(data::player::invOps)
 }
 impl fmt::Display for interactions{
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -139,9 +152,7 @@ impl fmt::Display for interactions{
             Self::printHello => "printHello",
             Self::printDebug => "printDebug",
             Self::clearWorld => "clearWorld",
-            Self::invSelect(DIR) => {idkfa_pDir = format!("invSelect >> {}", DIR); &idkfa_pDir},
-            Self::invMod(OP) => {idkfa_pDir = format!("invMod >> {}", OP); &idkfa_pDir},
-            Self::invAddDel(OP) => {idkfa_pDir = format!("invAddDel >> {}", OP); &idkfa_pDir}
+            Self::invOp(OP) => {idkfa_pDir = format!("invOp >> {:?}", OP); &idkfa_pDir},
         };
         write!(f, "{}", idkfa_fmt)
     }

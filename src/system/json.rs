@@ -13,7 +13,7 @@ pub fn init() {
         ">SYS_SSINIT_json".to_string(),
         debug::debug_item::new(
             debug::class::info,
-            ".DEBUG_sys/.SYS_ssInit/#SSINIT_json",
+            ".SYS/.SSINIT/#json",
             vars::MISC::PATHS::PATH_DEBUG,
             &[],
             40,
