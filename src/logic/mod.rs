@@ -1,6 +1,6 @@
-use std::fmt;
+use super::*;
 
-use crate::*;
+pub mod inventory;
 
 /// # Game logic
 pub fn init(){
@@ -72,14 +72,19 @@ pub fn main() {
 
     // Bandaid fix
     if let idkfa = &mut DEBUG_LOCK.inner.get_mut(">LOGIC_invValue").unwrap().values{
-        idkfa[0].1 = format!("{}", DATA_LOCK.player.invIndex);
-        // If it's all empty put 64, another bandaid fix
-        idkfa[1].1 = format!("{}", if DATA_LOCK.player.inv.is_empty(){64}else{DATA_LOCK.player.inv[DATA_LOCK.player.invIndex]})
+        idkfa[0].1 = format!("{}", DATA_LOCK.player.inventory.index);
+        // Bloody hell this is long
+        idkfa[1].1 = format!("{}", if DATA_LOCK.player.inventory.inner.is_empty(){
+                inventory::item_hashmap.get(&0).unwrap()
+            }else{
+                inventory::item_hashmap.get(&DATA_LOCK.player.inventory.inner[DATA_LOCK.player.inventory.index].id).unwrap_or(&"INVALID")
+            }
+        )
     }
 
     if let idkfa = &mut DEBUG_LOCK.inner.get_mut(">LOGIC_invDet").unwrap().values{
-        idkfa[0].1 = format!("{}", DATA_LOCK.player.inv.len());
-        idkfa[1].1 = format!("{}", DATA_LOCK.player.invMaxSize)
+        idkfa[0].1 = format!("{}", DATA_LOCK.player.inventory.inner.len());
+        idkfa[1].1 = format!("{}", DATA_LOCK.player.inventory.maxSize)
     }
 
     match DATA_LOCK.playerInput {
@@ -122,7 +127,7 @@ pub fn main() {
             DATA_LOCK.player.walk(&idkfa_direction, vars::PLAYER::PLAYER_LEAP_SIZE)
         }
         
-        interactions::invOp(OP) => DATA_LOCK.player.invOp(OP),
+        interactions::invOp(OP) => DATA_LOCK.player.inventory.invOp(OP),
         interactions::NULL => {}
     }
 }
@@ -139,7 +144,7 @@ pub enum interactions {
     printHello,
     printDebug,
     clearWorld,
-    invOp(data::player::invOps)
+    invOp(inventory::invOps)
 }
 impl fmt::Display for interactions{
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -178,5 +183,17 @@ impl fmt::Display for playerDirections{
             playerDirections::right => "Right"
         };
         write!(f, "{}", idkfa_string)
+    }
+}
+
+#[derive(Clone, Copy)]
+pub struct item{
+    pub id: u8,
+}
+impl item {
+    pub fn new() -> Self{
+        Self{
+            id: 1
+        }
     }
 }

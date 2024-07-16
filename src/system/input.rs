@@ -99,20 +99,20 @@ pub fn main(){
                 },
                 KeyCode::Char('t') => {
                     if modifiers == KeyModifiers::CONTROL{
-                        DATA_LOCK.playerInput = logic::interactions::invOp(data::player::invOps::modify(true));
+                        DATA_LOCK.playerInput = logic::interactions::invOp(logic::inventory::invOps::modify(true));
                         return;
                     }
-                    DATA_LOCK.playerInput = logic::interactions::invOp(data::player::invOps::select(true))
+                    DATA_LOCK.playerInput = logic::interactions::invOp(logic::inventory::invOps::select(true))
                 },
                 KeyCode::Char('y') =>{
                     if modifiers == KeyModifiers::CONTROL{
-                        DATA_LOCK.playerInput = logic::interactions::invOp(data::player::invOps::modify(false));
+                        DATA_LOCK.playerInput = logic::interactions::invOp(logic::inventory::invOps::modify(false));
                         return;
                     }
-                    DATA_LOCK.playerInput = logic::interactions::invOp(data::player::invOps::select(false))
+                    DATA_LOCK.playerInput = logic::interactions::invOp(logic::inventory::invOps::select(false))
                 }
-                KeyCode::Char('T') => DATA_LOCK.playerInput = logic::interactions::invOp(data::player::invOps::addDel(true)),
-                KeyCode::Char('Y') => DATA_LOCK.playerInput = logic::interactions::invOp(data::player::invOps::addDel(false)),
+                KeyCode::Char('T') => DATA_LOCK.playerInput = logic::interactions::invOp(logic::inventory::invOps::addDel(true)),
+                KeyCode::Char('Y') => DATA_LOCK.playerInput = logic::interactions::invOp(logic::inventory::invOps::addDel(false)),
                 _ => {DATA_LOCK.playerInput = logic::interactions::NULL}
             }
             return;
