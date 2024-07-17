@@ -1,2 +1,6 @@
 # idkfa
-A small project, name should give you a hint
+At-some-point-to-be factory and/or survival game
+
+And maybe custom Engine
+
+*Engie*ne, I like that
