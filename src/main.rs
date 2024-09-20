@@ -12,6 +12,7 @@ pub use std::{collections::HashMap, sync::Mutex, fmt::{self, Write as fmtWrite},
 mod system;
 mod logic;
 mod renderer;
+mod ECS;
 
 // This is system stuff so yeah
 pub use system::*;
