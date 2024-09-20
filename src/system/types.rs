@@ -9,6 +9,12 @@ pub type vector3 = (usize, usize, usize);
 /// (Foreground, Background)
 pub type colorSet = (Color, Color);
 
+pub struct styleSet{
+    ch: char,
+    fg: Color,
+    bg: Color
+}
+
 /// Color struct
 /// (R, G, B)
 pub struct SYS_COLOR(u8, u8, u8);
