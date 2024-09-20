@@ -77,3 +77,6 @@ impl gmCompEx for gmCompPController{
         "manufacture::gmCompPController"   
     }
 }
+
+
+pub struct gmObj{}
