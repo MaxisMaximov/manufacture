@@ -103,3 +103,7 @@ impl gmObjBuilder<'_>{
         IN_prefab::spawn(self.compMapRef)
     }
 }
+
+pub trait gmObjPrefEx: Default{
+    fn spawn(&self, IN_compMapRef: &mut WORLD_compMap);
+}
