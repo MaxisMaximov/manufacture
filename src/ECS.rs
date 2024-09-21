@@ -166,7 +166,7 @@ pub trait gmStorageEx{
     fn get(&self, IN_id: &u16) -> Option<&Self::outputType>;
     fn getMut(&mut self, IN_id: &u16) -> Option<&mut Self::outputType>;
     fn insert(&mut self, IN_id: u16, IN_item: Self::outputType);
-    fn remove(&mut self, IN_id: &u16) -> Option<Self::outputType>;
+    fn remove(&mut self, IN_id: &u16);
     fn iter(&self) -> impl Iterator;
     fn iterMut(&mut self) -> impl Iterator;
 }
@@ -198,8 +198,8 @@ impl<T> gmStorageEx for sMBTreeMap<T>{
         self.innerMap.insert(IN_id, IN_item);
     }
 
-    fn remove(&mut self, IN_id: &u16) -> Option<Self::outputType> {
-        self.innerMap.remove(IN_id)
+    fn remove(&mut self, IN_id: &u16) {
+        self.innerMap.remove(IN_id);
     }
 
     fn iter(&self) -> impl Iterator {
@@ -236,8 +236,8 @@ impl<T> gmStorageEx for sMHashMap<T>{
         self.innerMap.insert(IN_id, IN_item);
     }
 
-    fn remove(&mut self, IN_id: &u16) -> Option<Self::outputType> {
-        self.innerMap.remove(IN_id)
+    fn remove(&mut self, IN_id: &u16){
+        self.innerMap.remove(IN_id);
     }
 
     fn iter(&self) -> impl Iterator {
@@ -251,6 +251,67 @@ impl<T> gmStorageEx for sMHashMap<T>{
 
 pub struct sMDenseVec<T>{
     innerProxyMap: HashMap<u16, usize>,
-    innerDenseVec: Vec<T>
+    innerDenseVec: Vec<sMDenseVecIndex<T>>
 }
 
+pub struct sMDenseVecIndex<T>{
+    superID: u16,
+    val: T
+}
+impl<T> gmStorageEx for sMDenseVec<T>{
+    type outputType = T;
+
+    fn new() -> Self {
+        Self{
+            innerProxyMap: HashMap::new(),
+            innerDenseVec: Vec::new()
+        }
+    }
+
+    fn get(&self, IN_id: &u16) -> Option<&Self::outputType> {
+        if let Some(INDEX) = self.innerProxyMap.get(IN_id){
+            return Some(&self.innerDenseVec[*INDEX].val);
+        };
+        None
+    }
+
+    fn getMut(&mut self, IN_id: &u16) -> Option<&mut Self::outputType> {
+        if let Some(INDEX) = self.innerProxyMap.get(IN_id){
+            return Some(&mut self.innerDenseVec[*INDEX].val);
+        };
+        None
+    }
+
+    fn insert(&mut self, IN_id: u16, IN_item: Self::outputType) {
+        self.innerProxyMap.insert(IN_id, self.innerDenseVec.len()); // Length is always guaranteed to be next free index in Vec
+        self.innerDenseVec.push(sMDenseVecIndex{superID: IN_id, val: IN_item});
+    }
+
+    fn remove(&mut self, IN_id: &u16){
+        // Check if it's in the ProxyMap
+        if let Some(INDEX) = self.innerProxyMap.remove(IN_id){
+            // If it's the last index, just pop it
+            if INDEX == self.innerDenseVec.len() - 1{
+                self.innerDenseVec.pop();
+                return
+            }
+            // If not, Clone the value to an idkfa value
+            let idkfa = self.innerDenseVec.get(INDEX).unwrap().superID;
+            // Update the index in ProxyMap
+            *self.innerProxyMap.get_mut(&idkfa).unwrap() = *IN_id as usize;
+                // Take the superID of the value
+                // Find it in ProxyMap
+                // Update the ProxyMap value with the removal index
+            // Swap Removal and last index (Pop)
+            self.innerDenseVec[INDEX] = self.innerDenseVec.pop().unwrap();
+        }
+    }
+
+    fn iter(&self) -> impl Iterator {
+        self.innerDenseVec.iter()
+    }
+
+    fn iterMut(&mut self) -> impl Iterator {
+        self.innerDenseVec.iter_mut()
+    }
+}
