@@ -319,3 +319,10 @@ impl<T> gmStorageEx for sMDenseVec<T>{
         self.innerDenseVec.iter_mut()
     }
 }
+
+
+pub trait gmEventEx{
+    fn EVENT_ID() -> &str;
+}
+pub trait gmEventBox{}
+impl<T> gmEventBox for T where T: gmEventEx{}
