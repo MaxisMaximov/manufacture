@@ -80,3 +80,26 @@ impl gmCompEx for gmCompPController{
 
 
 pub struct gmObj{}
+
+pub struct gmObjBuilder<'a>{
+    ID: u16,
+    compMapRef: &'a mut WORLD_compMap
+}
+impl gmObjBuilder<'_>{
+    pub fn new(IN_id: u16, IN_compMapRef: &mut WORLD_compMap) -> Self{
+        Self{
+            ID: IN_id,
+            compMapRef: IN_compMapRef,
+        }
+    }
+    pub fn addComp<T>(self, IN_comp: T) -> Self where T: gmCompEx{
+        self.compMapRef.get(&T::COMP_ID()).unwrap().insert(&self.ID, T);
+        self
+    }
+    pub fn finish(self) -> u16{
+        self.ID
+    }
+    pub fn fromPrefab<T>(mut self, IN_prefab: &T) -> Self where T: gmObjPrefEx{
+        IN_prefab::spawn(self.compMapRef)
+    }
+}
