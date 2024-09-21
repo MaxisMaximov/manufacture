@@ -1,3 +1,5 @@
+use std::collections::BTreeMap;
+
 use super::*;
 
 pub trait gmCompEx{
@@ -172,3 +174,15 @@ pub trait gmStorageEx{
 pub trait gmStorageBox{}
 impl<T> gmStorageBox for T where T: gmStorageEx{}
 
+pub struct sMBTreeMap<T>{
+    innerMap: BTreeMap<u16, T>,
+}
+
+pub struct sMHashMap<T>{
+    innerMap: HashMap<u16, T>
+}
+
+pub struct sMDenseVec<T>{
+    innerProxyMap: HashMap<u16, usize>,
+    innerDenseVec: Vec<T>
+}
