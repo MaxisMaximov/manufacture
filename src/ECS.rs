@@ -114,6 +114,8 @@ impl gmObjBuilder<'_>{
 pub trait gmObjPrefEx: Default{
     fn spawn(&self, IN_id: &u16, IN_compMapRef: &mut WORLD_compMap);
 }
+pub trait gmObjPrefBox{}
+impl<T> gmObjPrefBox for T where T:gmObjPrefEx{}
 
 pub struct gmObjPrefP{
     health: u16,
@@ -322,7 +324,22 @@ impl<T> gmStorageEx for sMDenseVec<T>{
 
 
 pub trait gmEventEx{
-    fn EVENT_ID() -> &str;
+    fn EVENT_ID() -> &'static str;
 }
 pub trait gmEventBox{}
 impl<T> gmEventBox for T where T: gmEventEx{}
+
+pub struct gmEvGmObjSpawn{
+    id: u16,
+    inner: Box<gmEvGmObjDeSpawnType>
+}
+pub enum gmEvGmObjDeSpawnType{
+    spawn(Box<dyn gmObjPrefBox>),
+    despawn(&'static str)
+}
+
+pub struct gmEvTileChange{
+    pos: types::vector2,
+    tile: types::styleSet
+}
+
