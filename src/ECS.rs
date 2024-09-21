@@ -156,3 +156,19 @@ impl gmObjPrefEx for gmObjPrefP{
 
     }
 }
+
+
+pub trait gmStorageEx{
+    type outputType;
+    type iter: Iterator;
+    type iterMut: Iterator;
+    fn get(&self, IN_id: u16) -> Option<&'static Self::outputType>;
+    fn getMut(&mut self, IN_id: u16) -> Option<&'static mut Self::outputType>;
+    fn insert(&mut self, IN_id: u16, IN_item: Self::outputType);
+    fn remove(&mut self, IN_id: u16) -> Option<Self::outputType>;
+    fn iter(&self) -> Self::iter;
+    fn iterMut(&mut self) -> Self::iterMut;
+}
+pub trait gmStorageBox{}
+impl<T> gmStorageBox for T where T: gmStorageEx{}
+
