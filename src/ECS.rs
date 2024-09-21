@@ -162,20 +162,54 @@ impl gmObjPrefEx for gmObjPrefP{
 
 pub trait gmStorageEx{
     type outputType;
-    type iter: Iterator;
-    type iterMut: Iterator;
-    fn get(&self, IN_id: u16) -> Option<&'static Self::outputType>;
-    fn getMut(&mut self, IN_id: u16) -> Option<&'static mut Self::outputType>;
+    fn new() -> Self;
+    fn get(&self, IN_id: &u16) -> Option<&Self::outputType>;
+    fn getMut(&mut self, IN_id: &u16) -> Option<&mut Self::outputType>;
     fn insert(&mut self, IN_id: u16, IN_item: Self::outputType);
-    fn remove(&mut self, IN_id: u16) -> Option<Self::outputType>;
-    fn iter(&self) -> Self::iter;
-    fn iterMut(&mut self) -> Self::iterMut;
+    fn remove(&mut self, IN_id: &u16) -> Option<Self::outputType>;
+    fn iter(&self) -> impl Iterator;
+    fn iterMut(&mut self) -> impl Iterator;
 }
 pub trait gmStorageBox{}
 impl<T> gmStorageBox for T where T: gmStorageEx{}
 
 pub struct sMBTreeMap<T>{
     innerMap: BTreeMap<u16, T>,
+}
+impl<T> gmStorageEx for sMBTreeMap<T>{
+
+    type outputType = T;
+
+    fn new() -> Self{
+        Self{
+            innerMap: BTreeMap::new()
+        }
+    }
+
+    fn get(&self, IN_id: &u16) -> Option<&Self::outputType> {
+        self.innerMap.get(IN_id)
+    }
+
+    fn getMut(&mut self, IN_id: &u16) -> Option<&mut Self::outputType> {
+        self.innerMap.get_mut(IN_id)
+    }
+
+    fn insert(&mut self, IN_id: u16, IN_item: Self::outputType) {
+        self.innerMap.insert(IN_id, IN_item);
+    }
+
+    fn remove(&mut self, IN_id: &u16) -> Option<Self::outputType> {
+        self.innerMap.remove(IN_id)
+    }
+
+    fn iter(&self) -> impl Iterator {
+        self.innerMap.iter()
+    }
+
+    fn iterMut(&mut self) -> impl Iterator {
+        self.innerMap.iter_mut()
+    }
+    
 }
 
 pub struct sMHashMap<T>{
@@ -186,3 +220,4 @@ pub struct sMDenseVec<T>{
     innerProxyMap: HashMap<u16, usize>,
     innerDenseVec: Vec<T>
 }
+
