@@ -329,10 +329,16 @@ pub trait gmEventEx{
 pub trait gmEventBox{}
 impl<T> gmEventBox for T where T: gmEventEx{}
 
-pub struct gmEvGmObjSpawn{
+pub struct gmEvGmObjDeSpawn{
     id: u16,
     inner: Box<gmEvGmObjDeSpawnType>
 }
+impl gmEventEx for gmEvGmObjDeSpawn{
+    fn EVENT_ID() -> &'static str {
+        "manufacture::gmEvGmObjDeSpawn"
+    }
+}
+
 pub enum gmEvGmObjDeSpawnType{
     spawn(Box<dyn gmObjPrefBox>),
     despawn(&'static str)
@@ -341,5 +347,10 @@ pub enum gmEvGmObjDeSpawnType{
 pub struct gmEvTileChange{
     pos: types::vector2,
     tile: types::styleSet
+}
+impl gmEventEx for gmEvTileChange{
+    fn EVENT_ID() -> &'static str {
+        "manufacture::gmEvTileChange"
+    }
 }
 
