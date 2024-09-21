@@ -354,3 +354,9 @@ impl gmEventEx for gmEvTileChange{
     }
 }
 
+
+pub trait gmResourceEx{
+    fn RES_ID() -> &'static str;
+}
+pub trait gmResourceBox{}
+impl<T> gmResourceBox for T where T: gmResourceEx{}
