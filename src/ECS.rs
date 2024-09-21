@@ -104,6 +104,55 @@ impl gmObjBuilder<'_>{
     }
 }
 
+
 pub trait gmObjPrefEx: Default{
-    fn spawn(&self, IN_compMapRef: &mut WORLD_compMap);
+    fn spawn(&self, IN_id: &u16, IN_compMapRef: &mut WORLD_compMap);
+}
+
+pub struct gmObjPrefP{
+    health: u16,
+    position: types::vector2,
+    velocity: types::vector2,
+    render: gmCompRender,
+    Pcontrol: bool
+}
+impl Default for gmObjPrefP{
+    fn default() -> Self {
+        Self{
+            health: 100,
+            position: (0, 0),
+            velocity: (0, 0),
+            render: gmCompRender{
+                size: (1, 1),
+                sprite: &[types::styleSet{
+                    ch: 'P',
+                    fg: Color::White,
+                    bg: Color::Cyan
+                    }
+                ],
+                visible: true,
+            },
+            Pcontrol: true
+        }
+    }
+}
+impl gmObjPrefEx for gmObjPrefP{
+    fn spawn(self, IN_id: &u16, IN_compMapRef: &mut WORLD_compMap){
+
+        IN_compMapRef.get(gmCompHealth::COMP_ID())
+            .unwrap().insert(IN_id, gmCompHealth{val: self.health});
+
+        IN_compMapRef.get(gmCompPosition::COMP_ID())
+            .unwrap().insert(IN_id, gmCompPosition{x: self.position.0, y: self.position.1});
+
+        IN_compMapRef.get(gmCompVelocity::COMP_ID())
+            .unwrap().insert(IN_id, gmCompVelocity{x: self.velocity.0, y: self.velocity.1});
+
+        IN_compMapRef.get(gmCompRender::COMP_ID())
+            .unwrap().insert(IN_id, self.render);
+
+        IN_compMapRef.get(gmCompPController::COMP_ID())
+            .unwrap().insert(IN_id, gmCompPController{active: self.Pcontrol});
+
+    }
 }

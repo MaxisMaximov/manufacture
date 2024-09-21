@@ -10,9 +10,9 @@ pub type vector3 = (usize, usize, usize);
 pub type colorSet = (Color, Color);
 
 pub struct styleSet{
-    ch: char,
-    fg: Color,
-    bg: Color
+    pub ch: char,
+    pub fg: Color,
+    pub bg: Color
 }
 
 /// Color struct
