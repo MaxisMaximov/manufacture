@@ -13,7 +13,7 @@ pub struct gmCompHealth{
     val: u16
 }
 impl gmCompEx for gmCompHealth{
-    type COMP_STORAGE;
+    type COMP_STORAGE = sMBTreeMap<Self>;
 
     fn COMP_ID() -> &'static str {
         "manufacture::gmCompHealth"
@@ -25,7 +25,7 @@ pub struct gmCompPosition{
     y: usize
 }
 impl gmCompEx for gmCompPosition{
-    type COMP_STORAGE;
+    type COMP_STORAGE = sMBTreeMap<Self>;
 
     fn COMP_ID() -> &'static str {
         "manufacture::gmCompPosition"
@@ -37,7 +37,7 @@ pub struct gmCompVelocity{
     y: usize
 }
 impl gmCompEx for gmCompVelocity{
-    type COMP_STORAGE;
+    type COMP_STORAGE = sMDenseVec<Self>;
 
     fn COMP_ID() -> &'static str {
         "manufacture::gmCompVelocity"
@@ -49,7 +49,7 @@ pub struct gmCompTerrainChunk{
     needsUpdate: bool
 }
 impl gmCompEx for gmCompTerrainChunk{
-    type COMP_STORAGE;
+    type COMP_STORAGE = sMDenseVec<Self>;
 
     fn COMP_ID() -> &'static str {
         "manufacture::gmCompTerrainChunk"
@@ -62,7 +62,7 @@ pub struct gmCompRender{
     visible: bool
 }
 impl gmCompEx for gmCompRender{
-    type COMP_STORAGE;
+    type COMP_STORAGE = sMBTreeMap<Self>;
 
     fn COMP_ID() -> &'static str {
         "manufacture::gmCompRender"
@@ -73,7 +73,7 @@ pub struct gmCompPController{
     active: bool
 }
 impl gmCompEx for gmCompPController{
-    type COMP_STORAGE;
+    type COMP_STORAGE = sMBTreeMap<Self>;
 
     fn COMP_ID() -> &'static str {
         "manufacture::gmCompPController"   
@@ -101,8 +101,12 @@ impl gmObjBuilder<'_>{
     pub fn finish(self) -> u16{
         self.ID
     }
+    // "`IN_prefab` is defined here, but is not a type"
+    // WHAT??
+    // RUSTC WHAT THE PECK DO YOU MEAN????
     pub fn fromPrefab<T>(mut self, IN_prefab: &T) -> Self where T: gmObjPrefEx{
-        IN_prefab::spawn(self.compMapRef)
+        IN_prefab::spawn(self.compMapRef);
+        self
     }
 }
 
