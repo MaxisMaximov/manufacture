@@ -1,5 +1,8 @@
 use std::collections::BTreeMap;
 
+use event::KeyCode;
+use time::Duration;
+
 use super::*;
 
 pub trait gmCompEx{
@@ -259,11 +262,6 @@ pub struct sMDenseVec<T>{
     innerProxyMap: HashMap<u16, usize>,
     innerDenseVec: Vec<sMDenseVecIndex<T>>
 }
-
-pub struct sMDenseVecIndex<T>{
-    superID: u16,
-    val: T
-}
 impl<T> gmStorageEx for sMDenseVec<T>{
     type outputType = T;
 
@@ -321,6 +319,10 @@ impl<T> gmStorageEx for sMDenseVec<T>{
         self.innerDenseVec.iter_mut()
     }
 }
+pub struct sMDenseVecIndex<T>{
+    superID: u16,
+    val: T
+}
 
 
 pub trait gmEventEx{
@@ -338,7 +340,6 @@ impl gmEventEx for gmEvGmObjDeSpawn{
         "manufacture::gmEvGmObjDeSpawn"
     }
 }
-
 pub enum gmEvGmObjDeSpawnType{
     spawn(Box<dyn gmObjPrefBox>),
     despawn(&'static str)
@@ -360,3 +361,65 @@ pub trait gmResourceEx{
 }
 pub trait gmResourceBox{}
 impl<T> gmResourceBox for T where T: gmResourceEx{}
+
+pub struct gmResPrefabs{
+    res: HashMap<&'static str, Box<dyn gmObjPrefBox>>
+}
+
+pub struct gmResPInput{
+    res: KeyCode
+}
+
+pub struct gmResPState{
+    res: dyn gmPStateBox
+}
+
+pub trait gmPStateEx{
+    fn PSTATE_ID() ->&'static str;
+}
+
+pub trait gmPStateBox{}
+impl<T> gmPStateBox for T where T:gmPStateEx{}
+
+pub struct gmPStateWalk{}
+impl gmPStateEx for gmPStateWalk{
+    fn PSTATE_ID() ->&'static str {
+        "manufacture::gmPStateWalk"
+    }
+}
+pub struct gmPStateFly{}
+impl gmPStateEx for gmPStateFly{
+    fn PSTATE_ID() ->&'static str {
+        "manufacture::gmPStateFly"
+    }
+}
+
+pub struct gmResDeltaT{
+    res: Duration
+}
+
+pub struct gmResGmState{
+    res: dyn gmStateBox
+}
+pub trait gmStateEx{
+    fn GMSTATE_ID() -> &'static str;
+}
+pub trait gmStateBox{}
+impl<T> gmStateBox for T where T: gmStateEx{}
+
+pub struct gmResEvents{
+    bufferA: Vec<Box<dyn gmEventBox>>,
+    bufferB: Vec<Box<dyn gmEventBox>>,
+    activeBuffer: bool
+}
+impl gmResEvents{
+    fn getActiveQueueMut(&mut self) -> &mut Vec<Box<dyn gmEventBox>>{
+        if self.activeBuffer{
+            return &mut self.bufferB;
+        }
+        &mut self.bufferA
+    }
+    pub fn getActiveQueue(&mut self) -> &Vec<Box<dyn gmEventBox>>{
+        self.getActiveQueueMut()
+    }
+}
