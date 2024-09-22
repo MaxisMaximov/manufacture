@@ -458,3 +458,18 @@ pub struct gmWorld{
 }
 type WORLD_compMap = HashMap<&'static str, Box<dyn gmStorageBox>>;
 type WORLD_resMap = HashMap<&'static str, Box<dyn gmStorageBox>>;
+
+pub trait gmWorldEx{
+    fn compReg<T>(&mut self) where T: gmCompBox;
+    fn resReg<T>(&mut self) where T: gmResourceBox;
+    fn compUnreg<T>(&mut self) where T: gmCompBox;
+    fn resUnreg<T>(&mut self) where T: gmResourceBox;
+
+    fn fetchComp<T>(&self) -> &dyn gmStorageBox where T: gmCompBox;
+    fn fetchCompMut<T>(&mut self) -> &mut dyn gmStorageBox where T: gmCompBox;
+    fn fetchRes<T>(&self) -> &dyn gmStorageBox where T: gmResourceBox;
+    fn fetchResMut<T>(&mut self) -> &mut dyn gmStorageBox where T: gmResourceBox;
+
+    fn entityAdd(&mut self) -> gmObjBuilder;
+    fn entityRemove(&mut self) -> u16;
+}
