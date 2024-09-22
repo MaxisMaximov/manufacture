@@ -448,3 +448,13 @@ impl gmResourceEx for gmResEvents{
         "manufacture::gmResEvents"
     }
 }
+
+
+pub struct gmWorld{
+    entities: BTreeMap<u16, gmObj>,
+    nextFree: BTreeMap<u16, ()>,
+    resources: WORLD_resMap,
+    components: WORLD_compMap
+}
+type WORLD_compMap = HashMap<&'static str, Box<dyn gmStorageBox>>;
+type WORLD_resMap = HashMap<&'static str, Box<dyn gmStorageBox>>;
