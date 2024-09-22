@@ -365,13 +365,28 @@ impl<T> gmResourceBox for T where T: gmResourceEx{}
 pub struct gmResPrefabs{
     res: HashMap<&'static str, Box<dyn gmObjPrefBox>>
 }
+impl gmResourceEx for gmResPrefabs{
+    fn RES_ID() -> &'static str {
+        "manufacture::gmResPrefabs"
+    }
+}
 
 pub struct gmResPInput{
     res: KeyCode
 }
+impl gmResourceEx for gmResPInput{
+    fn RES_ID() -> &'static str {
+        "manufacture::gmResPInput"
+    }
+}
 
 pub struct gmResPState{
     res: dyn gmPStateBox
+}
+impl gmResourceEx for gmResPState{
+    fn RES_ID() -> &'static str {
+        "manufacture::gmResPState"
+    }
 }
 
 pub trait gmPStateEx{
@@ -397,6 +412,11 @@ impl gmPStateEx for gmPStateFly{
 pub struct gmResDeltaT{
     res: Duration
 }
+impl gmResourceEx for gmResDeltaT{
+    fn RES_ID() -> &'static str {
+        "manufacture::gmResDeltaT"
+    }
+}
 
 pub struct gmResGmState{
     res: dyn gmStateBox
@@ -421,5 +441,10 @@ impl gmResEvents{
     }
     pub fn getActiveQueue(&mut self) -> &Vec<Box<dyn gmEventBox>>{
         self.getActiveQueueMut()
+    }
+}
+impl gmResourceEx for gmResEvents{
+    fn RES_ID() -> &'static str {
+        "manufacture::gmResEvents"
     }
 }
