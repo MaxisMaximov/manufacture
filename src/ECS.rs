@@ -533,3 +533,20 @@ pub trait gmSystemEx{
 }
 pub trait gmSystemBox{}
 impl<T> gmSystemBox for T where T: gmSystemEx{}
+
+pub struct gmSysInput{}
+
+pub struct gmSysPController{}
+
+pub struct gmSysMovement{}
+
+pub struct gmSysEntities{}
+
+pub struct gmSysChunks{}
+
+pub struct gmSysRender{
+    mainBuffer: RENDER_BUFFER,
+    worldBuffer: RENDER_BUFFER
+}
+
+pub type RENDER_BUFFER = Vec<types::styleSet>;
