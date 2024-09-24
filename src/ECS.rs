@@ -526,3 +526,10 @@ impl gmWorldEx for gmWorld{
         }
     }
 }
+
+pub trait gmSystemEx{
+    fn SYS_ID() -> &'static str;
+    fn execute(&mut self, IN_world: &mut gmWorld);
+}
+pub trait gmSystemBox{}
+impl<T> gmSystemBox for T where T: gmSystemEx{}
