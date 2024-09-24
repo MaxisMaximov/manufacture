@@ -148,7 +148,7 @@ impl Default for gmObjPrefP{
     }
 }
 impl gmObjPrefEx for gmObjPrefP{
-    fn spawn(self, IN_id: &u16, IN_compMapRef: &mut WORLD_compMap){
+    fn spawn(&self, IN_id: &u16, IN_compMapRef: &mut WORLD_compMap){
 
         IN_compMapRef.get(gmCompHealth::COMP_ID())
             .unwrap().insert(IN_id, gmCompHealth{val: self.health});
@@ -457,19 +457,72 @@ pub struct gmWorld{
     components: WORLD_compMap
 }
 type WORLD_compMap = HashMap<&'static str, Box<dyn gmStorageBox>>;
-type WORLD_resMap = HashMap<&'static str, Box<dyn gmStorageBox>>;
+type WORLD_resMap = HashMap<&'static str, Box<dyn gmResourceBox>>;
 
 pub trait gmWorldEx{
     fn compReg<T>(&mut self) where T: gmCompBox;
-    fn resReg<T>(&mut self) where T: gmResourceBox;
     fn compUnreg<T>(&mut self) where T: gmCompBox;
+    fn resReg<T>(&mut self, IN_res: T) where T: gmResourceBox;
     fn resUnreg<T>(&mut self) where T: gmResourceBox;
 
     fn fetchComp<T>(&self) -> &dyn gmStorageBox where T: gmCompBox;
     fn fetchCompMut<T>(&mut self) -> &mut dyn gmStorageBox where T: gmCompBox;
-    fn fetchRes<T>(&self) -> &dyn gmStorageBox where T: gmResourceBox;
-    fn fetchResMut<T>(&mut self) -> &mut dyn gmStorageBox where T: gmResourceBox;
+    fn fetchRes<T>(&self) -> &dyn gmResourceBox where T: gmResourceBox;
+    fn fetchResMut<T>(&mut self) -> &mut dyn gmResourceBox where T: gmResourceBox;
 
     fn entityAdd(&mut self) -> gmObjBuilder;
-    fn entityRemove(&mut self) -> u16;
+    fn entityRemove(&mut self, IN_id: &u16);
+}
+
+impl gmWorldEx for gmWorld{
+    fn compReg<T>(&mut self) where T: gmCompBox {
+        self.components.insert(T::COMP_ID(), Box::new(T::COMP_STORAGE));
+    }
+    
+    fn compUnreg<T>(&mut self) where T: gmCompBox {
+        self.components.remove(T::COMP_ID());
+    }
+
+    fn resReg<T>(&mut self, IN_res: T) where T: gmResourceBox {
+        self.resources.insert(T::RES_ID(), Box::new(IN_res));
+    }
+
+    fn resUnreg<T>(&mut self) where T: gmResourceBox {
+        self.resources.remove(T::RES_ID());
+    }
+
+    fn fetchComp<T>(&self) -> &dyn gmStorageBox where T: gmCompBox {
+        &**self.components.get(T::COMP_ID()).unwrap()
+    }
+
+    fn fetchCompMut<T>(&mut self) -> &mut dyn gmStorageBox where T: gmCompBox {
+        &mut **self.components.get_mut(T::COMP_ID()).unwrap()
+    }
+
+    fn fetchRes<T>(&self) -> &dyn gmResourceBox where T: gmResourceBox {
+        &**self.resources.get(T::RES_ID()).unwrap()
+    }
+
+    fn fetchResMut<T>(&mut self) -> &mut dyn gmResourceBox where T: gmResourceBox {
+        &mut **self.resources.get(T::COMP_ID()).unwrap()
+    }
+
+    fn entityAdd(&mut self) -> gmObjBuilder {
+        let idkfa_ID = if self.nextFree.len() == 0{
+            self.entities.len() as u16
+        }else{
+            self.nextFree.pop_first().unwrap().0
+        };
+
+        self.entities.insert(idkfa_ID, gmObj{});
+
+        gmObjBuilder::new(idkfa_ID, &mut self.components)
+    }
+
+    fn entityRemove(&mut self, IN_id: &u16) {
+        self.entities.remove(IN_id);
+        for COMPONENT in self.components.iter(){
+            **COMPONENT.1.remove(IN_id)
+        }
+    }
 }
