@@ -1,6 +1,6 @@
 use std::collections::BTreeMap;
 
-use event::KeyCode;
+use event::*;
 use time::Duration;
 
 use super::*;
@@ -372,7 +372,7 @@ impl gmResourceEx for gmResPrefabs{
 }
 
 pub struct gmResPInput{
-    res: KeyCode
+    res: Option<KeyCode>
 }
 impl gmResourceEx for gmResPInput{
     fn RES_ID() -> &'static str {
@@ -535,6 +535,28 @@ pub trait gmSystemBox{}
 impl<T> gmSystemBox for T where T: gmSystemEx{}
 
 pub struct gmSysInput{}
+impl gmSystemEx for gmSysInput{
+    fn SYS_ID() -> &'static str {
+        "manufacture::gmSysInput"
+    }
+
+    fn execute(&mut self, IN_world: &mut gmWorld) {
+
+        let RES_LOCK = IN_world.fetchResMut::<gmResPInput>();
+
+        if !poll(Duration::from_secs(0)).unwrap(){
+            return
+        }
+        if let Event::Key(KEY) = read().unwrap(){
+            if KEY.kind != KeyEventKind::Press {
+                RES_LOCK.res = None;
+                return
+            }
+
+            RES_LOCK.res = Some(KEY);
+        }
+    }
+}
 
 pub struct gmSysPController{}
 
