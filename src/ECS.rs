@@ -8,8 +8,8 @@ pub struct gmObj{
 
 pub struct gmWorld{
     gmObjs: Vec<gmObj>,
-    hpVec: Vec<tests::gmComp_Health>,
-    posVec: Vec<tests::gmComp_Pos>
+    hpVec: tests::hpStorage,
+    posVec: tests::posStorage
 }
 
 pub trait gmSystem{
@@ -27,19 +27,21 @@ impl gmDispatcher{
     }
 }
 
+pub trait gmStorage{}
+
 mod tests{
     use super::*;
 
     pub fn main(){
         let mut world = gmWorld{
             gmObjs: Vec::new(),
-            hpVec: Vec::new(),
-            posVec: Vec::new(),
+            hpVec: hpStorage{inner: Vec::new()},
+            posVec: posStorage{inner: Vec::new()},
         };
 
         world.gmObjs.push(gmObj{ID: 0});
-        world.hpVec.push(gmComp_Health{val: 100});
-        world.posVec.push(gmComp_Pos{x: 0, y: 0});
+        world.hpVec.inner.push(gmComp_Health{val: 100});
+        world.posVec.inner.push(gmComp_Pos{x: 0, y: 0});
 
         let mut dispatcher = gmDispatcher{systems: Vec::new()};
 
@@ -64,10 +66,20 @@ mod tests{
     impl gmSystem for gmSys_HP{
         fn execute(&mut self, IN_world: &mut gmWorld) {
 
-            for COMP_HP in IN_world.hpVec.iter_mut(){
-                if COMP_HP.val <= 0{ continue}
+            for COMP_HP in IN_world.hpVec.inner.iter_mut(){
+                if COMP_HP.val <= 0{continue}
                 COMP_HP.val -= 1
             }
         }
     }
+
+    pub struct hpStorage{
+        pub inner: Vec<gmComp_Health>
+    }
+    impl gmStorage for hpStorage{}
+
+    pub struct posStorage{
+        pub inner: Vec<gmComp_Pos>
+    }
+    impl gmStorage for posStorage{}
 }
