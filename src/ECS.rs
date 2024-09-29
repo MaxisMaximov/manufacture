@@ -27,7 +27,10 @@ impl gmDispatcher{
     }
 }
 
-pub trait gmStorage{}
+pub trait gmStorage<T>{
+    fn push(&mut self, IN_item: T);
+    fn pop(&mut self) -> Option<T>;
+}
 
 mod tests{
     use super::*;
@@ -40,8 +43,8 @@ mod tests{
         };
 
         world.gmObjs.push(gmObj{ID: 0});
-        world.hpVec.inner.push(gmComp_Health{val: 100});
-        world.posVec.inner.push(gmComp_Pos{x: 0, y: 0});
+        world.hpVec.push(gmComp_Health{val: 100});
+        world.posVec.push(gmComp_Pos{x: 0, y: 0});
 
         let mut dispatcher = gmDispatcher{systems: Vec::new()};
 
@@ -76,10 +79,26 @@ mod tests{
     pub struct hpStorage{
         pub inner: Vec<gmComp_Health>
     }
-    impl gmStorage for hpStorage{}
+    impl gmStorage<gmComp_Health> for hpStorage{
+        fn push(&mut self, IN_item: gmComp_Health) {
+            self.inner.push(IN_item);
+        }
+    
+        fn pop(&mut self) -> Option<gmComp_Health> {
+            self.inner.pop()
+        }
+    }
 
     pub struct posStorage{
         pub inner: Vec<gmComp_Pos>
     }
-    impl gmStorage for posStorage{}
+    impl gmStorage<gmComp_Pos> for posStorage{
+        fn push(&mut self, IN_item: gmComp_Pos) {
+            self.inner.push(IN_item);
+        }
+    
+        fn pop(&mut self) -> Option<gmComp_Pos> {
+            self.inner.pop()
+        }
+    }
 }
