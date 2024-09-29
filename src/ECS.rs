@@ -32,6 +32,12 @@ pub trait gmStorage<T>{
     fn pop(&mut self) -> Option<T>;
 }
 
+pub struct gmGenIndex<T>{
+    pub id: u16,
+    pub gen: u16,
+    pub val: T
+}
+
 mod tests{
     use super::*;
 
@@ -70,35 +76,53 @@ mod tests{
         fn execute(&mut self, IN_world: &mut gmWorld) {
 
             for COMP_HP in IN_world.hpVec.inner.iter_mut(){
-                if COMP_HP.val <= 0{continue}
-                COMP_HP.val -= 1
+                if COMP_HP.val.val <= 0{continue}
+                COMP_HP.val.val -= 1
             }
         }
     }
 
     pub struct hpStorage{
-        pub inner: Vec<gmComp_Health>
+        pub inner: Vec<gmGenIndex<gmComp_Health>>
     }
     impl gmStorage<gmComp_Health> for hpStorage{
         fn push(&mut self, IN_item: gmComp_Health) {
-            self.inner.push(IN_item);
+            self.inner.push(
+                gmGenIndex{
+                    id: self.inner.len() as u16,
+                    gen: 0,
+                    val: IN_item,
+                }
+            );
         }
     
         fn pop(&mut self) -> Option<gmComp_Health> {
-            self.inner.pop()
+            if let Some(INDEX) = self.inner.pop(){
+                return Some(INDEX.val);
+            }
+            None
         }
     }
 
     pub struct posStorage{
-        pub inner: Vec<gmComp_Pos>
+        pub inner: Vec<gmGenIndex<gmComp_Pos>>
     }
     impl gmStorage<gmComp_Pos> for posStorage{
         fn push(&mut self, IN_item: gmComp_Pos) {
-            self.inner.push(IN_item);
+            self.inner.push(
+                gmGenIndex{
+                    id: self.inner.len() as u16,
+                    gen: 0,
+                    val: IN_item,
+                }
+            );
         }
     
         fn pop(&mut self) -> Option<gmComp_Pos> {
-            self.inner.pop()
+            if let Some(INDEX) = self.inner.pop(){
+                return Some(INDEX.val)
+            }
+            None
         }
     }
 }
