@@ -13,7 +13,18 @@ pub struct gmWorld{
 }
 
 pub trait gmSystem{
-    fn execute(IN_world: &mut gmWorld);
+    fn execute(&mut self, IN_world: &mut gmWorld);
+}
+
+pub struct gmDispatcher{
+    systems: Vec<Box<dyn gmSystem>>
+}
+impl gmDispatcher{
+    pub fn dispatch(&mut self, IN_world: &mut gmWorld){
+        for SYS in self.systems.iter_mut(){
+            SYS.execute(IN_world);
+        }
+    }
 }
 
 mod tests{
@@ -26,10 +37,16 @@ mod tests{
             posVec: Vec::new(),
         };
 
+        world.gmObjs.push(gmObj{ID: 0});
         world.hpVec.push(gmComp_Health{val: 100});
         world.posVec.push(gmComp_Pos{x: 0, y: 0});
 
-        gmSys_HP::execute(&mut world);
+        let mut dispatcher = gmDispatcher{systems: Vec::new()};
+
+        dispatcher.systems.push(Box::new(gmSys_HP{}));
+
+        dispatcher.dispatch(&mut world);
+
     }
 
     pub struct gmComp_Health{
@@ -45,7 +62,7 @@ mod tests{
 
     pub struct gmSys_HP{}
     impl gmSystem for gmSys_HP{
-        fn execute(IN_world: &mut gmWorld) {
+        fn execute(&mut self, IN_world: &mut gmWorld) {
 
             for COMP_HP in IN_world.hpVec.iter_mut(){
                 if COMP_HP.val <= 0{ continue}
