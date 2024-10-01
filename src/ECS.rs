@@ -7,9 +7,13 @@ pub trait gmComp{
     fn COMP_ID() -> &'static str;
 }
 
+pub trait gmRes{}
+
 pub struct gmWorld{
     gmObjs: Vec<gmGenIndex<()>>,
-    components: HashMap<&'static str, Box<dyn Any>>
+    components: HashMap<&'static str, Box<dyn Any>>,
+    deltaT: tests::gmRes_deltaT,
+    PInput: tests::gmRes_PInput
 }
 impl gmWorld{
     pub fn fetch<T>(&self) -> &tests::vecStorage<T> where T: gmComp + 'static{
@@ -69,12 +73,17 @@ pub struct gmGenIndex<T>{
 
 
 mod tests{
+    use event::*;
+    use time::Duration;
+
     use super::*;
 
     pub fn main(){
         let mut world = gmWorld{
             components: HashMap::new(),
             gmObjs: Vec::new(),
+            deltaT: gmRes_deltaT{res: Duration::from_secs(0)},
+            PInput: gmRes_PInput{res: KeyEvent{code: event::KeyCode::Null, kind: event::KeyEventKind::Release, modifiers: KeyModifiers::NONE, state: KeyEventState::NONE}}
         };
 
         world.createGmObj();
@@ -86,6 +95,7 @@ mod tests{
 
         let mut dispatcher = gmDispatcher{systems: Vec::new()};
 
+        dispatcher.systems.push(Box::new(gmSys_input{}));
         dispatcher.systems.push(Box::new(gmSys_HP{}));
 
         dispatcher.dispatch(&mut world);
@@ -122,6 +132,17 @@ mod tests{
         }
     }
 
+    pub struct gmSys_input{}
+    impl gmSystem for gmSys_input{
+        fn execute(&mut self, IN_world: &mut gmWorld) {
+            if poll(Duration::from_secs(0)).unwrap(){
+                if let Event::Key(KEY) = read().unwrap(){
+                    IN_world.PInput.res = KEY;
+                }
+            }
+        }
+    }
+
     pub struct vecStorage<T>{
         pub inner: Vec<gmGenIndex<T>>
     }
@@ -145,4 +166,14 @@ mod tests{
             None
         }
     }
+
+    pub struct gmRes_deltaT{
+        res: Duration
+    }
+    impl gmRes for gmRes_deltaT{}
+
+    pub struct gmRes_PInput{
+        res: KeyEvent
+    }
+    impl gmRes for gmRes_PInput{}
 }
