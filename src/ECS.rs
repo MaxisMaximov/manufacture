@@ -11,6 +11,14 @@ pub struct gmWorld{
     gmObjs: Vec<gmGenIndex<()>>,
     components: HashMap<&'static str, Box<dyn Any>>
 }
+impl gmWorld{
+    pub fn fetch<T>(&self) -> &tests::vecStorage<T> where T: gmComp + 'static{
+        self.components.get(T::COMP_ID()).unwrap().downcast_ref::<tests::vecStorage<T>>().unwrap()
+    }
+    pub fn fetchMut<T>(&mut self) -> &mut tests::vecStorage<T> where T: gmComp + 'static{
+        self.components.get_mut(T::COMP_ID()).unwrap().downcast_mut::<tests::vecStorage<T>>().unwrap()
+    }
+}
 
 pub trait gmSystem{
     fn execute(&mut self, IN_world: &mut gmWorld);
@@ -39,11 +47,10 @@ pub struct gmGenIndex<T>{
     pub val: T
 }
 
-#[cfg(test)]
+
 mod tests{
     use super::*;
 
-    #[test]
     pub fn main(){
         let mut world = gmWorld{
             components: HashMap::new(),
@@ -54,8 +61,8 @@ mod tests{
         world.components.insert(gmComp_Health::COMP_ID(), Box::new(vecStorage::<gmComp_Health>{inner: Vec::new()}));
         world.components.insert(gmComp_Pos::COMP_ID(), Box::new(vecStorage::<gmComp_Pos>{inner: Vec::new()}));
 
-        world.components.get_mut(gmComp_Health::COMP_ID()).unwrap().downcast_mut::<vecStorage<gmComp_Health>>().unwrap().push(gmComp_Health{val: 100});
-        world.components.get_mut(gmComp_Pos::COMP_ID()).unwrap().downcast_mut::<vecStorage<gmComp_Pos>>().unwrap().push(gmComp_Pos{x: 0, y: 0});
+        world.fetchMut::<gmComp_Health>().push(gmComp_Health{val: 100});
+        world.fetchMut::<gmComp_Pos>().push(gmComp_Pos{x: 0, y: 0});
 
         let mut dispatcher = gmDispatcher{systems: Vec::new()};
 
@@ -88,7 +95,7 @@ mod tests{
     impl gmSystem for gmSys_HP{
         fn execute(&mut self, IN_world: &mut gmWorld) {
 
-            for COMP_HP in IN_world.components.get_mut(gmComp_Health::COMP_ID()).unwrap().downcast_mut::<vecStorage<gmComp_Health>>().unwrap().inner.iter_mut(){
+            for COMP_HP in IN_world.fetchMut::<gmComp_Health>().inner.iter_mut(){
                 if COMP_HP.val.val <= 0{continue}
                 COMP_HP.val.val -= 1
             }
