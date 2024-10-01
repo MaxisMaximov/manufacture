@@ -1,3 +1,5 @@
+use std::any::Any;
+
 use super::*;
 
 pub trait gmComp{}
@@ -8,8 +10,7 @@ pub struct gmObj{
 
 pub struct gmWorld{
     gmObjs: Vec<gmObj>,
-    hpVec: tests::hpStorage,
-    posVec: tests::posStorage
+    components: Vec<Box<dyn Any>>,
 }
 
 pub trait gmSystem{
@@ -27,7 +28,7 @@ impl gmDispatcher{
     }
 }
 
-pub trait gmStorage{
+pub trait gmStorage: Any{
     type output;
     fn push(&mut self, IN_item: Self::output);
     fn pop(&mut self) -> Option<Self::output>;
@@ -39,19 +40,23 @@ pub struct gmGenIndex<T>{
     pub val: T
 }
 
+#[cfg(test)]
 mod tests{
     use super::*;
 
+    #[test]
     pub fn main(){
         let mut world = gmWorld{
+            components: Vec::new(),
             gmObjs: Vec::new(),
-            hpVec: hpStorage{inner: Vec::new()},
-            posVec: posStorage{inner: Vec::new()},
         };
 
         world.gmObjs.push(gmObj{ID: 0});
-        world.hpVec.push(gmComp_Health{val: 100});
-        world.posVec.push(gmComp_Pos{x: 0, y: 0});
+        world.components.push(Box::new(hpStorage{inner: Vec::new()}));
+        world.components.push(Box::new(posStorage{inner: Vec::new()}));
+
+        world.components[0].downcast_mut::<hpStorage>().unwrap().push(gmComp_Health{val: 100});
+        world.components[1].downcast_mut::<posStorage>().unwrap().push(gmComp_Pos{x: 0, y: 0});
 
         let mut dispatcher = gmDispatcher{systems: Vec::new()};
 
@@ -76,7 +81,7 @@ mod tests{
     impl gmSystem for gmSys_HP{
         fn execute(&mut self, IN_world: &mut gmWorld) {
 
-            for COMP_HP in IN_world.hpVec.inner.iter_mut(){
+            for COMP_HP in IN_world.components[0].downcast_mut::<hpStorage>().unwrap().inner.iter_mut(){
                 if COMP_HP.val.val <= 0{continue}
                 COMP_HP.val.val -= 1
             }
