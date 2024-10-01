@@ -52,11 +52,11 @@ mod tests{
         };
 
         world.gmObjs.push(gmObj{ID: 0});
-        world.components.push(Box::new(hpStorage{inner: Vec::new()}));
-        world.components.push(Box::new(posStorage{inner: Vec::new()}));
+        world.components.push(Box::new(vecStorage::<gmComp_Health>{inner: Vec::new()}));
+        world.components.push(Box::new(vecStorage::<gmComp_Pos>{inner: Vec::new()}));
 
-        world.components[0].downcast_mut::<hpStorage>().unwrap().push(gmComp_Health{val: 100});
-        world.components[1].downcast_mut::<posStorage>().unwrap().push(gmComp_Pos{x: 0, y: 0});
+        world.components[0].downcast_mut::<vecStorage<gmComp_Health>>().unwrap().push(gmComp_Health{val: 100});
+        world.components[1].downcast_mut::<vecStorage<gmComp_Pos>>().unwrap().push(gmComp_Pos{x: 0, y: 0});
 
         let mut dispatcher = gmDispatcher{systems: Vec::new()};
 
@@ -81,19 +81,18 @@ mod tests{
     impl gmSystem for gmSys_HP{
         fn execute(&mut self, IN_world: &mut gmWorld) {
 
-            for COMP_HP in IN_world.components[0].downcast_mut::<hpStorage>().unwrap().inner.iter_mut(){
+            for COMP_HP in IN_world.components[0].downcast_mut::<vecStorage<gmComp_Health>>().unwrap().inner.iter_mut(){
                 if COMP_HP.val.val <= 0{continue}
                 COMP_HP.val.val -= 1
             }
         }
     }
 
-    pub struct hpStorage{
-        pub inner: Vec<gmGenIndex<gmComp_Health>>
+    pub struct vecStorage<T>{
+        inner: Vec<gmGenIndex<T>>
     }
-    impl gmStorage for hpStorage{
-
-        type output = gmComp_Health;
+    impl<T: 'static> gmStorage for vecStorage<T>{
+        type output = T;
 
         fn push(&mut self, IN_item: Self::output) {
             self.inner.push(
@@ -108,31 +107,6 @@ mod tests{
         fn pop(&mut self) -> Option<Self::output> {
             if let Some(INDEX) = self.inner.pop(){
                 return Some(INDEX.val);
-            }
-            None
-        }
-    }
-
-    pub struct posStorage{
-        pub inner: Vec<gmGenIndex<gmComp_Pos>>
-    }
-    impl gmStorage for posStorage{
-
-        type output = gmComp_Pos;
-
-        fn push(&mut self, IN_item: Self::output) {
-            self.inner.push(
-                gmGenIndex{
-                    id: self.inner.len() as u16,
-                    gen: 0,
-                    val: IN_item,
-                }
-            );
-        }
-    
-        fn pop(&mut self) -> Option<Self::output> {
-            if let Some(INDEX) = self.inner.pop(){
-                return Some(INDEX.val)
             }
             None
         }
