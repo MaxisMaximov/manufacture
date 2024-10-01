@@ -25,9 +25,18 @@ impl gmWorld{
             Box::new(tests::vecStorage::<T>{inner: Vec::new()})
         );
     }
-
     pub fn unRegisterComp<T>(&mut self) where T: gmComp + 'static{
         self.components.remove(T::COMP_ID());
+    }
+
+    pub fn createGmObj(&mut self) -> u16{
+        let idkfa_ID = self.gmObjs.len() as u16;
+        self.gmObjs.push(gmGenIndex{
+            id: idkfa_ID,
+            gen: 0,
+            val: (),
+        });
+        idkfa_ID
     }
 }
 
@@ -68,7 +77,7 @@ mod tests{
             gmObjs: Vec::new(),
         };
 
-        world.gmObjs.push(gmGenIndex::<()>{id: 0, gen: 0, val: ()});
+        world.createGmObj();
         world.registerComp::<gmComp_Health>();
         world.registerComp::<gmComp_Pos>();
 
