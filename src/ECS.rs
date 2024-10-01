@@ -27,9 +27,10 @@ impl gmDispatcher{
     }
 }
 
-pub trait gmStorage<T>{
-    fn push(&mut self, IN_item: T);
-    fn pop(&mut self) -> Option<T>;
+pub trait gmStorage{
+    type output;
+    fn push(&mut self, IN_item: Self::output);
+    fn pop(&mut self) -> Option<Self::output>;
 }
 
 pub struct gmGenIndex<T>{
@@ -85,8 +86,11 @@ mod tests{
     pub struct hpStorage{
         pub inner: Vec<gmGenIndex<gmComp_Health>>
     }
-    impl gmStorage<gmComp_Health> for hpStorage{
-        fn push(&mut self, IN_item: gmComp_Health) {
+    impl gmStorage for hpStorage{
+
+        type output = gmComp_Health;
+
+        fn push(&mut self, IN_item: Self::output) {
             self.inner.push(
                 gmGenIndex{
                     id: self.inner.len() as u16,
@@ -96,7 +100,7 @@ mod tests{
             );
         }
     
-        fn pop(&mut self) -> Option<gmComp_Health> {
+        fn pop(&mut self) -> Option<Self::output> {
             if let Some(INDEX) = self.inner.pop(){
                 return Some(INDEX.val);
             }
@@ -107,8 +111,11 @@ mod tests{
     pub struct posStorage{
         pub inner: Vec<gmGenIndex<gmComp_Pos>>
     }
-    impl gmStorage<gmComp_Pos> for posStorage{
-        fn push(&mut self, IN_item: gmComp_Pos) {
+    impl gmStorage for posStorage{
+
+        type output = gmComp_Pos;
+
+        fn push(&mut self, IN_item: Self::output) {
             self.inner.push(
                 gmGenIndex{
                     id: self.inner.len() as u16,
@@ -118,7 +125,7 @@ mod tests{
             );
         }
     
-        fn pop(&mut self) -> Option<gmComp_Pos> {
+        fn pop(&mut self) -> Option<Self::output> {
             if let Some(INDEX) = self.inner.pop(){
                 return Some(INDEX.val)
             }
