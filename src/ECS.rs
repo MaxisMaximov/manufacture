@@ -7,12 +7,8 @@ pub trait gmComp{
     fn COMP_ID() -> &'static str;
 }
 
-pub struct gmObj{
-    ID: u16
-}
-
 pub struct gmWorld{
-    gmObjs: Vec<gmObj>,
+    gmObjs: Vec<gmGenIndex<()>>,
     components: HashMap<&'static str, Box<dyn Any>>
 }
 
@@ -54,7 +50,7 @@ mod tests{
             gmObjs: Vec::new(),
         };
 
-        world.gmObjs.push(gmObj{ID: 0});
+        world.gmObjs.push(gmGenIndex::<()>{id: 0, gen: 0, val: ()});
         world.components.insert(gmComp_Health::COMP_ID(), Box::new(vecStorage::<gmComp_Health>{inner: Vec::new()}));
         world.components.insert(gmComp_Pos::COMP_ID(), Box::new(vecStorage::<gmComp_Pos>{inner: Vec::new()}));
 
