@@ -1,4 +1,5 @@
 use std::any::Any;
+use std::collections::HashMap;
 
 use super::*;
 
@@ -10,7 +11,7 @@ pub struct gmObj{
 
 pub struct gmWorld{
     gmObjs: Vec<gmObj>,
-    components: Vec<Box<dyn Any>>,
+    components: HashMap<&'static str, Box<dyn Any>>
 }
 
 pub trait gmSystem{
@@ -47,16 +48,16 @@ mod tests{
     #[test]
     pub fn main(){
         let mut world = gmWorld{
-            components: Vec::new(),
+            components: HashMap::new(),
             gmObjs: Vec::new(),
         };
 
         world.gmObjs.push(gmObj{ID: 0});
-        world.components.push(Box::new(vecStorage::<gmComp_Health>{inner: Vec::new()}));
-        world.components.push(Box::new(vecStorage::<gmComp_Pos>{inner: Vec::new()}));
+        world.components.insert("gmComp_Health", Box::new(vecStorage::<gmComp_Health>{inner: Vec::new()}));
+        world.components.insert("gmComp_Pos", Box::new(vecStorage::<gmComp_Pos>{inner: Vec::new()}));
 
-        world.components[0].downcast_mut::<vecStorage<gmComp_Health>>().unwrap().push(gmComp_Health{val: 100});
-        world.components[1].downcast_mut::<vecStorage<gmComp_Pos>>().unwrap().push(gmComp_Pos{x: 0, y: 0});
+        world.components.get_mut("gmComp_Health").unwrap().downcast_mut::<vecStorage<gmComp_Health>>().unwrap().push(gmComp_Health{val: 100});
+        world.components.get_mut("gmComp_Pos").unwrap().downcast_mut::<vecStorage<gmComp_Pos>>().unwrap().push(gmComp_Pos{x: 0, y: 0});
 
         let mut dispatcher = gmDispatcher{systems: Vec::new()};
 
@@ -81,7 +82,7 @@ mod tests{
     impl gmSystem for gmSys_HP{
         fn execute(&mut self, IN_world: &mut gmWorld) {
 
-            for COMP_HP in IN_world.components[0].downcast_mut::<vecStorage<gmComp_Health>>().unwrap().inner.iter_mut(){
+            for COMP_HP in IN_world.components.get_mut("gmComp_Health").unwrap().downcast_mut::<vecStorage<gmComp_Health>>().unwrap().inner.iter_mut(){
                 if COMP_HP.val.val <= 0{continue}
                 COMP_HP.val.val -= 1
             }
