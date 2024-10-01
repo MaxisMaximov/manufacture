@@ -3,7 +3,9 @@ use std::collections::HashMap;
 
 use super::*;
 
-pub trait gmComp{}
+pub trait gmComp{
+    fn COMP_ID() -> &'static str;
+}
 
 pub struct gmObj{
     ID: u16
@@ -53,11 +55,11 @@ mod tests{
         };
 
         world.gmObjs.push(gmObj{ID: 0});
-        world.components.insert("gmComp_Health", Box::new(vecStorage::<gmComp_Health>{inner: Vec::new()}));
-        world.components.insert("gmComp_Pos", Box::new(vecStorage::<gmComp_Pos>{inner: Vec::new()}));
+        world.components.insert(gmComp_Health::COMP_ID(), Box::new(vecStorage::<gmComp_Health>{inner: Vec::new()}));
+        world.components.insert(gmComp_Pos::COMP_ID(), Box::new(vecStorage::<gmComp_Pos>{inner: Vec::new()}));
 
-        world.components.get_mut("gmComp_Health").unwrap().downcast_mut::<vecStorage<gmComp_Health>>().unwrap().push(gmComp_Health{val: 100});
-        world.components.get_mut("gmComp_Pos").unwrap().downcast_mut::<vecStorage<gmComp_Pos>>().unwrap().push(gmComp_Pos{x: 0, y: 0});
+        world.components.get_mut(gmComp_Health::COMP_ID()).unwrap().downcast_mut::<vecStorage<gmComp_Health>>().unwrap().push(gmComp_Health{val: 100});
+        world.components.get_mut(gmComp_Pos::COMP_ID()).unwrap().downcast_mut::<vecStorage<gmComp_Pos>>().unwrap().push(gmComp_Pos{x: 0, y: 0});
 
         let mut dispatcher = gmDispatcher{systems: Vec::new()};
 
@@ -70,19 +72,27 @@ mod tests{
     pub struct gmComp_Health{
         pub val: u16
     }
-    impl gmComp for gmComp_Health{}
+    impl gmComp for gmComp_Health{
+        fn COMP_ID() -> &'static str {
+            "gmComp_Health"
+        }
+    }
 
     pub struct gmComp_Pos{
         pub x: usize,
         pub y: usize
     }
-    impl gmComp for gmComp_Pos{}
+    impl gmComp for gmComp_Pos{
+        fn COMP_ID() -> &'static str {
+            "gmComp_Pos"
+        }
+    }
 
     pub struct gmSys_HP{}
     impl gmSystem for gmSys_HP{
         fn execute(&mut self, IN_world: &mut gmWorld) {
 
-            for COMP_HP in IN_world.components.get_mut("gmComp_Health").unwrap().downcast_mut::<vecStorage<gmComp_Health>>().unwrap().inner.iter_mut(){
+            for COMP_HP in IN_world.components.get_mut(gmComp_Health::COMP_ID()).unwrap().downcast_mut::<vecStorage<gmComp_Health>>().unwrap().inner.iter_mut(){
                 if COMP_HP.val.val <= 0{continue}
                 COMP_HP.val.val -= 1
             }
