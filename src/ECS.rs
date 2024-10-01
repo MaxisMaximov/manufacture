@@ -18,6 +18,17 @@ impl gmWorld{
     pub fn fetchMut<T>(&mut self) -> &mut tests::vecStorage<T> where T: gmComp + 'static{
         self.components.get_mut(T::COMP_ID()).unwrap().downcast_mut::<tests::vecStorage<T>>().unwrap()
     }
+
+    pub fn registerComp<T>(&mut self) where T: gmComp + 'static{
+        self.components.insert(
+            T::COMP_ID(),
+            Box::new(tests::vecStorage::<T>{inner: Vec::new()})
+        );
+    }
+
+    pub fn unRegisterComp<T>(&mut self) where T: gmComp + 'static{
+        self.components.remove(T::COMP_ID());
+    }
 }
 
 pub trait gmSystem{
@@ -58,8 +69,8 @@ mod tests{
         };
 
         world.gmObjs.push(gmGenIndex::<()>{id: 0, gen: 0, val: ()});
-        world.components.insert(gmComp_Health::COMP_ID(), Box::new(vecStorage::<gmComp_Health>{inner: Vec::new()}));
-        world.components.insert(gmComp_Pos::COMP_ID(), Box::new(vecStorage::<gmComp_Pos>{inner: Vec::new()}));
+        world.registerComp::<gmComp_Health>();
+        world.registerComp::<gmComp_Pos>();
 
         world.fetchMut::<gmComp_Health>().push(gmComp_Health{val: 100});
         world.fetchMut::<gmComp_Pos>().push(gmComp_Pos{x: 0, y: 0});
@@ -103,7 +114,7 @@ mod tests{
     }
 
     pub struct vecStorage<T>{
-        inner: Vec<gmGenIndex<T>>
+        pub inner: Vec<gmGenIndex<T>>
     }
     impl<T: 'static> gmStorage for vecStorage<T>{
         type output = T;
