@@ -59,10 +59,9 @@ impl gmDispatcher{
     }
 }
 
-pub trait gmStorage: Any{
-    type output;
-    fn push(&mut self, IN_item: Self::output);
-    fn pop(&mut self) -> Option<Self::output>;
+pub trait gmStorage<T>: Any{
+    fn push(&mut self, IN_item: T);
+    fn pop(&mut self) -> Option<T>;
 }
 
 pub struct gmGenIndex<T>{
@@ -135,10 +134,18 @@ mod tests{
     pub struct gmSys_input{}
     impl gmSystem for gmSys_input{
         fn execute(&mut self, IN_world: &mut gmWorld) {
-            if poll(Duration::from_secs(0)).unwrap(){
-                if let Event::Key(KEY) = read().unwrap(){
-                    IN_world.PInput.res = KEY;
-                }
+            if !poll(Duration::from_secs(0)).unwrap(){
+                IN_world.PInput.res = KeyEvent{
+                    code: KeyCode::Null,
+                    modifiers: KeyModifiers::NONE,
+                    kind: KeyEventKind::Release,
+                    state: KeyEventState::NONE,
+                };
+                return
+            }
+            if let Event::Key(KEY) = read().unwrap(){
+                IN_world.PInput.res = KEY;
+                return
             }
         }
     }
@@ -146,10 +153,9 @@ mod tests{
     pub struct vecStorage<T>{
         pub inner: Vec<gmGenIndex<T>>
     }
-    impl<T: 'static> gmStorage for vecStorage<T>{
-        type output = T;
+    impl<T: 'static> gmStorage<T> for vecStorage<T>{
 
-        fn push(&mut self, IN_item: Self::output) {
+        fn push(&mut self, IN_item: T) {
             self.inner.push(
                 gmGenIndex{
                     id: self.inner.len() as u16,
@@ -159,7 +165,7 @@ mod tests{
             );
         }
     
-        fn pop(&mut self) -> Option<Self::output> {
+        fn pop(&mut self) -> Option<T> {
             if let Some(INDEX) = self.inner.pop(){
                 return Some(INDEX.val);
             }
