@@ -24,6 +24,13 @@ impl gmWorld{
         self.components.get_mut(T::COMP_ID()).unwrap().downcast_mut::<tests::vecStorage<T>>().unwrap()
     }
 
+    pub fn fetchRes<T>(&self) -> &T where T: gmRes + 'static{
+        self.resources.get(T::RES_ID()).unwrap().downcast_ref::<T>().unwrap()
+    }
+    pub fn fetchResMut<T>(&mut self) -> &mut T where T: gmRes + 'static{
+        self.resources.get_mut(T::RES_ID()).unwrap().downcast_mut::<T>().unwrap()
+    }
+
     pub fn registerComp<T>(&mut self) where T: gmComp + 'static{
         self.components.insert(
             T::COMP_ID(),
@@ -144,9 +151,9 @@ mod tests{
     pub struct gmSys_input{}
     impl gmSystem for gmSys_input{
         fn execute(&mut self, IN_world: &mut gmWorld) {
-            let mut INPUT_LOCK = IN_world.resources.get_mut("gmRes_PInput").unwrap().downcast_mut::<gmRes_PInput>().unwrap().res;
+            let mut INPUT_LOCK = IN_world.fetchResMut::<gmRes_PInput>();
             if !poll(Duration::from_secs(0)).unwrap(){
-                INPUT_LOCK = KeyEvent{
+                INPUT_LOCK.res = KeyEvent{
                     code: KeyCode::Null,
                     modifiers: KeyModifiers::NONE,
                     kind: KeyEventKind::Release,
@@ -155,7 +162,7 @@ mod tests{
                 return
             }
             if let Event::Key(KEY) = read().unwrap(){
-                INPUT_LOCK = KEY;
+                INPUT_LOCK.res = KEY;
                 return
             }
         }
