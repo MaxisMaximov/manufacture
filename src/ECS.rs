@@ -7,7 +7,9 @@ pub trait gmComp{
     fn COMP_ID() -> &'static str;
 }
 
-pub trait gmRes: Any{}
+pub trait gmRes: Any{
+    fn RES_ID() -> &'static str;
+}
 
 pub struct gmWorld{
     pub gmObjs: Vec<gmGenIndex<()>>,
@@ -87,8 +89,8 @@ mod tests{
         world.registerComp::<gmComp_Health>();
         world.registerComp::<gmComp_Pos>();
 
-        world.resources.insert("gmRes_deltaT", Box::new(gmRes_deltaT{res: Duration::from_secs(0)}));
-        world.resources.insert("gmRes_PInput", Box::new(gmRes_PInput{res: KeyEvent{code: event::KeyCode::Null, kind: event::KeyEventKind::Release, modifiers: KeyModifiers::NONE, state: KeyEventState::NONE}}));
+        world.resources.insert(gmRes_deltaT::RES_ID(), Box::new(gmRes_deltaT{res: Duration::from_secs(0)}));
+        world.resources.insert(gmRes_PInput::RES_ID(), Box::new(gmRes_PInput{res: KeyEvent{code: event::KeyCode::Null, kind: event::KeyEventKind::Release, modifiers: KeyModifiers::NONE, state: KeyEventState::NONE}}));
 
         world.fetchMut::<gmComp_Health>().push(gmComp_Health{val: 100});
         world.fetchMut::<gmComp_Pos>().push(gmComp_Pos{x: 0, y: 0});
@@ -178,10 +180,18 @@ mod tests{
     pub struct gmRes_deltaT{
         res: Duration
     }
-    impl gmRes for gmRes_deltaT{}
+    impl gmRes for gmRes_deltaT{
+        fn RES_ID() -> &'static str {
+            "gmRes_deltaT"
+        }
+    }
 
     pub struct gmRes_PInput{
         res: KeyEvent
     }
-    impl gmRes for gmRes_PInput{}
+    impl gmRes for gmRes_PInput{
+        fn RES_ID() -> &'static str {
+            "gmResPInput"
+        }
+    }
 }
