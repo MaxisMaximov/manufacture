@@ -3,7 +3,8 @@ use std::collections::HashMap;
 
 use super::*;
 
-pub trait gmComp{
+pub trait gmComp: Any + Sized{
+    type COMP_STORAGE: gmStorage<Self>;
     fn COMP_ID() -> &'static str;
 }
 
@@ -17,11 +18,11 @@ pub struct gmWorld{
     pub resources: HashMap<&'static str, Box<dyn Any>>,
 }
 impl gmWorld{
-    pub fn fetch<T>(&self) -> &tests::vecStorage<T> where T: gmComp + 'static{
-        self.components.get(T::COMP_ID()).unwrap().downcast_ref::<tests::vecStorage<T>>().unwrap()
+    pub fn fetch<T>(&self) -> &T::COMP_STORAGE where T: gmComp + 'static{
+        self.components.get(T::COMP_ID()).unwrap().downcast_ref::<T::COMP_STORAGE>().unwrap()
     }
-    pub fn fetchMut<T>(&mut self) -> &mut tests::vecStorage<T> where T: gmComp + 'static{
-        self.components.get_mut(T::COMP_ID()).unwrap().downcast_mut::<tests::vecStorage<T>>().unwrap()
+    pub fn fetchMut<T>(&mut self) -> &mut T::COMP_STORAGE where T: gmComp + 'static{
+        self.components.get_mut(T::COMP_ID()).unwrap().downcast_mut::<T::COMP_STORAGE>().unwrap()
     }
 
     pub fn fetchRes<T>(&self) -> &T where T: gmRes + 'static{
@@ -122,6 +123,7 @@ mod tests{
         pub val: u16
     }
     impl gmComp for gmComp_Health{
+        type COMP_STORAGE = vecStorage<Self>;
         fn COMP_ID() -> &'static str {
             "gmComp_Health"
         }
@@ -132,6 +134,7 @@ mod tests{
         pub y: usize
     }
     impl gmComp for gmComp_Pos{
+        type COMP_STORAGE = vecStorage<Self>;
         fn COMP_ID() -> &'static str {
             "gmComp_Pos"
         }
