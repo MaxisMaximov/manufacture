@@ -7,13 +7,12 @@ pub trait gmComp{
     fn COMP_ID() -> &'static str;
 }
 
-pub trait gmRes{}
+pub trait gmRes: Any{}
 
 pub struct gmWorld{
-    gmObjs: Vec<gmGenIndex<()>>,
-    components: HashMap<&'static str, Box<dyn Any>>,
-    deltaT: tests::gmRes_deltaT,
-    PInput: tests::gmRes_PInput
+    pub gmObjs: Vec<gmGenIndex<()>>,
+    pub components: HashMap<&'static str, Box<dyn Any>>,
+    pub resources: Vec<Box<dyn Any>>,
 }
 impl gmWorld{
     pub fn fetch<T>(&self) -> &tests::vecStorage<T> where T: gmComp + 'static{
@@ -79,15 +78,17 @@ mod tests{
 
     pub fn main(){
         let mut world = gmWorld{
-            components: HashMap::new(),
             gmObjs: Vec::new(),
-            deltaT: gmRes_deltaT{res: Duration::from_secs(0)},
-            PInput: gmRes_PInput{res: KeyEvent{code: event::KeyCode::Null, kind: event::KeyEventKind::Release, modifiers: KeyModifiers::NONE, state: KeyEventState::NONE}}
+            components: HashMap::new(),
+            resources: Vec::new(),
         };
 
         world.createGmObj();
         world.registerComp::<gmComp_Health>();
         world.registerComp::<gmComp_Pos>();
+
+        world.resources.push(Box::new(gmRes_deltaT{res: Duration::from_secs(0)}));
+        world.resources.push(Box::new(gmRes_PInput{res: KeyEvent{code: event::KeyCode::Null, kind: event::KeyEventKind::Release, modifiers: KeyModifiers::NONE, state: KeyEventState::NONE}}));
 
         world.fetchMut::<gmComp_Health>().push(gmComp_Health{val: 100});
         world.fetchMut::<gmComp_Pos>().push(gmComp_Pos{x: 0, y: 0});
@@ -134,8 +135,9 @@ mod tests{
     pub struct gmSys_input{}
     impl gmSystem for gmSys_input{
         fn execute(&mut self, IN_world: &mut gmWorld) {
+            let mut INPUT_LOCK = IN_world.resources[1].downcast_mut::<gmRes_PInput>().unwrap().res;
             if !poll(Duration::from_secs(0)).unwrap(){
-                IN_world.PInput.res = KeyEvent{
+                INPUT_LOCK = KeyEvent{
                     code: KeyCode::Null,
                     modifiers: KeyModifiers::NONE,
                     kind: KeyEventKind::Release,
@@ -144,7 +146,7 @@ mod tests{
                 return
             }
             if let Event::Key(KEY) = read().unwrap(){
-                IN_world.PInput.res = KEY;
+                INPUT_LOCK = KEY;
                 return
             }
         }
