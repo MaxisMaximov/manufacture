@@ -34,6 +34,13 @@ impl gmWorld{
         self.components.remove(T::COMP_ID());
     }
 
+    pub fn registerRes<T>(&mut self, IN_res: T) where T: gmRes + 'static{
+        self.resources.insert(T::RES_ID(), Box::new(IN_res));
+    }
+    pub fn unRegisterRes<T>(&mut self) where T: gmRes + 'static{
+        self.resources.remove(T::RES_ID());
+    }
+
     pub fn createGmObj(&mut self) -> u16{
         let idkfa_ID = self.gmObjs.len() as u16;
         self.gmObjs.push(gmGenIndex{
@@ -89,8 +96,8 @@ mod tests{
         world.registerComp::<gmComp_Health>();
         world.registerComp::<gmComp_Pos>();
 
-        world.resources.insert(gmRes_deltaT::RES_ID(), Box::new(gmRes_deltaT{res: Duration::from_secs(0)}));
-        world.resources.insert(gmRes_PInput::RES_ID(), Box::new(gmRes_PInput{res: KeyEvent{code: event::KeyCode::Null, kind: event::KeyEventKind::Release, modifiers: KeyModifiers::NONE, state: KeyEventState::NONE}}));
+        world.registerRes::<gmRes_deltaT>(gmRes_deltaT{res: Duration::from_secs(0)});
+        world.registerRes::<gmRes_PInput>(gmRes_PInput{res: KeyEvent{code: event::KeyCode::Null, kind: event::KeyEventKind::Release, modifiers: KeyModifiers::NONE, state: KeyEventState::NONE}});
 
         world.fetchMut::<gmComp_Health>().push(gmComp_Health{val: 100});
         world.fetchMut::<gmComp_Pos>().push(gmComp_Pos{x: 0, y: 0});
