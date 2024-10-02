@@ -12,7 +12,7 @@ pub trait gmRes: Any{}
 pub struct gmWorld{
     pub gmObjs: Vec<gmGenIndex<()>>,
     pub components: HashMap<&'static str, Box<dyn Any>>,
-    pub resources: Vec<Box<dyn Any>>,
+    pub resources: HashMap<&'static str, Box<dyn Any>>,
 }
 impl gmWorld{
     pub fn fetch<T>(&self) -> &tests::vecStorage<T> where T: gmComp + 'static{
@@ -80,15 +80,15 @@ mod tests{
         let mut world = gmWorld{
             gmObjs: Vec::new(),
             components: HashMap::new(),
-            resources: Vec::new(),
+            resources: HashMap::new(),
         };
 
         world.createGmObj();
         world.registerComp::<gmComp_Health>();
         world.registerComp::<gmComp_Pos>();
 
-        world.resources.push(Box::new(gmRes_deltaT{res: Duration::from_secs(0)}));
-        world.resources.push(Box::new(gmRes_PInput{res: KeyEvent{code: event::KeyCode::Null, kind: event::KeyEventKind::Release, modifiers: KeyModifiers::NONE, state: KeyEventState::NONE}}));
+        world.resources.insert("gmRes_deltaT", Box::new(gmRes_deltaT{res: Duration::from_secs(0)}));
+        world.resources.insert("gmRes_PInput", Box::new(gmRes_PInput{res: KeyEvent{code: event::KeyCode::Null, kind: event::KeyEventKind::Release, modifiers: KeyModifiers::NONE, state: KeyEventState::NONE}}));
 
         world.fetchMut::<gmComp_Health>().push(gmComp_Health{val: 100});
         world.fetchMut::<gmComp_Pos>().push(gmComp_Pos{x: 0, y: 0});
@@ -135,7 +135,7 @@ mod tests{
     pub struct gmSys_input{}
     impl gmSystem for gmSys_input{
         fn execute(&mut self, IN_world: &mut gmWorld) {
-            let mut INPUT_LOCK = IN_world.resources[1].downcast_mut::<gmRes_PInput>().unwrap().res;
+            let mut INPUT_LOCK = IN_world.resources.get_mut("gmRes_PInput").unwrap().downcast_mut::<gmRes_PInput>().unwrap().res;
             if !poll(Duration::from_secs(0)).unwrap(){
                 INPUT_LOCK = KeyEvent{
                     code: KeyCode::Null,
