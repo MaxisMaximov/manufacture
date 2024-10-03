@@ -20,6 +20,16 @@ pub struct gmWorld{
     pub resources: gmWorld_RESMAP,
 }
 impl gmWorld{
+
+    pub fn new() -> Self{
+        Self{
+            gmObjs: HashMap::new(),
+            nextFree: BTreeMap::new(),
+            components: HashMap::new(),
+            resources: HashMap::new(),
+        }
+    }
+
     pub fn fetch<T>(&self) -> &T::COMP_STORAGE where T: gmComp + 'static{
         self.components.get(T::COMP_ID()).unwrap().downcast_ref::<T::COMP_STORAGE>().unwrap()
     }
@@ -106,12 +116,7 @@ mod tests{
     use super::*;
 
     pub fn main(){
-        let mut world = gmWorld{
-            gmObjs: HashMap::new(),
-            nextFree: BTreeMap::new(),
-            components: HashMap::new(),
-            resources: HashMap::new(),
-        };
+        let mut world = gmWorld::new();
 
         world.createGmObj();
         world.registerComp::<gmComp_Health>();
