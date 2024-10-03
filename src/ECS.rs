@@ -14,7 +14,7 @@ pub trait gmRes: Any{
 
 pub struct gmWorld{
     pub gmObjs: HashMap<gmID, gmObj>,
-    pub nextFree: BTreeMap<u16, ()>,
+    pub nextFree: BTreeMap<gmID, ()>,
     pub components: gmWorld_COMPMAP,
     pub resources: gmWorld_RESMAP,
 }
@@ -50,9 +50,9 @@ impl gmWorld{
         self.resources.remove(T::RES_ID());
     }
 
-    pub fn createGmObj(&mut self) -> u16{
-        let w_nextIndex = if self.nextFree.len() == 0{
-                self.gmObjs.len() as u16
+    pub fn createGmObj(&mut self) -> gmID{
+        let w_nextIndex: gmID = if self.nextFree.len() == 0{
+                self.gmObjs.len() as gmID
             }else{
                 self.nextFree.pop_first().unwrap().0
             };
@@ -86,8 +86,8 @@ pub trait gmStorage<T>: Any{
 }
 
 pub struct gmGenIndex<T>{
-    pub id: u16,
-    pub gen: u16,
+    pub id: gmID,
+    pub gen: gmGen,
     pub val: T
 }
 
@@ -95,6 +95,7 @@ pub type gmWorld_COMPMAP = HashMap<&'static str, Box<dyn Any>>;
 pub type gmWorld_RESMAP = HashMap<&'static str, Box<dyn Any>>;
 pub type gmObj = gmGenIndex<()>;
 pub type gmID = u16;
+pub type gmGen = u16; // There is no way you can even remotely get to 32kth generation -- Consider it a gift
 
 mod tests{
     use event::*;
@@ -130,7 +131,7 @@ mod tests{
     }
 
     pub struct gmComp_Health{
-        pub val: u16
+        pub val: gmID
     }
     impl gmComp for gmComp_Health{
         type COMP_STORAGE = vecStorage<Self>;
@@ -189,7 +190,7 @@ mod tests{
         fn push(&mut self, IN_item: T) {
             self.inner.push(
                 gmGenIndex{
-                    id: self.inner.len() as u16,
+                    id: self.inner.len() as gmID,
                     gen: 0,
                     val: IN_item,
                 }
