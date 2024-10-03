@@ -1,5 +1,5 @@
 use std::any::Any;
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 
 use super::*;
 
@@ -13,7 +13,7 @@ pub trait gmRes: Any{
 }
 
 pub struct gmWorld{
-    pub gmObjs: Vec<gmObj>,
+    pub gmObjs: HashMap<gmID, gmObj>,
     pub components: gmWorld_COMPMAP,
     pub resources: gmWorld_RESMAP,
 }
@@ -49,14 +49,12 @@ impl gmWorld{
         self.resources.remove(T::RES_ID());
     }
 
-    pub fn createGmObj(&mut self) -> u16{
-        let idkfa_ID = self.gmObjs.len() as u16;
-        self.gmObjs.push(gmGenIndex{
-            id: idkfa_ID,
+    pub fn createGmObj(&mut self, IN_id: u16){
+        self.gmObjs.insert(IN_id, gmGenIndex{
+            id: IN_id,
             gen: 0,
             val: (),
         });
-        idkfa_ID
     }
 }
 
@@ -99,12 +97,12 @@ mod tests{
 
     pub fn main(){
         let mut world = gmWorld{
-            gmObjs: Vec::new(),
+            gmObjs: HashMap::new(),
             components: HashMap::new(),
             resources: HashMap::new(),
         };
 
-        world.createGmObj();
+        world.createGmObj(1);
         world.registerComp::<gmComp_Health>();
         world.registerComp::<gmComp_Pos>();
 
