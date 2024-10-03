@@ -14,6 +14,7 @@ pub trait gmRes: Any{
 
 pub struct gmWorld{
     pub gmObjs: HashMap<gmID, gmObj>,
+    pub nextFree: BTreeMap<u16, ()>,
     pub components: gmWorld_COMPMAP,
     pub resources: gmWorld_RESMAP,
 }
@@ -49,12 +50,18 @@ impl gmWorld{
         self.resources.remove(T::RES_ID());
     }
 
-    pub fn createGmObj(&mut self, IN_id: u16){
-        self.gmObjs.insert(IN_id, gmGenIndex{
-            id: IN_id,
+    pub fn createGmObj(&mut self) -> u16{
+        let w_nextIndex = if self.nextFree.len() == 0{
+                self.gmObjs.len() as u16
+            }else{
+                self.nextFree.pop_first().unwrap().0
+            };
+        self.gmObjs.insert(w_nextIndex, gmObj{
+            id: w_nextIndex,
             gen: 0,
             val: (),
         });
+        w_nextIndex
     }
 }
 
@@ -98,11 +105,12 @@ mod tests{
     pub fn main(){
         let mut world = gmWorld{
             gmObjs: HashMap::new(),
+            nextFree: BTreeMap::new(),
             components: HashMap::new(),
             resources: HashMap::new(),
         };
 
-        world.createGmObj(1);
+        world.createGmObj();
         world.registerComp::<gmComp_Health>();
         world.registerComp::<gmComp_Pos>();
 
