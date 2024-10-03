@@ -36,7 +36,7 @@ impl gmWorld{
     pub fn registerComp<T>(&mut self) where T: gmComp + 'static{
         self.components.insert(
             T::COMP_ID(),
-            Box::new(tests::vecStorage::<T>{inner: Vec::new()})
+            Box::new(T::COMP_STORAGE::new())
         );
     }
     pub fn unRegisterComp<T>(&mut self) where T: gmComp + 'static{
@@ -81,6 +81,7 @@ impl gmDispatcher{
 }
 
 pub trait gmStorage<T>: Any{
+    fn new() -> Self;
     fn push(&mut self, IN_item: T);
     fn pop(&mut self) -> Option<T>;
 }
@@ -186,6 +187,12 @@ mod tests{
         pub inner: Vec<gmGenIndex<T>>
     }
     impl<T: 'static> gmStorage<T> for vecStorage<T>{
+
+        fn new() -> Self {
+            Self{
+                inner: Vec::new()
+            }
+        }
 
         fn push(&mut self, IN_item: T) {
             self.inner.push(
