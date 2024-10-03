@@ -13,9 +13,9 @@ pub trait gmRes: Any{
 }
 
 pub struct gmWorld{
-    pub gmObjs: Vec<gmGenIndex<()>>,
-    pub components: HashMap<&'static str, Box<dyn Any>>,
-    pub resources: HashMap<&'static str, Box<dyn Any>>,
+    pub gmObjs: Vec<gmObj>,
+    pub components: gmWorld_COMPMAP,
+    pub resources: gmWorld_RESMAP,
 }
 impl gmWorld{
     pub fn fetch<T>(&self) -> &T::COMP_STORAGE where T: gmComp + 'static{
@@ -86,6 +86,10 @@ pub struct gmGenIndex<T>{
     pub val: T
 }
 
+pub type gmWorld_COMPMAP = HashMap<&'static str, Box<dyn Any>>;
+pub type gmWorld_RESMAP = HashMap<&'static str, Box<dyn Any>>;
+pub type gmObj = gmGenIndex<()>;
+pub type gmID = u16;
 
 mod tests{
     use event::*;
