@@ -14,8 +14,7 @@ pub trait gmRes: Any{
 }
 
 pub struct gmWorld{
-    pub gmObjs: HashMap<gmID, gmObj>,
-    pub nextFree: BTreeMap<gmID, ()>,
+    pub gmObjs: gmObjStorage,
     pub components: gmWorld_COMPMAP,
     pub resources: gmWorld_RESMAP,
 }
@@ -23,8 +22,10 @@ impl gmWorld{
 
     pub fn new() -> Self{
         Self{
-            gmObjs: HashMap::new(),
-            nextFree: BTreeMap::new(),
+            gmObjs: gmObjStorage{
+                gmObjMap: HashMap::new(),
+                nextFree: BTreeMap::new(),
+            },
             components: HashMap::new(),
             resources: HashMap::new(),
         }
@@ -62,12 +63,12 @@ impl gmWorld{
     }
 
     pub fn createGmObj(&mut self) -> gmID{
-        let w_nextIndex: gmID = if self.nextFree.len() == 0{
-                self.gmObjs.len() as gmID
+        let w_nextIndex: gmID = if self.gmObjs.nextFree.len() == 0{
+                self.gmObjs.gmObjMap.len() as gmID
             }else{
-                self.nextFree.pop_first().unwrap().0
+                self.gmObjs.nextFree.pop_first().unwrap().0
             };
-        self.gmObjs.insert(w_nextIndex, gmObj{
+        self.gmObjs.gmObjMap.insert(w_nextIndex, gmObj{
             id: w_nextIndex,
             gen: 0,
             val: (),
@@ -101,6 +102,11 @@ pub struct gmGenIndex<T>{
     pub id: gmID,
     pub gen: gmGen,
     pub val: T
+}
+
+pub struct gmObjStorage{
+    pub gmObjMap: HashMap<gmID, gmObj>,
+    pub nextFree: BTreeMap<gmID, ()>,
 }
 
 pub type gmWorld_COMPMAP = HashMap<&'static str, Box<dyn Any>>;
