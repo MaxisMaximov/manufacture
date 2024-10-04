@@ -110,6 +110,18 @@ pub struct gmObjStorage{
     pub nextFree: BTreeMap<gmID, ()>,
 }
 
+pub struct gmObjBuilder<'a>{
+    pub gmObj: &'a gmObj,
+    pub CompMapRef: &'a mut gmWorld_COMPMAP
+}
+impl gmObjBuilder<'_>{
+    pub fn addComp<T>(self, IN_comp: T) -> Self where T:gmComp{
+        // I gotta deal with this
+        self.CompMapRef.get_mut(T::COMP_ID()).unwrap().downcast_mut::<T::COMP_STORAGE>().unwrap().insert(self.gmObj.id, IN_comp);
+        self
+    }
+}
+
 pub type gmWorld_COMPMAP = HashMap<&'static str, Box<dyn Any>>;
 pub type gmWorld_RESMAP = HashMap<&'static str, Box<dyn Any>>;
 pub type gmObj = gmGenIndex<()>;
