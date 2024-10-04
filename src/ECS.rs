@@ -94,8 +94,8 @@ impl gmDispatcher{
 
 pub trait gmStorage<T>: Any{
     fn new() -> Self;
-    fn push(&mut self, IN_item: T);
-    fn pop(&mut self) -> Option<T>;
+    fn insert(&mut self, IN_id: gmID, IN_item: T);
+    fn remove(&mut self, IN_id: gmID) -> Option<T>;
 }
 
 pub struct gmGenIndex<T>{
@@ -131,8 +131,8 @@ mod tests{
         world.registerRes::<gmRes_deltaT>();
         world.registerRes::<gmRes_PInput>();
 
-        world.fetchMut::<gmComp_Health>().push(gmComp_Health{val: 100});
-        world.fetchMut::<gmComp_Pos>().push(gmComp_Pos{x: 0, y: 0});
+        world.fetchMut::<gmComp_Health>().insert(0, gmComp_Health{val: 100});
+        world.fetchMut::<gmComp_Pos>().insert(0, gmComp_Pos{x: 0, y: 0});
 
         let mut dispatcher = gmDispatcher{systems: Vec::new()};
 
@@ -206,17 +206,17 @@ mod tests{
             }
         }
 
-        fn push(&mut self, IN_item: T) {
+        fn insert(&mut self, IN_id: gmID, IN_item: T) {
             self.inner.push(
                 gmGenIndex{
-                    id: self.inner.len() as gmID,
+                    id: IN_id as gmID,
                     gen: 0,
                     val: IN_item,
                 }
             );
         }
     
-        fn pop(&mut self) -> Option<T> {
+        fn remove(&mut self, IN_id: gmID) -> Option<T> {
             if let Some(INDEX) = self.inner.pop(){
                 return Some(INDEX.val);
             }
