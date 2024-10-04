@@ -98,6 +98,7 @@ pub trait gmStorage<T>: Any{
     fn remove(&mut self, IN_id: gmID) -> Option<T>;
 }
 
+#[derive(Clone, Copy)]
 pub struct gmGenIndex<T>{
     pub id: gmID,
     pub gen: gmGen,
@@ -140,14 +141,13 @@ mod tests{
         dispatcher.systems.push(Box::new(gmSys_HP{}));
 
         dispatcher.dispatch(&mut world);
-
     }
 
     pub struct gmComp_Health{
         pub val: gmID
     }
     impl gmComp for gmComp_Health{
-        type COMP_STORAGE = vecStorage<Self>;
+        type COMP_STORAGE = denseVecStorage<Self>;
         fn COMP_ID() -> &'static str {
             "gmComp_Health"
         }
@@ -158,7 +158,7 @@ mod tests{
         pub y: usize
     }
     impl gmComp for gmComp_Pos{
-        type COMP_STORAGE = vecStorage<Self>;
+        type COMP_STORAGE = denseVecStorage<Self>;
         fn COMP_ID() -> &'static str {
             "gmComp_Pos"
         }
@@ -195,21 +195,24 @@ mod tests{
         }
     }
 
-    pub struct vecStorage<T>{
+    pub struct denseVecStorage<T>{
+        pub proxyMap: HashMap<gmID, usize>,
         pub inner: Vec<gmGenIndex<T>>
     }
-    impl<T: 'static> gmStorage<T> for vecStorage<T>{
+    impl<T: 'static> gmStorage<T> for denseVecStorage<T>{
 
         fn new() -> Self {
             Self{
+                proxyMap: HashMap::new(),
                 inner: Vec::new()
             }
         }
 
         fn insert(&mut self, IN_id: gmID, IN_item: T) {
+            self.proxyMap.insert(IN_id, self.inner.len()); // Vec length is always the next free index
             self.inner.push(
                 gmGenIndex{
-                    id: IN_id as gmID,
+                    id: IN_id,
                     gen: 0,
                     val: IN_item,
                 }
@@ -217,10 +220,24 @@ mod tests{
         }
     
         fn remove(&mut self, IN_id: gmID) -> Option<T> {
-            if let Some(INDEX) = self.inner.pop(){
-                return Some(INDEX.val);
+            
+            if let Some(INDEX) = self.proxyMap.remove(&IN_id){
+                // Last index
+                let idkfa_index = self.inner.len() - 1;
+                // If it's the last element then just pop it
+                if INDEX == idkfa_index{
+                    return Some(self.inner.pop().unwrap().val)
+                }
+                // IF NOT
+                // Update the ID in proxyMap
+                *self.proxyMap.get_mut(&self.inner[idkfa_index].id).unwrap() = INDEX;
+                // Swap the indexes
+                self.inner.swap(INDEX, idkfa_index);
+                // Pop the last one (now the one requested to remove)
+                return Some(self.inner.pop().unwrap().val)
             }
             None
+
         }
     }
 
