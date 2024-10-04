@@ -62,7 +62,7 @@ impl gmWorld{
         self.resources.remove(T::RES_ID());
     }
 
-    pub fn createGmObj(&mut self) -> gmID{
+    pub fn createGmObj(&mut self) -> gmObjBuilder{
         let w_nextIndex: gmID = if self.gmObjs.nextFree.len() == 0{
                 self.gmObjs.gmObjMap.len() as gmID
             }else{
@@ -73,7 +73,10 @@ impl gmWorld{
             gen: 0,
             val: (),
         });
-        w_nextIndex
+        gmObjBuilder{
+            gmObj: &self.gmObjs.gmObjMap.get(&w_nextIndex).unwrap(),
+            CompMapRef: &mut self.components,
+        }
     }
 }
 
@@ -137,15 +140,15 @@ mod tests{
     pub fn main(){
         let mut world = gmWorld::new();
 
-        world.createGmObj();
         world.registerComp::<gmComp_Health>();
         world.registerComp::<gmComp_Pos>();
-
+        
         world.registerRes::<gmRes_deltaT>();
         world.registerRes::<gmRes_PInput>();
-
-        world.fetchMut::<gmComp_Health>().insert(0, gmComp_Health{val: 100});
-        world.fetchMut::<gmComp_Pos>().insert(0, gmComp_Pos{x: 0, y: 0});
+        
+        world.createGmObj()
+            .addComp::<gmComp_Health>(gmComp_Health{val: 100})
+            .addComp::<gmComp_Pos>(gmComp_Pos{x: 0, y: 0});
 
         let mut dispatcher = gmDispatcher{systems: Vec::new()};
 
