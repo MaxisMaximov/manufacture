@@ -84,6 +84,15 @@ pub trait gmSystem{
     fn execute(&mut self, IN_world: &mut gmWorld);
 }
 
+pub trait gmSysRun<'a>{
+    fn executeNow(&mut self, IN_world: &'a mut gmWorld);
+}
+impl<'a, T> gmSysRun<'a> for T where T:gmSystem<'a>{
+    fn executeNow(&mut self, IN_world: &'a mut gmWorld) {
+        self.execute(IN_world);
+    }
+}
+
 pub trait gmSystemData<'a>{
     fn fetch(IN_world: &'a mut gmWorld) -> Self;
 }
