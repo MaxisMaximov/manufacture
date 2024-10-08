@@ -82,7 +82,7 @@ impl gmWorld{
 
 pub trait gmSystem<'a>{
     type sysData: gmSystemData<'a>;
-    fn execute(&mut self, IN_world: &'a mut gmWorld);
+    fn execute(&mut self, IN_data: Self::sysData);
 }
 
 pub trait gmSysRun<'a>{
@@ -90,7 +90,7 @@ pub trait gmSysRun<'a>{
 }
 impl<'a, T> gmSysRun<'a> for T where T:gmSystem<'a>{
     fn executeNow(&mut self, IN_world: &'a mut gmWorld) {
-        self.execute(IN_world);
+        self.execute(T::sysData::fetch(IN_world));
     }
 }
 
@@ -205,10 +205,8 @@ mod tests{
     impl<'a> gmSystem<'a> for gmSys_HP{
         type sysData = gmSysData_HP<'a>;
 
-        fn execute(&mut self, IN_world: &'a mut gmWorld) {
-            let HPLOCK = Self::sysData::fetch(IN_world);
-
-            for COMP_HP in HPLOCK.comp_HP.inner.iter_mut(){
+        fn execute(&mut self, IN_data: Self::sysData) {
+            for COMP_HP in IN_data.comp_HP.inner.iter_mut(){
                 if COMP_HP.val.val <= 0{continue}
                 COMP_HP.val.val -= 1
             }
@@ -229,11 +227,9 @@ mod tests{
     impl<'a> gmSystem<'a> for gmSys_input{
         type sysData = gmSysData_Input<'a>;
 
-        fn execute(&mut self, IN_world: &'a mut gmWorld) {
-            let INPUT_LOCK = Self::sysData::fetch(IN_world);
-
+        fn execute(&mut self, IN_data: Self::sysData) {
             if !poll(Duration::from_secs(0)).unwrap(){
-                INPUT_LOCK.res_Input.res = KeyEvent{
+                IN_data.res_Input.res = KeyEvent{
                     code: KeyCode::Null,
                     modifiers: KeyModifiers::NONE,
                     kind: KeyEventKind::Release,
@@ -242,7 +238,7 @@ mod tests{
                 return
             }
             if let Event::Key(KEY) = read().unwrap(){
-                INPUT_LOCK.res_Input.res = KEY;
+                IN_data.res_Input.res = KEY;
                 return
             }
         }
