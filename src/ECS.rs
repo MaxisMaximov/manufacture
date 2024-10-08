@@ -84,6 +84,10 @@ pub trait gmSystem{
     fn execute(&mut self, IN_world: &mut gmWorld);
 }
 
+pub trait gmSystemData<'a>{
+    fn fetch(IN_world: &'a mut gmWorld) -> Self;
+}
+
 pub struct gmDispatcher{
     systems: Vec<Box<dyn gmSystem>>
 }
@@ -190,10 +194,20 @@ mod tests{
     pub struct gmSys_HP{}
     impl gmSystem for gmSys_HP{
         fn execute(&mut self, IN_world: &mut gmWorld) {
-
-            for COMP_HP in IN_world.fetchMut::<gmComp_Health>().inner.iter_mut(){
+            let mut HPLOCK = gmSysData_HP::fetch(IN_world);
+            for COMP_HP in HPLOCK.comp_HP.inner.iter_mut(){
                 if COMP_HP.val.val <= 0{continue}
                 COMP_HP.val.val -= 1
+            }
+        }
+    }
+    pub struct gmSysData_HP<'a>{
+        pub comp_HP: &'a mut <gmComp_Health as ECS::gmComp>::COMP_STORAGE
+    }
+    impl<'a> gmSystemData<'a> for gmSysData_HP<'a>{
+        fn fetch(IN_world: &'a mut gmWorld) -> Self {
+            Self{
+                comp_HP: IN_world.fetchMut::<gmComp_Health>()
             }
         }
     }
@@ -201,9 +215,9 @@ mod tests{
     pub struct gmSys_input{}
     impl gmSystem for gmSys_input{
         fn execute(&mut self, IN_world: &mut gmWorld) {
-            let mut INPUT_LOCK = IN_world.fetchResMut::<gmRes_PInput>();
+            let mut INPUT_LOCK = gmSysData_Input::fetch(IN_world);
             if !poll(Duration::from_secs(0)).unwrap(){
-                INPUT_LOCK.res = KeyEvent{
+                INPUT_LOCK.res_Input.res = KeyEvent{
                     code: KeyCode::Null,
                     modifiers: KeyModifiers::NONE,
                     kind: KeyEventKind::Release,
@@ -212,8 +226,18 @@ mod tests{
                 return
             }
             if let Event::Key(KEY) = read().unwrap(){
-                INPUT_LOCK.res = KEY;
+                INPUT_LOCK.res_Input.res = KEY;
                 return
+            }
+        }
+    }
+    pub struct gmSysData_Input<'a>{
+        pub res_Input: &'a mut gmRes_PInput
+    }
+    impl<'a> gmSystemData<'a> for gmSysData_Input<'a>{
+        fn fetch(IN_world: &'a mut gmWorld) -> Self {
+            Self{
+                res_Input: IN_world.fetchResMut::<gmRes_PInput>()
             }
         }
     }
