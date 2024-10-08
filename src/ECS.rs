@@ -98,7 +98,7 @@ pub trait gmSystemData<'a>{
 }
 
 pub struct gmDispatcher{
-    systems: Vec<Box<dyn gmSystem>>
+    systems: Vec<Box<dyn for<'a> gmSysRun<'a>>>
 }
 impl gmDispatcher{
     pub fn new() -> Self{
@@ -112,7 +112,7 @@ impl gmDispatcher{
     }
     pub fn dispatch(&mut self, IN_world: &mut gmWorld){
         for SYS in self.systems.iter_mut(){
-            SYS.execute(IN_world);
+            SYS.executeNow(IN_world);
         }
     }
 }
