@@ -80,8 +80,9 @@ impl gmWorld{
     }
 }
 
-pub trait gmSystem{
-    fn execute(&mut self, IN_world: &mut gmWorld);
+pub trait gmSystem<'a>{
+    type sysData: gmSystemData<'a>;
+    fn execute(&mut self, IN_world: &'a mut gmWorld);
 }
 
 pub trait gmSysRun<'a>{
@@ -106,7 +107,7 @@ impl gmDispatcher{
             systems: Vec::new()
         }
     }
-    pub fn addSys<T>(mut self, IN_system: T) -> Self where T: gmSystem + 'static{
+    pub fn addSys<T>(mut self, IN_system: T) -> Self where T: for<'a> gmSystem<'a> + 'static{
         self.systems.push(Box::new(IN_system));
         self
     }
@@ -201,9 +202,12 @@ mod tests{
     }
 
     pub struct gmSys_HP{}
-    impl gmSystem for gmSys_HP{
-        fn execute(&mut self, IN_world: &mut gmWorld) {
-            let mut HPLOCK = gmSysData_HP::fetch(IN_world);
+    impl<'a> gmSystem<'a> for gmSys_HP{
+        type sysData = gmSysData_HP<'a>;
+
+        fn execute(&mut self, IN_world: &'a mut gmWorld) {
+            let HPLOCK = Self::sysData::fetch(IN_world);
+
             for COMP_HP in HPLOCK.comp_HP.inner.iter_mut(){
                 if COMP_HP.val.val <= 0{continue}
                 COMP_HP.val.val -= 1
@@ -222,9 +226,12 @@ mod tests{
     }
 
     pub struct gmSys_input{}
-    impl gmSystem for gmSys_input{
-        fn execute(&mut self, IN_world: &mut gmWorld) {
-            let mut INPUT_LOCK = gmSysData_Input::fetch(IN_world);
+    impl<'a> gmSystem<'a> for gmSys_input{
+        type sysData = gmSysData_Input<'a>;
+
+        fn execute(&mut self, IN_world: &'a mut gmWorld) {
+            let INPUT_LOCK = Self::sysData::fetch(IN_world);
+
             if !poll(Duration::from_secs(0)).unwrap(){
                 INPUT_LOCK.res_Input.res = KeyEvent{
                     code: KeyCode::Null,
