@@ -88,6 +88,15 @@ pub struct gmDispatcher{
     systems: Vec<Box<dyn gmSystem>>
 }
 impl gmDispatcher{
+    pub fn new() -> Self{
+        Self{
+            systems: Vec::new()
+        }
+    }
+    pub fn addSys<T>(mut self, IN_system: T) -> Self where T: gmSystem + 'static{
+        self.systems.push(Box::new(IN_system));
+        self
+    }
     pub fn dispatch(&mut self, IN_world: &mut gmWorld){
         for SYS in self.systems.iter_mut(){
             SYS.execute(IN_world);
@@ -150,10 +159,9 @@ mod tests{
             .addComp::<gmComp_Health>(gmComp_Health{val: 100})
             .addComp::<gmComp_Pos>(gmComp_Pos{x: 0, y: 0});
 
-        let mut dispatcher = gmDispatcher{systems: Vec::new()};
-
-        dispatcher.systems.push(Box::new(gmSys_input{}));
-        dispatcher.systems.push(Box::new(gmSys_HP{}));
+        let mut dispatcher = gmDispatcher::new()
+            .addSys::<gmSys_input>(gmSys_input{})
+            .addSys::<gmSys_HP>(gmSys_HP{});
 
         dispatcher.dispatch(&mut world);
     }
