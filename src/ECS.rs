@@ -22,10 +22,7 @@ impl gmWorld{
 
     pub fn new() -> Self{
         Self{
-            gmObjs: gmObjStorage{
-                gmObjMap: HashMap::new(),
-                nextFree: BTreeMap::new(),
-            },
+            gmObjs: gmObjStorage::new(),
             components: HashMap::new(),
             resources: HashMap::new(),
         }
@@ -148,6 +145,14 @@ pub struct gmGenIndex<T>{
 pub struct gmObjStorage{
     pub gmObjMap: HashMap<gmID, gmObj>,
     pub nextFree: BTreeMap<gmID, ()>,
+}
+impl gmObjStorage{
+    pub fn new() -> Self{
+        Self{
+            gmObjMap: HashMap::new(),
+            nextFree: BTreeMap::new()
+        }
+    }
 }
 
 pub struct gmObjBuilder<'a>{
