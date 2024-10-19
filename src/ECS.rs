@@ -68,7 +68,7 @@ impl gmWorld{
         self.gmObjs.gmObjMap.insert(w_nextIndex, gmObj{
             id: w_nextIndex,
             gen: 0,
-            val: (),
+            entry: Some(()),
         });
         gmObjBuilder{
             gmObj: self.gmObjs.gmObjMap.get(&w_nextIndex).unwrap().clone(),
@@ -138,10 +138,10 @@ impl<T: 'static> gmStorageDrop for dyn gmStorage<T>{
 }
 
 #[derive(Clone, Copy)]
-pub struct gmGenIndex<T>{
+pub struct gmGenIndex<T: Sized>{
     pub id: gmID,
     pub gen: gmGen,
-    pub val: T
+    pub entry: Option<T>
 }
 
 pub struct gmObjStorage{
@@ -230,8 +230,8 @@ mod tests{
 
         fn execute(&mut self, IN_data: Self::sysData) {
             for COMP_HP in IN_data.comp_HP.inner.iter_mut(){
-                if COMP_HP.val.val <= 0{continue}
-                COMP_HP.val.val -= 1
+                if COMP_HP.entry.as_mut().unwrap().val <= 0{continue}
+                COMP_HP.entry.as_mut().unwrap().val -= 1
             }
         }
     }
@@ -296,7 +296,7 @@ mod tests{
                 gmGenIndex{
                     id: IN_id,
                     gen: 0,
-                    val: IN_item,
+                    entry: Some(IN_item),
                 }
             );
         }
@@ -305,18 +305,18 @@ mod tests{
             
             if let Some(INDEX) = self.proxyMap.remove(&IN_id){
                 // Last index
-                let idkfa_index = self.inner.len() - 1;
+                let idkfa_lastIndex = self.inner.len() - 1;
                 // If it's the last element then just pop it
-                if INDEX == idkfa_index{
-                    return Some(self.inner.pop().unwrap().val)
+                if INDEX == idkfa_lastIndex{
+                    return Some(self.inner.pop().unwrap().entry.unwrap())
                 }
                 // IF NOT
                 // Update the ID in proxyMap
-                *self.proxyMap.get_mut(&self.inner[idkfa_index].id).unwrap() = INDEX;
+                *self.proxyMap.get_mut(&self.inner[idkfa_lastIndex].id).unwrap() = INDEX;
                 // Swap the indexes
-                self.inner.swap(INDEX, idkfa_index);
+                self.inner.swap(INDEX, idkfa_lastIndex);
                 // Pop the last one (now the one requested to remove)
-                return Some(self.inner.pop().unwrap().val)
+                return Some(self.inner.pop().unwrap().entry.unwrap())
             }
             None
 
