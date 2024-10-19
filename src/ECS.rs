@@ -157,12 +157,12 @@ impl gmObjStorage{
 
 pub struct gmObjBuilder<'a>{
     pub gmObj: &'a gmObj,
-    pub CompMapRef: &'a mut gmWorld_COMPMAP
+    pub worldRef: &'a mut gmWorld
 }
 impl gmObjBuilder<'_>{
     pub fn addComp<T>(self, IN_comp: T) -> Self where T:gmComp{
         // I gotta deal with this
-        self.CompMapRef.get_mut(T::COMP_ID()).unwrap().downcast_mut::<T::COMP_STORAGE>().unwrap().insert(self.gmObj.id, IN_comp);
+        self.worldRef.fetchMut::<T>().insert(self.gmObj.id, IN_comp);
         self
     }
 }
