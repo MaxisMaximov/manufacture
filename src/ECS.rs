@@ -78,6 +78,12 @@ impl gmWorld{
             CompMapRef: &mut self.components,
         }
     }
+
+    pub fn deleteGmObj(&mut self, IN_id: gmID){
+        for COMP in self.components.values_mut(){
+            COMP.downcast_mut::<&mut dyn gmStorageDrop>().unwrap().drop(IN_id);
+        }
+    }
 }
 
 pub trait gmSystem<'a>{
@@ -186,6 +192,8 @@ mod tests{
             .addSys::<gmSys_HP>(gmSys_HP{});
 
         dispatcher.dispatch(&mut world);
+
+        world.deleteGmObj(0);
     }
 
     pub struct gmComp_Health{
