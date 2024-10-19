@@ -65,11 +65,13 @@ impl gmWorld{
             }else{
                 self.gmObjs.nextFree.pop_first().unwrap().0
             };
+
         self.gmObjs.gmObjMap.insert(w_nextIndex, gmObj{
             id: w_nextIndex,
             gen: 0,
             entry: Some(()),
         });
+
         gmObjBuilder{
             gmObj: self.gmObjs.gmObjMap.get(&w_nextIndex).unwrap().clone(),
             worldRef: self,
@@ -230,8 +232,8 @@ mod tests{
 
         fn execute(&mut self, IN_data: Self::sysData) {
             for COMP_HP in IN_data.comp_HP.inner.iter_mut(){
-                if COMP_HP.entry.as_mut().unwrap().val <= 0{continue}
-                COMP_HP.entry.as_mut().unwrap().val -= 1
+                if COMP_HP.val.val <= 0{continue}
+                COMP_HP.val.val -= 1
             }
         }
     }
@@ -279,7 +281,7 @@ mod tests{
 
     pub struct denseVecStorage<T>{
         pub proxyMap: HashMap<gmID, usize>,
-        pub inner: Vec<gmGenIndex<T>>
+        pub inner: Vec<denseVecEntry<T>>
     }
     impl<T: 'static> gmStorage<T> for denseVecStorage<T>{
 
@@ -293,10 +295,9 @@ mod tests{
         fn insert(&mut self, IN_id: gmID, IN_item: T) {
             self.proxyMap.insert(IN_id, self.inner.len()); // Vec length is always the next free index
             self.inner.push(
-                gmGenIndex{
+                denseVecEntry{
                     id: IN_id,
-                    gen: 0,
-                    entry: Some(IN_item),
+                    val: IN_item,
                 }
             );
         }
@@ -308,7 +309,7 @@ mod tests{
                 let idkfa_lastIndex = self.inner.len() - 1;
                 // If it's the last element then just pop it
                 if INDEX == idkfa_lastIndex{
-                    return Some(self.inner.pop().unwrap().entry.unwrap())
+                    return Some(self.inner.pop().unwrap().val)
                 }
                 // IF NOT
                 // Update the ID in proxyMap
@@ -316,11 +317,15 @@ mod tests{
                 // Swap the indexes
                 self.inner.swap(INDEX, idkfa_lastIndex);
                 // Pop the last one (now the one requested to remove)
-                return Some(self.inner.pop().unwrap().entry.unwrap())
+                return Some(self.inner.pop().unwrap().val)
             }
             None
 
         }
+    }
+    pub struct denseVecEntry<T>{
+        id: gmID,
+        val: T
     }
 
     pub struct gmRes_deltaT{
