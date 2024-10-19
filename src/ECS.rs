@@ -71,8 +71,8 @@ impl gmWorld{
             val: (),
         });
         gmObjBuilder{
-            gmObj: &self.gmObjs.gmObjMap.get(&w_nextIndex).unwrap(),
-            CompMapRef: &mut self.components,
+            gmObj: self.gmObjs.gmObjMap.get(&w_nextIndex).unwrap().clone(),
+            worldRef: self,
         }
     }
 
@@ -156,7 +156,7 @@ impl gmObjStorage{
 }
 
 pub struct gmObjBuilder<'a>{
-    pub gmObj: &'a gmObj,
+    pub gmObj: gmObj,
     pub worldRef: &'a mut gmWorld
 }
 impl gmObjBuilder<'_>{
