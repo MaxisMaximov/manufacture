@@ -67,10 +67,9 @@ impl gmWorld{
     }
 
     pub fn deleteGmObj(&mut self, IN_id: gmID){
-        if let Some(_) = self.gmObjs.gmObjMap.remove(&IN_id){
-            for COMP in self.components.values_mut(){
-                COMP.downcast_mut::<&mut dyn gmStorageDrop>().unwrap().drop(IN_id);
-            }
+        self.gmObjs.remove(IN_id);
+        for COMP in self.components.values_mut(){
+            COMP.downcast_mut::<&mut dyn gmStorageDrop>().unwrap().drop(IN_id);
         }
     }
 }
@@ -161,6 +160,10 @@ impl gmObjStorage{
         });
 
         return w_nextIndex
+    }
+    pub fn remove(&mut self, IN_id: gmID){
+        self.gmObjMap.remove(&IN_id);
+        self.nextFree.insert(IN_id, ());
     }
 }
 
