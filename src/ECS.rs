@@ -61,7 +61,7 @@ impl gmWorld{
 
     pub fn createGmObj(&mut self) -> gmObjBuilder{
         gmObjBuilder{
-            gmObj: *self.gmObjs.insertNextFree(),
+            gmObjID: self.gmObjs.insertNextFree(),
             worldRef: self,
         }
     }
@@ -145,7 +145,7 @@ impl gmObjStorage{
             nextFree: BTreeMap::new()
         }
     }
-    pub fn insertNextFree(&mut self) -> &gmObj{
+    pub fn insertNextFree(&mut self) -> gmID{
         let w_nextIndex: gmID = if self.nextFree.len() == 0{
             // If there's no nextFree, length is always the next index
             self.gmObjMap.len() as gmID
@@ -160,18 +160,18 @@ impl gmObjStorage{
             entry: Some(()),
         });
 
-        return self.gmObjMap.get(&w_nextIndex).unwrap()
+        return w_nextIndex
     }
 }
 
 pub struct gmObjBuilder<'a>{
-    pub gmObj: gmObj,
+    pub gmObjID: gmID,
     pub worldRef: &'a mut gmWorld
 }
 impl gmObjBuilder<'_>{
     pub fn addComp<T>(self, IN_comp: T) -> Self where T:gmComp{
         // I gotta deal with this
-        self.worldRef.fetchMut::<T>().insert(self.gmObj.id, IN_comp);
+        self.worldRef.fetchMut::<T>().insert(self.gmObjID, IN_comp);
         self
     }
 }
