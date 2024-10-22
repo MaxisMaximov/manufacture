@@ -60,20 +60,8 @@ impl gmWorld{
     }
 
     pub fn createGmObj(&mut self) -> gmObjBuilder{
-        let w_nextIndex: gmID = if self.gmObjs.nextFree.len() == 0{
-                self.gmObjs.gmObjMap.len() as gmID
-            }else{
-                self.gmObjs.nextFree.pop_first().unwrap().0
-            };
-
-        self.gmObjs.gmObjMap.insert(w_nextIndex, gmObj{
-            id: w_nextIndex,
-            gen: 0,
-            entry: Some(()),
-        });
-
         gmObjBuilder{
-            gmObj: self.gmObjs.gmObjMap.get(&w_nextIndex).unwrap().clone(),
+            gmObj: *self.gmObjs.insertNextFree(),
             worldRef: self,
         }
     }
@@ -156,6 +144,23 @@ impl gmObjStorage{
             gmObjMap: HashMap::new(),
             nextFree: BTreeMap::new()
         }
+    }
+    pub fn insertNextFree(&mut self) -> &gmObj{
+        let w_nextIndex: gmID = if self.nextFree.len() == 0{
+            // If there's no nextFree, length is always the next index
+            self.gmObjMap.len() as gmID
+        }else{
+            // Else return first available in nextFree
+            self.nextFree.pop_first().unwrap().0
+        };
+
+        self.gmObjMap.insert(w_nextIndex, gmObj{
+            id: w_nextIndex,
+            gen: 0,
+            entry: Some(()),
+        });
+
+        return self.gmObjMap.get(&w_nextIndex).unwrap()
     }
 }
 
