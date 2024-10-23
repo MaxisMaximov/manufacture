@@ -140,6 +140,13 @@ impl<T: Sized> gmGenIndex<T>{
             entry: IN_entry,
         }
     }
+    pub fn set(&mut self, IN_entry: T){
+        self.entry = Some(IN_entry);
+    }
+    pub fn unset(&mut self){
+        self.entry = None;
+        self.gen += 1;
+    }
 }
 
 pub struct gmObjStorage{
@@ -167,7 +174,7 @@ impl gmObjStorage{
             self.nextFree.pop_first().unwrap().0
         };
 
-        self.gmObjMap.insert(w_nextIndex, gmObj::new(w_nextIndex, Some(())));
+        self.gmObjMap.entry(w_nextIndex).or_insert(gmObj::new(w_nextIndex, Some(())));
 
         return w_nextIndex
     }
