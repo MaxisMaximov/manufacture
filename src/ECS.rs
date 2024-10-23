@@ -144,6 +144,9 @@ impl gmObjStorage{
             nextFree: BTreeMap::new()
         }
     }
+    pub fn insert(&mut self, IN_id: gmID){
+        self.gmObjMap.entry(IN_id).or_insert(gmObj{id: IN_id, gen: 0, entry: Some(())});
+    }
     pub fn insertNextFree(&mut self) -> gmID{
         let w_nextIndex: gmID = if self.nextFree.len() == 0{
             // If there's no nextFree, length is always the next index
