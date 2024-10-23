@@ -162,7 +162,9 @@ impl gmObjStorage{
     }
 
     pub fn insert(&mut self, IN_id: gmID){
-        self.gmObjMap.entry(IN_id).or_insert(gmObj::new(IN_id, Some(())));
+        self.gmObjMap.entry(IN_id)
+            .and_modify(|ENTRY| ENTRY.set(()))
+            .or_insert(gmObj::new(IN_id, Some(())));
     }
 
     pub fn insertNextFree(&mut self) -> gmID{
@@ -174,14 +176,16 @@ impl gmObjStorage{
             self.nextFree.pop_first().unwrap().0
         };
 
-        self.gmObjMap.entry(w_nextIndex).or_insert(gmObj::new(w_nextIndex, Some(())));
+        self.insert(w_nextIndex);
 
         return w_nextIndex
     }
 
     pub fn remove(&mut self, IN_id: gmID){
-        self.gmObjMap.remove(&IN_id);
-        self.nextFree.insert(IN_id, ());
+        if let Some(ENTRY) = self.gmObjMap.get_mut(&IN_id){
+            ENTRY.unset();
+            self.nextFree.insert(IN_id, ());
+        }
     }
 }
 
