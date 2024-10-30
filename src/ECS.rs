@@ -114,20 +114,23 @@ impl gmDispatcher{
 }
 
 pub struct gmDispatchStage{
-    pub systems: Vec<Box<dyn for<'a> gmSysRun<'a>>>
+    pub systems: HashMap<&'static str, ()>,
+    pub inner: Vec<Box<dyn for<'a> gmSysRun<'a>>>
 }
 impl gmDispatchStage{
     pub fn new() -> Self{
         Self{
-            systems: Vec::new()
+            systems: HashMap::new(),
+            inner: Vec::new()
         }
     }
     pub fn addSys<T>(mut self, IN_system: T) -> Self where T: for<'a> gmSystem<'a> + 'static{
-        self.systems.push(Box::new(IN_system));
+        self.systems.insert(T::SYS_ID(), ());
+        self.inner.push(Box::new(IN_system));
         self
     }
     pub fn dispatch(&mut self, IN_world: &mut gmWorld){
-        for SYS in self.systems.iter_mut(){
+        for SYS in self.inner.iter_mut(){
             SYS.executeNow(IN_world);
         }
     }
