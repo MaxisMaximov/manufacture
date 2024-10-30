@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use std::any::Any;
 use std::collections::{BTreeMap, HashMap};
 
@@ -76,6 +77,7 @@ impl gmWorld{
 
 pub trait gmSystem<'a>{
     type sysData: gmSystemData<'a>;
+    fn SYS_ID() -> &'static str;
     fn execute(&mut self, IN_data: Self::sysData);
 }
 
@@ -279,6 +281,10 @@ mod tests{
     impl<'a> gmSystem<'a> for gmSys_HP{
         type sysData = gmSysData_HP<'a>;
 
+        fn SYS_ID() -> &'static str {
+            "gmSys_HP"
+        }
+
         fn execute(&mut self, IN_data: Self::sysData) {
             for COMP_HP in IN_data.comp_HP.inner.iter_mut(){
                 if COMP_HP.val.val <= 0{continue}
@@ -300,6 +306,10 @@ mod tests{
     pub struct gmSys_input{}
     impl<'a> gmSystem<'a> for gmSys_input{
         type sysData = gmSysData_Input<'a>;
+
+        fn SYS_ID() -> &'static str {
+            "gmSys_input"
+        }
 
         fn execute(&mut self, IN_data: Self::sysData) {
             if !poll(Duration::from_secs(0)).unwrap(){
