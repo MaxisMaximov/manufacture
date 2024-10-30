@@ -101,9 +101,8 @@ impl gmDispatcher{
             stages: Vec::new()
         }
     }
-    pub fn addSys<T>(mut self, IN_system: T) -> Self where T: for<'a> gmSystem<'a> + 'static{
-        self.systems.push(Box::new(IN_system));
-        self
+    pub fn addStage(&mut self, IN_stage: gmDispatchStage){
+        self.stages.push(IN_stage);
     }
     pub fn dispatch(&mut self, IN_world: &mut gmWorld){
         for STAGE in self.stages.iter_mut(){
@@ -246,9 +245,9 @@ mod tests{
             .addComp::<gmComp_Health>(gmComp_Health{val: 100})
             .addComp::<gmComp_Pos>(gmComp_Pos{x: 0, y: 0});
 
-        let mut dispatcher = gmDispatcher::new()
-            .addSys::<gmSys_input>(gmSys_input{})
-            .addSys::<gmSys_HP>(gmSys_HP{});
+        let mut dispatcher = gmDispatcher::new();
+        dispatcher.addStage(gmDispatchStage::new().addSys::<gmSys_input>(gmSys_input{}));
+        dispatcher.addStage(gmDispatchStage::new().addSys::<gmSys_HP>(gmSys_HP{}));
 
         dispatcher.dispatch(&mut world);
 
