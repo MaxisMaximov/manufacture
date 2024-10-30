@@ -150,7 +150,10 @@ impl gmDispatchStage{
         self.inner.push(Box::new(IN_system));
     }
     pub fn checkSys<T>(&self) -> bool where T: for<'a> gmSystem<'a>{
-        match self.systems.get(T::SYS_ID()){
+        self.checkSysID(T::SYS_ID())
+    }
+    pub fn checkSysID(&self, IN_id: &'static str) -> bool{
+        match self.systems.get(IN_id){
             Some(_) => true,
             None => false,
         }
