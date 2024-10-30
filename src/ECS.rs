@@ -121,6 +121,10 @@ impl gmDispatchStage{
             systems: Vec::new()
         }
     }
+    pub fn addSys<T>(mut self, IN_system: T) -> Self where T: for<'a> gmSystem<'a> + 'static{
+        self.systems.push(Box::new(IN_system));
+        self
+    }
 }
 
 pub trait gmStorage<T>: Any{
