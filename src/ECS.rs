@@ -125,10 +125,14 @@ impl gmDispatchStage{
             inner: Vec::new()
         }
     }
-    pub fn addSys<T>(mut self, IN_system: T) -> Self where T: for<'a> gmSystem<'a> + 'static{
+    pub fn withSys<T>(mut self, IN_system: T) -> Self where T: for<'a> gmSystem<'a> + 'static{
         self.systems.insert(T::SYS_ID(), ());
         self.inner.push(Box::new(IN_system));
         self
+    }
+    pub fn addSys<T>(&mut self, IN_system: T) where T: for<'a> gmSystem<'a> + 'static{
+        self.systems.insert(T::SYS_ID(), ());
+        self.inner.push(Box::new(IN_system));
     }
     pub fn checkSys<T>(&self) -> bool where T: for<'a> gmSystem<'a>{
         match self.systems.get(T::SYS_ID()){
@@ -258,8 +262,8 @@ mod tests{
             .addComp::<gmComp_Pos>(gmComp_Pos{x: 0, y: 0});
 
         let mut dispatcher = gmDispatcher::new();
-        dispatcher.addStage(gmDispatchStage::new().addSys::<gmSys_input>(gmSys_input{}));
-        dispatcher.addStage(gmDispatchStage::new().addSys::<gmSys_HP>(gmSys_HP{}));
+        dispatcher.addStage(gmDispatchStage::new().withSys::<gmSys_input>(gmSys_input{}));
+        dispatcher.addStage(gmDispatchStage::new().withSys::<gmSys_HP>(gmSys_HP{}));
 
         dispatcher.dispatch(&mut world);
 
