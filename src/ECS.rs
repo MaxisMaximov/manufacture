@@ -112,6 +112,10 @@ impl gmDispatcher{
     }
 }
 
+pub struct gmDispatchStage{
+    pub systems: Vec<Box<dyn for<'a> gmSysRun<'a>>>
+}
+
 pub trait gmStorage<T>: Any{
     fn new() -> Self where Self: Sized;
     fn insert(&mut self, IN_id: gmID, IN_item: T);
