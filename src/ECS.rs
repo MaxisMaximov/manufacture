@@ -104,6 +104,18 @@ impl gmDispatcher{
             stages: Vec::from([gmDispatchStage::new()])
         }
     }
+    pub fn addSys<T>(&mut self, IN_system: T) where T: for<'a> gmSystem<'a> + 'static{
+        // Check stages for a place for the new system
+        for STAGE in self.stages.iter_mut(){
+            // If there's no such system in this stage, exit early
+            if !STAGE.checkSys::<T>(){
+                STAGE.addSys(IN_system);
+                return;
+            }
+        }
+        // If not, create a new stage for it
+        self.addStage(gmDispatchStage::new().withSys(IN_system));
+    }
     pub fn addStage(&mut self, IN_stage: gmDispatchStage){
         self.stages.push(IN_stage);
     }
@@ -126,8 +138,7 @@ impl gmDispatchStage{
         }
     }
     pub fn withSys<T>(mut self, IN_system: T) -> Self where T: for<'a> gmSystem<'a> + 'static{
-        self.systems.insert(T::SYS_ID(), ());
-        self.inner.push(Box::new(IN_system));
+        self.addSys(IN_system);
         self
     }
     pub fn addSys<T>(&mut self, IN_system: T) where T: for<'a> gmSystem<'a> + 'static{
@@ -262,8 +273,8 @@ mod tests{
             .addComp::<gmComp_Pos>(gmComp_Pos{x: 0, y: 0});
 
         let mut dispatcher = gmDispatcher::new();
-        dispatcher.addStage(gmDispatchStage::new().withSys::<gmSys_input>(gmSys_input{}));
-        dispatcher.addStage(gmDispatchStage::new().withSys::<gmSys_HP>(gmSys_HP{}));
+        dispatcher.addSys::<gmSys_input>(gmSys_input{});
+        dispatcher.addSys::<gmSys_HP>(gmSys_HP{});
 
         dispatcher.dispatch(&mut world);
 
