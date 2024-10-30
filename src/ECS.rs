@@ -93,12 +93,12 @@ pub trait gmSystemData<'a>{
 }
 
 pub struct gmDispatcher{
-    systems: Vec<Box<dyn for<'a> gmSysRun<'a>>>
+    stages: Vec<gmDispatchStage>
 }
 impl gmDispatcher{
     pub fn new() -> Self{
         Self{
-            systems: Vec::new()
+            stages: Vec::new()
         }
     }
     pub fn addSys<T>(mut self, IN_system: T) -> Self where T: for<'a> gmSystem<'a> + 'static{
@@ -106,8 +106,8 @@ impl gmDispatcher{
         self
     }
     pub fn dispatch(&mut self, IN_world: &mut gmWorld){
-        for SYS in self.systems.iter_mut(){
-            SYS.executeNow(IN_world);
+        for STAGE in self.stages.iter_mut(){
+            STAGE.dispatch(IN_world);
         }
     }
 }
