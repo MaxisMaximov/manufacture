@@ -115,6 +115,13 @@ impl gmDispatcher{
 pub struct gmDispatchStage{
     pub systems: Vec<Box<dyn for<'a> gmSysRun<'a>>>
 }
+impl gmDispatchStage{
+    pub fn new() -> Self{
+        Self{
+            systems: Vec::new()
+        }
+    }
+}
 
 pub trait gmStorage<T>: Any{
     fn new() -> Self where Self: Sized;
