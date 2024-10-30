@@ -100,7 +100,8 @@ pub struct gmDispatcher{
 impl gmDispatcher{
     pub fn new() -> Self{
         Self{
-            stages: Vec::new()
+            // Singular item to avoid checks for empty vec later
+            stages: Vec::from([gmDispatchStage::new()])
         }
     }
     pub fn addStage(&mut self, IN_stage: gmDispatchStage){
@@ -128,6 +129,12 @@ impl gmDispatchStage{
         self.systems.insert(T::SYS_ID(), ());
         self.inner.push(Box::new(IN_system));
         self
+    }
+    pub fn checkSys<T>(&self) -> bool where T: for<'a> gmSystem<'a>{
+        match self.systems.get(T::SYS_ID()){
+            Some(_) => true,
+            None => false,
+        }
     }
     pub fn dispatch(&mut self, IN_world: &mut gmWorld){
         for SYS in self.inner.iter_mut(){
