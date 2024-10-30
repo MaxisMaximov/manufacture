@@ -125,6 +125,11 @@ impl gmDispatchStage{
         self.systems.push(Box::new(IN_system));
         self
     }
+    pub fn dispatch(&mut self, IN_world: &mut gmWorld){
+        for SYS in self.systems.iter_mut(){
+            SYS.executeNow(IN_world);
+        }
+    }
 }
 
 pub trait gmStorage<T>: Any{
