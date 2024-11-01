@@ -112,19 +112,25 @@ impl gmDispatcher{
     }
     pub fn addSys<T>(&mut self, IN_system: T, IN_depends: &[&'static str]) where T: for<'a> gmSystem<'a> + 'static{
         // Check if the system is registered already
-        if let Some(_) = self.systems.get(T::SYS_ID()){
+        if self.systems.contains_key(T::SYS_ID()){
             return
         }
 
-        // Check what stage to insert at
         let mut w_nextStage: usize = 0;
+        
+        'CHECKSTAGE:{
+            // Exit early if there's no dependencies
+            if IN_depends.len() == 0{
+                break 'CHECKSTAGE;
+            }
 
-        for DEPEND in IN_depends.iter(){
-            // Check if such dependency exists
-            if let Some(STAGEID) = self.systems.get(DEPEND){
-                // If it's later in processing than latest recorded stage, update it
-                if *STAGEID > w_nextStage{
-                    w_nextStage = *STAGEID + 1
+            for DEPEND in IN_depends.iter(){
+                // Check if such dependency exists
+                if let Some(STAGEID) = self.systems.get(DEPEND){
+                    // If it's later in processing than latest recorded stage, update it
+                    if *STAGEID > w_nextStage{
+                        w_nextStage = *STAGEID + 1
+                    }
                 }
             }
         }
