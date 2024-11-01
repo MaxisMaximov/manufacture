@@ -95,11 +95,13 @@ pub trait gmSystemData<'a>{
 }
 
 pub struct gmDispatcher{
+    systems: HashMap<&'static str, usize>,
     stages: Vec<gmDispatchStage>
 }
 impl gmDispatcher{
     pub fn new() -> Self{
         Self{
+            systems: HashMap::new(),
             // Singular item to avoid checks for empty vec later
             stages: Vec::from([gmDispatchStage::new()])
         }
@@ -109,16 +111,12 @@ impl gmDispatcher{
         self
     }
     pub fn addSys<T>(&mut self, IN_system: T) where T: for<'a> gmSystem<'a> + 'static{
-        // Check stages for a place for the new system
-        for STAGE in self.stages.iter_mut(){
-            // If there's no such system in this stage, exit early
-            if !STAGE.checkSys::<T>(){
-                STAGE.addSys(IN_system);
-                return;
-            }
+        // Check if the systems is registered already
+        if let Some(_) = self.systems.get(T::SYS_ID()){
+            return
         }
-        // If not, create a new stage for it
-        self.addStage(gmDispatchStage::new().withSys(IN_system));
+        self.systems.insert(T::SYS_ID(), 0);
+        self.stages[0].addSys(IN_system);
     }
     pub fn addStage(&mut self, IN_stage: gmDispatchStage){
         self.stages.push(IN_stage);
