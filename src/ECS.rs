@@ -106,17 +106,37 @@ impl gmDispatcher{
             stages: Vec::from([gmDispatchStage::new()])
         }
     }
-    pub fn withSys<T>(mut self, IN_system: T) -> Self where T: for<'a> gmSystem<'a> + 'static{
-        self.addSys(IN_system);
+    pub fn withSys<T>(mut self, IN_system: T, IN_depends: &[&'static str]) -> Self where T: for<'a> gmSystem<'a> + 'static{
+        self.addSys(IN_system, IN_depends);
         self
     }
-    pub fn addSys<T>(&mut self, IN_system: T) where T: for<'a> gmSystem<'a> + 'static{
-        // Check if the systems is registered already
+    pub fn addSys<T>(&mut self, IN_system: T, IN_depends: &[&'static str]) where T: for<'a> gmSystem<'a> + 'static{
+        // Check if the system is registered already
         if let Some(_) = self.systems.get(T::SYS_ID()){
             return
         }
-        self.systems.insert(T::SYS_ID(), 0);
-        self.stages[0].addSys(IN_system);
+
+        // Check what stage to insert at
+        let mut w_nextStage: usize = 0;
+
+        for DEPEND in IN_depends.iter(){
+            // Check if such dependency exists
+            if let Some(STAGEID) = self.systems.get(DEPEND){
+                // If it's later in processing than latest recorded stage, update it
+                if *STAGEID > w_nextStage{
+                    w_nextStage = *STAGEID + 1
+                }
+            }
+        }
+
+        // Check if the desired stage exists
+        if let Some(STAGE) = self.stages.get_mut(w_nextStage){
+            STAGE.addSys(IN_system);
+            return
+        }
+        // If not, add a new stage with the system
+        self.addStage(gmDispatchStage::new().withSys(IN_system));
+
     }
     pub fn addStage(&mut self, IN_stage: gmDispatchStage){
         self.stages.push(IN_stage);
@@ -278,8 +298,8 @@ mod tests{
             .addComp::<gmComp_Pos>(gmComp_Pos{x: 0, y: 0});
 
         let mut dispatcher = gmDispatcher::new()
-            .withSys::<gmSys_input>(gmSys_input{})
-            .withSys::<gmSys_HP>(gmSys_HP{});
+            .withSys::<gmSys_input>(gmSys_input{}, &[])
+            .withSys::<gmSys_HP>(gmSys_HP{}, &[]);
 
         dispatcher.dispatch(&mut world);
 
