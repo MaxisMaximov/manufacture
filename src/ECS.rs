@@ -107,11 +107,11 @@ impl gmDispatcher{
             stages: Vec::from([gmDispatchStage::new()])
         }
     }
-    pub fn withSys<T>(mut self, IN_system: T, IN_depends: &[&'static str]) -> Self where T: for<'a> gmSystem<'a> + 'static{
-        self.addSys(IN_system, IN_depends);
+    pub fn withSys<T>(mut self, IN_depends: &[&'static str]) -> Self where T: for<'a> gmSystem<'a> + 'static{
+        self.addSys::<T>(IN_depends);
         self
     }
-    pub fn addSys<T>(&mut self, IN_system: T, IN_depends: &[&'static str]) where T: for<'a> gmSystem<'a> + 'static{
+    pub fn addSys<T>(&mut self, IN_depends: &[&'static str]) where T: for<'a> gmSystem<'a> + 'static{
         // Check if the system is registered already
         if self.systems.contains_key(T::SYS_ID()){
             return
@@ -138,11 +138,11 @@ impl gmDispatcher{
 
         // Check if the desired stage exists
         if let Some(STAGE) = self.stages.get_mut(w_nextStage){
-            STAGE.addSys(IN_system);
+            STAGE.addSys(T::new());
             return
         }
         // If not, add a new stage with the system
-        self.addStage(gmDispatchStage::new().withSys(IN_system));
+        self.addStage(gmDispatchStage::new().withSys(T::new()));
 
     }
     pub fn addStage(&mut self, IN_stage: gmDispatchStage){
@@ -305,8 +305,8 @@ mod tests{
             .addComp::<gmComp_Pos>(gmComp_Pos{x: 0, y: 0});
 
         let mut dispatcher = gmDispatcher::new()
-            .withSys::<gmSys_input>(gmSys_input::new(), &[])
-            .withSys::<gmSys_HP>(gmSys_HP::new(), &[]);
+            .withSys::<gmSys_input>( &[])
+            .withSys::<gmSys_HP>(&[]);
 
         dispatcher.dispatch(&mut world);
 
