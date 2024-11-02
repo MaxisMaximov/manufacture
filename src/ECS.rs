@@ -138,11 +138,11 @@ impl gmDispatcher{
 
         // Check if the desired stage exists
         if let Some(STAGE) = self.stages.get_mut(w_nextStage){
-            STAGE.addSys(T::new());
+            STAGE.addSys::<T>();
             return
         }
         // If not, add a new stage with the system
-        self.addStage(gmDispatchStage::new().withSys(T::new()));
+        self.addStage(gmDispatchStage::new().withSys::<T>());
 
     }
     pub fn addStage(&mut self, IN_stage: gmDispatchStage){
@@ -166,13 +166,13 @@ impl gmDispatchStage{
             inner: Vec::new()
         }
     }
-    pub fn withSys<T>(mut self, IN_system: T) -> Self where T: for<'a> gmSystem<'a> + 'static{
-        self.addSys(IN_system);
+    pub fn withSys<T>(mut self) -> Self where T: for<'a> gmSystem<'a> + 'static{
+        self.addSys::<T>();
         self
     }
-    pub fn addSys<T>(&mut self, IN_system: T) where T: for<'a> gmSystem<'a> + 'static{
+    pub fn addSys<T>(&mut self) where T: for<'a> gmSystem<'a> + 'static{
         self.systems.insert(T::SYS_ID(), ());
-        self.inner.push(Box::new(IN_system));
+        self.inner.push(Box::new(T::new()));
     }
     pub fn checkSys<T>(&self) -> bool where T: for<'a> gmSystem<'a>{
         self.checkSysID(T::SYS_ID())
