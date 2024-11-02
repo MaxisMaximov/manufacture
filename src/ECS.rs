@@ -77,6 +77,7 @@ impl gmWorld{
 
 pub trait gmSystem<'a>{
     type sysData: gmSystemData<'a>;
+    fn new() -> Self;
     fn SYS_ID() -> &'static str;
     fn execute(&mut self, IN_data: Self::sysData);
 }
@@ -304,8 +305,8 @@ mod tests{
             .addComp::<gmComp_Pos>(gmComp_Pos{x: 0, y: 0});
 
         let mut dispatcher = gmDispatcher::new()
-            .withSys::<gmSys_input>(gmSys_input{}, &[])
-            .withSys::<gmSys_HP>(gmSys_HP{}, &[]);
+            .withSys::<gmSys_input>(gmSys_input::new(), &[])
+            .withSys::<gmSys_HP>(gmSys_HP::new(), &[]);
 
         dispatcher.dispatch(&mut world);
 
@@ -337,6 +338,10 @@ mod tests{
     impl<'a> gmSystem<'a> for gmSys_HP{
         type sysData = gmSysData_HP<'a>;
 
+        fn new() -> Self {
+            Self{}
+        }
+
         fn SYS_ID() -> &'static str {
             "gmSys_HP"
         }
@@ -362,6 +367,10 @@ mod tests{
     pub struct gmSys_input{}
     impl<'a> gmSystem<'a> for gmSys_input{
         type sysData = gmSysData_Input<'a>;
+
+        fn new() -> Self {
+            Self{}
+        }
 
         fn SYS_ID() -> &'static str {
             "gmSys_input"
