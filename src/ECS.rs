@@ -69,9 +69,9 @@ impl gmWorld{
 
     pub fn deleteGmObj(&mut self, IN_id: gmID){
         self.gmObjs.remove(IN_id);
-        for COMP in self.components.values_mut(){
-            COMP.downcast_mut::<&mut dyn gmStorageDrop>().unwrap().drop(IN_id);
-        }
+            for COMP in self.components.values_mut(){
+                COMP.downcast_mut::<&mut dyn gmStorageDrop>().unwrap().drop(IN_id);
+            }
     }
 }
 
@@ -121,7 +121,7 @@ impl gmDispatcher{
         
         'CHECKSTAGE:{
             // Exit early if there's no dependencies
-            if IN_depends.len() == 0{
+            if IN_depends.is_empty(){
                 break 'CHECKSTAGE;
             }
 
@@ -171,6 +171,8 @@ impl gmDispatchStage{
         self
     }
     pub fn addSys<T>(&mut self) where T: for<'a> gmSystem<'a> + 'static{
+        if self.systems.contains_key(T::SYS_ID()){return}
+        
         self.systems.insert(T::SYS_ID(), ());
         self.inner.push(Box::new(T::new()));
     }
@@ -246,13 +248,7 @@ impl gmObjStorage{
     }
 
     pub fn insertNextFree(&mut self) -> gmID{
-        let w_nextIndex: gmID = if self.nextFree.len() == 0{
-            // If there's no nextFree, length is always the next index
-            self.gmObjMap.len() as gmID
-        }else{
-            // Else return first available in nextFree
-            self.nextFree.pop_first().unwrap().0
-        };
+        let w_nextIndex: gmID = self.nextFree.pop_first().unwrap_or((self.gmObjMap.len() as gmID, ())).0;
 
         self.insert(w_nextIndex);
 
@@ -305,7 +301,7 @@ mod tests{
             .addComp::<gmComp_Pos>(gmComp_Pos{x: 0, y: 0});
 
         let mut dispatcher = gmDispatcher::new()
-            .withSys::<gmSys_input>( &[])
+            .withSys::<gmSys_input>(&[])
             .withSys::<gmSys_HP>(&[]);
 
         dispatcher.dispatch(&mut world);
@@ -348,8 +344,9 @@ mod tests{
 
         fn execute(&mut self, IN_data: Self::sysData) {
             for COMP_HP in IN_data.comp_HP.inner.iter_mut(){
-                if COMP_HP.val.val <= 0{continue}
-                COMP_HP.val.val -= 1
+                if COMP_HP.val.val > 0{
+                    COMP_HP.val.val -= 1
+                }
             }
         }
     }
@@ -378,14 +375,10 @@ mod tests{
 
         fn execute(&mut self, IN_data: Self::sysData) {
             if !poll(Duration::from_secs(0)).unwrap(){
-                IN_data.res_Input.res = KeyEvent{
-                    code: KeyCode::Null,
-                    modifiers: KeyModifiers::NONE,
-                    kind: KeyEventKind::Release,
-                    state: KeyEventState::NONE,
-                };
+                IN_data.res_Input.res = KeyEvent::new(KeyCode::Null, KeyModifiers::NONE);
                 return
             }
+
             if let Event::Key(KEY) = read().unwrap(){
                 IN_data.res_Input.res = KEY;
                 return
@@ -417,6 +410,8 @@ mod tests{
         }
 
         fn insert(&mut self, IN_id: gmID, IN_item: T) {
+            if self.proxyMap.contains_key(&IN_id){return}
+
             self.proxyMap.insert(IN_id, self.inner.len()); // Vec length is always the next free index
             self.inner.push(
                 denseVecEntry{
@@ -429,19 +424,14 @@ mod tests{
         fn remove(&mut self, IN_id: gmID) -> Option<T> {
             
             if let Some(INDEX) = self.proxyMap.remove(&IN_id){
-                // Last index
-                let idkfa_lastIndex = self.inner.len() - 1;
-                // If it's the last element then just pop it
-                if INDEX == idkfa_lastIndex{
+
+                if INDEX == self.inner.len() - 1{
                     return Some(self.inner.pop().unwrap().val)
                 }
-                // IF NOT
-                // Update the ID in proxyMap
-                *self.proxyMap.get_mut(&self.inner[idkfa_lastIndex].id).unwrap() = INDEX;
-                // Swap the indexes
-                self.inner.swap(INDEX, idkfa_lastIndex);
-                // Pop the last one (now the one requested to remove)
-                return Some(self.inner.pop().unwrap().val)
+
+                *self.proxyMap.get_mut(&self.inner.last().unwrap().id).unwrap() = INDEX;
+
+                return Some(self.inner.swap_remove(INDEX).val);
             }
             None
 
