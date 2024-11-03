@@ -15,11 +15,11 @@ impl gmDispatcher{
             stages: Vec::from([gmDispatchStage::new()])
         }
     }
-    pub fn withSys<T>(mut self, IN_depends: &[&'static str]) -> Self where T: for<'a> gmSystem<'a> + 'static{
+    pub fn withSys<T>(mut self, IN_depends: &[&'static str]) -> Self where T: for<'a> system::gmSystem<'a> + 'static{
         self.addSys::<T>(IN_depends);
         self
     }
-    pub fn addSys<T>(&mut self, IN_depends: &[&'static str]) where T: for<'a> gmSystem<'a> + 'static{
+    pub fn addSys<T>(&mut self, IN_depends: &[&'static str]) where T: for<'a> system::gmSystem<'a> + 'static{
         // Check if the system is registered already
         if self.systems.contains_key(T::SYS_ID()){
             return
@@ -56,7 +56,7 @@ impl gmDispatcher{
     pub fn addStage(&mut self, IN_stage: gmDispatchStage){
         self.stages.push(IN_stage);
     }
-    pub fn dispatch(&mut self, IN_world: &mut gmWorld){
+    pub fn dispatch(&mut self, IN_world: &mut world::gmWorld){
         for STAGE in self.stages.iter_mut(){
             STAGE.dispatch(IN_world);
         }

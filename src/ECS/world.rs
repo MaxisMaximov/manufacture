@@ -1,5 +1,11 @@
 use super::*;
 
+use vars::*;
+use resource::*;
+use comp::*;
+use builders::gmObjBuilder;
+use storage::*;
+
 pub struct gmWorld{
     pub gmObjs: gmObjStorage,
     pub components: gmWorld_COMPMAP,

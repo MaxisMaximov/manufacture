@@ -14,21 +14,14 @@ mod builders;
 mod dispatcher;
 mod misc;
 
-use comp::*;
-use storage::*;
-use system::*;
-use vars::*;
-use world::*;
-use resource::*;
-use builders::*;
-use dispatcher::*;
-use misc::*;
+mod prelude;
 
 mod tests{
     use event::*;
     use time::Duration;
 
     use super::*;
+    use prelude::*;
 
     pub fn main(){
         let mut world = gmWorld::new();
@@ -94,7 +87,7 @@ mod tests{
         }
     }
     pub struct gmSysData_HP<'a>{
-        pub comp_HP: &'a mut <gmComp_Health as ECS::gmComp>::COMP_STORAGE
+        pub comp_HP: &'a mut <gmComp_Health as gmComp>::COMP_STORAGE
     }
     impl<'a> gmSystemData<'a> for gmSysData_HP<'a>{
         fn fetch(IN_world: &'a mut gmWorld) -> Self {

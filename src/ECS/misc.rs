@@ -1,5 +1,7 @@
 use super::*;
 
+use vars::*;
+
 #[derive(Clone, Copy)]
 pub struct gmGenIndex<T: Sized>{
     pub id: gmID,

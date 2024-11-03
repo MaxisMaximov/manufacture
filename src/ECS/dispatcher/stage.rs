@@ -1,5 +1,8 @@
 use super::*;
 
+use world::*;
+use system::*;
+
 pub struct gmDispatchStage{
     pub systems: HashMap<&'static str, ()>,
     pub inner: Vec<Box<dyn for<'a> gmSysRun<'a>>>

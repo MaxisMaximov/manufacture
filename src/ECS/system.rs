@@ -1,5 +1,7 @@
 use super::*;
 
+use world::*;
+
 pub trait gmSystem<'a>{
     type sysData: gmSystemData<'a>;
     fn new() -> Self;
