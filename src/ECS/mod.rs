@@ -7,10 +7,12 @@ use super::*;
 mod comp;
 mod storage;
 mod system;
+mod vars;
 
 use comp::*;
 use storage::*;
 use system::*;
+use vars::*;
 
 pub trait gmRes: Any{
     fn new() -> Self;
@@ -243,12 +245,6 @@ impl gmObjBuilder<'_>{
         self
     }
 }
-
-pub type gmWorld_COMPMAP = HashMap<&'static str, Box<dyn Any>>;
-pub type gmWorld_RESMAP = HashMap<&'static str, Box<dyn Any>>;
-pub type gmObj = gmGenIndex<()>;
-pub type gmID = u16;
-pub type gmGen = u16; // There is no way you can even remotely get to 32kth generation -- Consider it a gift
 
 mod tests{
     use event::*;
