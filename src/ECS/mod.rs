@@ -10,6 +10,7 @@ mod system;
 mod vars;
 mod world;
 mod resource;
+mod builders;
 
 use comp::*;
 use storage::*;
@@ -17,6 +18,7 @@ use system::*;
 use vars::*;
 use world::*;
 use resource::*;
+use builders::*;
 
 pub struct gmDispatcher{
     systems: HashMap<&'static str, usize>,
@@ -135,18 +137,6 @@ impl<T: Sized> gmGenIndex<T>{
     pub fn unset(&mut self){
         self.entry = None;
         self.gen += 1;
-    }
-}
-
-pub struct gmObjBuilder<'a>{
-    pub gmObjID: gmID,
-    pub worldRef: &'a mut gmWorld
-}
-impl gmObjBuilder<'_>{
-    pub fn addComp<T>(self, IN_comp: T) -> Self where T:gmComp{
-        // I gotta deal with this
-        self.worldRef.fetchMut::<T>().insert(self.gmObjID, IN_comp);
-        self
     }
 }
 
