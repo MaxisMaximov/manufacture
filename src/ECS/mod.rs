@@ -9,17 +9,14 @@ mod storage;
 mod system;
 mod vars;
 mod world;
+mod resource;
 
 use comp::*;
 use storage::*;
 use system::*;
 use vars::*;
 use world::*;
-
-pub trait gmRes: Any{
-    fn new() -> Self;
-    fn RES_ID() -> &'static str;
-}
+use resource::*;
 
 pub struct gmDispatcher{
     systems: HashMap<&'static str, usize>,
