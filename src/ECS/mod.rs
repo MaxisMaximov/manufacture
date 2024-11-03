@@ -11,6 +11,7 @@ mod vars;
 mod world;
 mod resource;
 mod builders;
+mod dispatcher;
 
 use comp::*;
 use storage::*;
@@ -19,103 +20,7 @@ use vars::*;
 use world::*;
 use resource::*;
 use builders::*;
-
-pub struct gmDispatcher{
-    systems: HashMap<&'static str, usize>,
-    stages: Vec<gmDispatchStage>
-}
-impl gmDispatcher{
-    pub fn new() -> Self{
-        Self{
-            systems: HashMap::new(),
-            // Singular item to avoid checks for empty vec later
-            stages: Vec::from([gmDispatchStage::new()])
-        }
-    }
-    pub fn withSys<T>(mut self, IN_depends: &[&'static str]) -> Self where T: for<'a> gmSystem<'a> + 'static{
-        self.addSys::<T>(IN_depends);
-        self
-    }
-    pub fn addSys<T>(&mut self, IN_depends: &[&'static str]) where T: for<'a> gmSystem<'a> + 'static{
-        // Check if the system is registered already
-        if self.systems.contains_key(T::SYS_ID()){
-            return
-        }
-
-        let mut w_nextStage: usize = 0;
-        
-        'CHECKSTAGE:{
-            // Exit early if there's no dependencies
-            if IN_depends.is_empty(){
-                break 'CHECKSTAGE;
-            }
-
-            for DEPEND in IN_depends.iter(){
-                // Check if such dependency exists
-                if let Some(STAGEID) = self.systems.get(DEPEND){
-                    // If it's later in processing than latest recorded stage, update it
-                    if *STAGEID > w_nextStage{
-                        w_nextStage = *STAGEID + 1
-                    }
-                }
-            }
-        }
-
-        // Check if the desired stage exists
-        if let Some(STAGE) = self.stages.get_mut(w_nextStage){
-            STAGE.addSys::<T>();
-            return
-        }
-        // If not, add a new stage with the system
-        self.addStage(gmDispatchStage::new().withSys::<T>());
-
-    }
-    pub fn addStage(&mut self, IN_stage: gmDispatchStage){
-        self.stages.push(IN_stage);
-    }
-    pub fn dispatch(&mut self, IN_world: &mut gmWorld){
-        for STAGE in self.stages.iter_mut(){
-            STAGE.dispatch(IN_world);
-        }
-    }
-}
-
-pub struct gmDispatchStage{
-    pub systems: HashMap<&'static str, ()>,
-    pub inner: Vec<Box<dyn for<'a> gmSysRun<'a>>>
-}
-impl gmDispatchStage{
-    pub fn new() -> Self{
-        Self{
-            systems: HashMap::new(),
-            inner: Vec::new()
-        }
-    }
-    pub fn withSys<T>(mut self) -> Self where T: for<'a> gmSystem<'a> + 'static{
-        self.addSys::<T>();
-        self
-    }
-    pub fn addSys<T>(&mut self) where T: for<'a> gmSystem<'a> + 'static{
-        if self.systems.contains_key(T::SYS_ID()){return}
-        
-        self.systems.insert(T::SYS_ID(), ());
-        self.inner.push(Box::new(T::new()));
-    }
-    pub fn checkSys<T>(&self) -> bool where T: for<'a> gmSystem<'a>{
-        self.checkSysID(T::SYS_ID())
-    }
-    pub fn checkSysID(&self, IN_id: &'static str) -> bool{
-        match self.systems.get(IN_id){
-            Some(_) => true,
-            None => false,
-        }
-    }
-    pub fn dispatch(&mut self, IN_world: &mut gmWorld){
-        for SYS in self.inner.iter_mut(){
-            SYS.executeNow(IN_world);
-        }
-    }
-}
+use dispatcher::*;
 
 #[derive(Clone, Copy)]
 pub struct gmGenIndex<T: Sized>{
