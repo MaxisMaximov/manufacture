@@ -4,10 +4,8 @@ use std::collections::{BTreeMap, HashMap};
 
 use super::*;
 
-pub trait gmComp: Any + Sized{
-    type COMP_STORAGE: gmStorage<Self>;
-    fn COMP_ID() -> &'static str;
-}
+mod comp;
+use comp::*;
 
 pub trait gmRes: Any{
     fn new() -> Self;
