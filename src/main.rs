@@ -6,13 +6,14 @@ use std::thread::sleep;
 
 pub use once_cell::sync::Lazy;
 pub use crossterm::{style::{Color, Stylize}, *};
-pub use std::{collections::HashMap, sync::Mutex, fmt::{self, Write as fmtWrite}, io::{stdout, Write as ioWrite}, time, ops::{Index, IndexMut}};
+pub use std::{any::Any, collections::{HashMap, BTreeMap}, sync::Mutex, fmt::{self, Write as fmtWrite}, io::{stdout, Write as ioWrite}, time, ops::{Index, IndexMut}};
 
 // Define all subsystems
 mod system;
 mod logic;
 mod renderer;
-mod ECS;
+pub mod ECS;
+pub mod manufacture;
 
 // This is system stuff so yeah
 pub use system::*;
