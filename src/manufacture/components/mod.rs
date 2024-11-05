@@ -34,3 +34,16 @@ impl gmComp for comp_Vel {
         "comp_Vel"
     }
 }
+
+pub struct comp_Sprite{
+    sizeX: usize,
+    sizeY: usize,
+    sprite: Vec<crate::types::styleSet>
+}
+impl gmComp for comp_Sprite{
+    type COMP_STORAGE = denseVecStorage<Self>;
+
+    fn COMP_ID() -> &'static str {
+        "comp_Sprite"
+    }
+}
