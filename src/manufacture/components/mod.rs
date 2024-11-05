@@ -47,3 +47,14 @@ impl gmComp for comp_Sprite{
         "comp_Sprite"
     }
 }
+
+pub struct comp_PController{
+    active: bool
+}
+impl gmComp for comp_PController{
+    type COMP_STORAGE = denseVecStorage<Self>;
+
+    fn COMP_ID() -> &'static str {
+        "comp_PController                   "
+    }
+}
