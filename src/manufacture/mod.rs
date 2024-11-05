@@ -1,7 +1,7 @@
-use super::ECS::prelude;
+use super::ECS::prelude::*;
 
-mod components;
-mod resources;
-mod systems;
+pub mod components;
+pub mod resources;
+pub mod systems;
 
-mod init;
+pub mod init;
