@@ -29,3 +29,18 @@ impl gmRes for res_DeltaT{
         "res_DeltaT"
     }
 }
+
+pub struct res_Event{
+    res: &'static str // It'll be a singular string for now -- A very bad idea, I know
+}
+impl gmRes for res_Event{
+    fn new() -> Self {
+        Self{
+            res: "NULL"
+        }
+    }
+
+    fn RES_ID() -> &'static str {
+        "res_Event"
+    }
+}
