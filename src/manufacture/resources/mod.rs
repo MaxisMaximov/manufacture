@@ -44,3 +44,6 @@ impl gmRes for res_Events{
         "res_Event"
     }
 }
+pub trait gmEvent{
+    fn EVENT_ID() -> &'static str;
+}
