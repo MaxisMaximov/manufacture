@@ -30,13 +30,13 @@ impl gmRes for res_DeltaT{
     }
 }
 
-pub struct res_Event{
-    res: Vec<&'static str>
+pub struct res_Events{
+    res: HashMap<&'static str, Vec<&'static str>>
 }
-impl gmRes for res_Event{
+impl gmRes for res_Events{
     fn new() -> Self {
         Self{
-            res: Vec::new()
+            res: HashMap::new()
         }
     }
 
