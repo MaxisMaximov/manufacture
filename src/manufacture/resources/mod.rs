@@ -31,7 +31,7 @@ impl gmRes for res_DeltaT{
 }
 
 pub struct res_Events{
-    res: HashMap<&'static str, Vec<&'static str>>
+    res: HashMap<&'static str, Box<dyn Any>>
 }
 impl gmRes for res_Events{
     fn new() -> Self {
