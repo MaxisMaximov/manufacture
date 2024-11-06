@@ -31,12 +31,12 @@ impl gmRes for res_DeltaT{
 }
 
 pub struct res_Event{
-    res: &'static str // It'll be a singular string for now -- A very bad idea, I know
+    res: Vec<&'static str>
 }
 impl gmRes for res_Event{
     fn new() -> Self {
         Self{
-            res: "NULL"
+            res: Vec::new()
         }
     }
 
