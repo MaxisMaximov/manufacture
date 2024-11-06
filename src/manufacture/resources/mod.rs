@@ -14,3 +14,18 @@ impl gmRes for res_PInput{
         "res_PInput"
     }
 }
+
+pub struct res_DeltaT{
+    res: Duration
+}
+impl gmRes for res_DeltaT{
+    fn new() -> Self {
+        Self{
+            res: Duration::from_secs(0)
+        }
+    }
+
+    fn RES_ID() -> &'static str {
+        "res_DeltaT"
+    }
+}
