@@ -47,3 +47,6 @@ impl gmRes for res_Events{
 pub trait gmEvent{
     fn EVENT_ID() -> &'static str;
 }
+pub struct eventQueue<T: gmEvent>{
+    inner: Vec<T>
+}
