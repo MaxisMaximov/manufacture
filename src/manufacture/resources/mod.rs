@@ -36,6 +36,14 @@ pub struct res_Events{
 }
 impl res_Events{
 
+    pub fn registerEvent<T>(&mut self) where T: gmEvent + 'static{
+        self.inner.entry(T::EVENT_ID()).or_insert((Box::new(Vec::<T>::new()), Box::new(Vec::<T>::new())));
+    }
+
+    pub fn unRegisterEvent<T>(&mut self) where T: gmEvent + 'static{
+        self.inner.remove(T::EVENT_ID());
+    }
+
     fn getActiveBuffer<T>(&mut self) -> &mut Vec<T> where T: gmEvent + 'static{
         let BUFFERS = self.inner.get_mut(T::EVENT_ID()).unwrap();
 
