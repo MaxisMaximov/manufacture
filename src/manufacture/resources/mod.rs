@@ -36,18 +36,11 @@ pub struct res_Events{
     bufferB: HashMap<&'static str, Box<dyn Any>>
 }
 impl res_Events{
-    pub fn readA<T>(&mut self) -> &Vec<T> where T: gmEvent + 'static{
-        self.bufferA.get(T::EVENT_ID()).unwrap().downcast_ref::<Vec<T>>().unwrap()
-    }
-
-    pub fn readB<T>(&mut self) -> &Vec<T> where T: gmEvent + 'static{
-        self.bufferB.get(T::EVENT_ID()).unwrap().downcast_ref::<Vec<T>>().unwrap()
-    }
 
     pub fn read<T>(&mut self) -> &Vec<T> where T: gmEvent + 'static{
         match self.activeBuffer{
-            true => self.readA(),
-            false => self.readB()
+            true => self.bufferA.get(T::EVENT_ID()).unwrap().downcast_ref::<Vec<T>>().unwrap(),
+            false => self.bufferB.get(T::EVENT_ID()).unwrap().downcast_ref::<Vec<T>>().unwrap()
         }
     }
 
