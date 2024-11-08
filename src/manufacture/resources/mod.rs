@@ -32,27 +32,30 @@ impl gmRes for res_DeltaT{
 
 pub struct res_Events{
     activeBuffer: bool,
-    bufferA: HashMap<&'static str, Box<dyn Any>>,
-    bufferB: HashMap<&'static str, Box<dyn Any>>
+    inner: HashMap<&'static str, (Box<dyn Any>, Box<dyn Any>)>,
 }
 impl res_Events{
 
-    fn getActiveBuffer(&mut self) -> &mut HashMap<&'static str, Box<dyn Any>>{
-        if self.activeBuffer{&mut self.bufferA}
-        else {&mut self.bufferB}
+    fn getActiveBuffer<T>(&mut self) -> &mut Vec<T> where T: gmEvent + 'static{
+        let BUFFERS = self.inner.get_mut(T::EVENT_ID()).unwrap();
+
+        if self.activeBuffer{BUFFERS.1.downcast_mut::<Vec<T>>().unwrap()}
+        else{BUFFERS.0.downcast_mut::<Vec<T>>().unwrap()}
     }
 
-    fn getAlternateBuffer(&mut self) -> &mut HashMap<&'static str, Box<dyn Any>>{
-        if self.activeBuffer{&mut self.bufferB}
-        else {&mut self.bufferA}
+    fn getAlternateBuffer<T>(&mut self) -> &mut Vec<T> where T: gmEvent + 'static{
+        let BUFFERS = self.inner.get_mut(T::EVENT_ID()).unwrap();
+
+        if self.activeBuffer {BUFFERS.1.downcast_mut::<Vec<T>>().unwrap()}
+        else{BUFFERS.0.downcast_mut::<Vec<T>>().unwrap()}
     }
 
     pub fn read<T>(&mut self) -> &Vec<T> where T: gmEvent + 'static{
-        self.getActiveBuffer().get(T::EVENT_ID()).unwrap().downcast_ref::<Vec<T>>().unwrap()
+        self.getActiveBuffer::<T>()
     }
 
     pub fn push<T>(&mut self, IN_event: T) where T: gmEvent + 'static{
-        self.getAlternateBuffer().get_mut(T::EVENT_ID()).unwrap().downcast_mut::<Vec<T>>().unwrap().push(IN_event)
+        self.getAlternateBuffer().push(IN_event)
     }
 
     pub fn switchBuffer(&mut self){
@@ -63,8 +66,7 @@ impl gmRes for res_Events{
     fn new() -> Self {
         Self{
             activeBuffer: false,
-            bufferA: HashMap::new(),
-            bufferB: HashMap::new()
+            inner: HashMap::new()
         }
     }
 
