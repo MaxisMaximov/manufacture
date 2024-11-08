@@ -56,6 +56,13 @@ impl res_Events{
             false => self.readB()
         }
     }
+
+    pub fn push<T>(&mut self, IN_event: T) where T: gmEvent + 'static{
+        match self.activeBuffer{
+            true => self.pushA(IN_event),
+            false => self.pushB(IN_event),
+        }
+    }
 }
 impl gmRes for res_Events{
     fn new() -> Self {
