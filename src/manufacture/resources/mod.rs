@@ -35,10 +35,10 @@ pub struct res_Events{
 }
 impl res_Events{
     pub fn push<T>(&mut self, IN_event: T) where T: gmEvent + 'static{
-        self.res.get_mut(T::EVENT_ID()).unwrap().downcast_mut::<eventQueue<T>>().unwrap().inner.push(IN_event);
+        self.res.get_mut(T::EVENT_ID()).unwrap().downcast_mut::<Vec<T>>().unwrap().push(IN_event);
     }
-    pub fn read<T>(&mut self) -> &eventQueue<T> where T: gmEvent + 'static{
-        self.res.get(T::EVENT_ID()).unwrap().downcast_ref::<eventQueue<T>>().unwrap()
+    pub fn read<T>(&mut self) -> &Vec<T> where T: gmEvent + 'static{
+        self.res.get(T::EVENT_ID()).unwrap().downcast_ref::<Vec<T>>().unwrap()
     }
 }
 impl gmRes for res_Events{
@@ -54,7 +54,4 @@ impl gmRes for res_Events{
 }
 pub trait gmEvent{
     fn EVENT_ID() -> &'static str;
-}
-pub struct eventQueue<T: gmEvent>{
-    inner: Vec<T>
 }
