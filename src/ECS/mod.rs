@@ -29,6 +29,7 @@ mod tests{
 
         world.registerComp::<gmComp_Health>();
         world.registerComp::<gmComp_Pos>();
+        world.registerComp::<gmComp_Vel>();
         
         world.registerRes::<gmRes_deltaT>();
         world.registerRes::<gmRes_PInput>();
@@ -39,7 +40,8 @@ mod tests{
 
         let mut dispatcher = gmDispatcher::new()
             .withSys::<gmSys_input>(&[])
-            .withSys::<gmSys_HP>(&[]);
+            .withSys::<gmSys_HP>(&[])
+            .withSys::<gmSys_movement>(&[]);
 
         dispatcher.dispatch(&mut world);
 
@@ -64,6 +66,17 @@ mod tests{
         type COMP_STORAGE = denseVecStorage<Self>;
         fn COMP_ID() -> &'static str {
             "gmComp_Pos"
+        }
+    }
+
+    pub struct gmComp_Vel{
+        pub x: usize,
+        pub y: usize
+    }
+    impl gmComp for gmComp_Vel{
+        type COMP_STORAGE = denseVecStorage<Self>;
+        fn COMP_ID() -> &'static str {
+            "gmComp_Vel"
         }
     }
 
@@ -129,6 +142,35 @@ mod tests{
         fn fetch(IN_world: &'a mut gmWorld) -> Self {
             Self{
                 res_Input: IN_world.fetchResMut::<gmRes_PInput>()
+            }
+        }
+    }
+
+    pub struct gmSys_movement{}
+    impl<'a> gmSystem<'a> for gmSys_movement{
+        type sysData = gmSysData_Movement<'a>;
+    
+        fn new() -> Self {
+            Self{}
+        }
+    
+        fn SYS_ID() -> &'static str {
+            "gmSys_movement"
+        }
+    
+        fn execute(&mut self, IN_data: Self::sysData) {
+            todo!()
+        }
+    }
+    pub struct gmSysData_Movement<'a>{
+        pub comp_pos: &'a mut <gmComp_Pos as gmComp>::COMP_STORAGE,
+        pub comp_vel: &'a mut <gmComp_Vel as gmComp>::COMP_STORAGE,
+    }
+    impl<'a> gmSystemData<'a> for gmSysData_Movement<'a>{
+        fn fetch(IN_world: &'a mut gmWorld) -> Self {
+            Self{
+                comp_pos: IN_world.fetchMut::<gmComp_Pos>(),
+                comp_vel: IN_world.fetchMut::<gmComp_Vel>(),
             }
         }
     }
