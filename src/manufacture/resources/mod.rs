@@ -37,18 +37,19 @@ pub struct res_Events{
 }
 impl res_Events{
 
-    pub fn read<T>(&mut self) -> &Vec<T> where T: gmEvent + 'static{
+    fn getActiveBuffer(&mut self) -> &mut HashMap<&'static str, Box<dyn Any>>{
         match self.activeBuffer{
-            true => self.bufferA.get(T::EVENT_ID()).unwrap().downcast_ref::<Vec<T>>().unwrap(),
-            false => self.bufferB.get(T::EVENT_ID()).unwrap().downcast_ref::<Vec<T>>().unwrap()
+            true => &mut self.bufferA,
+            false => &mut self.bufferB,
         }
     }
 
+    pub fn read<T>(&mut self) -> &Vec<T> where T: gmEvent + 'static{
+        self.getActiveBuffer().get(T::EVENT_ID()).unwrap().downcast_ref::<Vec<T>>().unwrap()
+    }
+
     pub fn push<T>(&mut self, IN_event: T) where T: gmEvent + 'static{
-        match self.activeBuffer{
-            true => self.bufferA.get_mut(T::EVENT_ID()).unwrap().downcast_mut::<Vec<T>>().unwrap().push(IN_event),
-            false => self.bufferB.get_mut(T::EVENT_ID()).unwrap().downcast_mut::<Vec<T>>().unwrap().push(IN_event),
-        }
+        self.getActiveBuffer().get_mut(T::EVENT_ID()).unwrap().downcast_mut::<Vec<T>>().unwrap().push(IN_event)
     }
 
     pub fn switchBuffer(&mut self){
