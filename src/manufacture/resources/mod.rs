@@ -31,20 +31,28 @@ impl gmRes for res_DeltaT{
 }
 
 pub struct res_Events{
-    res: HashMap<&'static str, Box<dyn Any>>
+    bufferA: HashMap<&'static str, Box<dyn Any>>,
+    bufferB: HashMap<&'static str, Box<dyn Any>>
 }
 impl res_Events{
-    pub fn push<T>(&mut self, IN_event: T) where T: gmEvent + 'static{
-        self.res.get_mut(T::EVENT_ID()).unwrap().downcast_mut::<Vec<T>>().unwrap().push(IN_event);
+    pub fn pushA<T>(&mut self, IN_event: T) where T: gmEvent + 'static{
+        self.bufferA.get_mut(T::EVENT_ID()).unwrap().downcast_mut::<Vec<T>>().unwrap().push(IN_event);
     }
-    pub fn read<T>(&mut self) -> &Vec<T> where T: gmEvent + 'static{
-        self.res.get(T::EVENT_ID()).unwrap().downcast_ref::<Vec<T>>().unwrap()
+    pub fn readA<T>(&mut self) -> &Vec<T> where T: gmEvent + 'static{
+        self.bufferA.get(T::EVENT_ID()).unwrap().downcast_ref::<Vec<T>>().unwrap()
+    }
+    pub fn pushB<T>(&mut self, IN_event: T) where T: gmEvent + 'static{
+        self.bufferB.get_mut(T::EVENT_ID()).unwrap().downcast_mut::<Vec<T>>().unwrap().push(IN_event);
+    }
+    pub fn readB<T>(&mut self) -> &Vec<T> where T: gmEvent + 'static{
+        self.bufferB.get(T::EVENT_ID()).unwrap().downcast_ref::<Vec<T>>().unwrap()
     }
 }
 impl gmRes for res_Events{
     fn new() -> Self {
         Self{
-            res: HashMap::new()
+            bufferA: HashMap::new(),
+            bufferB: HashMap::new()
         }
     }
 
