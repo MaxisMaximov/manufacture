@@ -37,6 +37,9 @@ impl res_Events{
     pub fn push<T>(&mut self, IN_event: T) where T: gmEvent + 'static{
         self.res.get_mut(T::EVENT_ID()).unwrap().downcast_mut::<eventQueue<T>>().unwrap().inner.push(IN_event);
     }
+    pub fn read<T>(&mut self) -> &eventQueue<T> where T: gmEvent + 'static{
+        self.res.get(T::EVENT_ID()).unwrap().downcast_ref::<eventQueue<T>>().unwrap()
+    }
 }
 impl gmRes for res_Events{
     fn new() -> Self {
