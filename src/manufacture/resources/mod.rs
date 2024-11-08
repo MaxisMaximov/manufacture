@@ -63,6 +63,10 @@ impl res_Events{
             false => self.pushB(IN_event),
         }
     }
+
+    pub fn switchBuffer(&mut self){
+        self.activeBuffer = !self.activeBuffer
+    }
 }
 impl gmRes for res_Events{
     fn new() -> Self {
