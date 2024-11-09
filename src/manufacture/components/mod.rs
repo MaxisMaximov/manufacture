@@ -1,7 +1,7 @@
 use super::*;
 
 pub struct comp_HP{
-    val: u16
+    pub val: u16
 }
 impl gmComp for comp_HP{
     type COMP_STORAGE = denseVecStorage<Self>;
@@ -12,8 +12,8 @@ impl gmComp for comp_HP{
 }
 
 pub struct comp_Pos{
-    x: usize,
-    y: usize
+    pub x: usize,
+    pub y: usize
 }
 impl gmComp for comp_Pos {
     type COMP_STORAGE = denseVecStorage<Self>;
@@ -24,8 +24,8 @@ impl gmComp for comp_Pos {
 }
 
 pub struct comp_Vel{
-    x: usize,
-    y: usize
+    pub x: usize,
+    pub y: usize
 }
 impl gmComp for comp_Vel {
     type COMP_STORAGE = denseVecStorage<Self>;
@@ -36,9 +36,9 @@ impl gmComp for comp_Vel {
 }
 
 pub struct comp_Sprite{
-    sizeX: usize,
-    sizeY: usize,
-    sprite: Vec<crate::types::styleSet>
+    pub sizeX: usize,
+    pub sizeY: usize,
+    pub sprite: Vec<crate::types::styleSet>
 }
 impl gmComp for comp_Sprite{
     type COMP_STORAGE = denseVecStorage<Self>;
@@ -49,7 +49,7 @@ impl gmComp for comp_Sprite{
 }
 
 pub struct comp_PController{
-    active: bool
+    pub active: bool
 }
 impl gmComp for comp_PController{
     type COMP_STORAGE = denseVecStorage<Self>;
