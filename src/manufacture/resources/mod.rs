@@ -1,7 +1,7 @@
 use super::*;
 
 pub struct res_PInput{
-    res: KeyEvent
+    pub res: KeyEvent
 }
 impl gmRes for res_PInput{
     fn new() -> Self {
@@ -16,7 +16,7 @@ impl gmRes for res_PInput{
 }
 
 pub struct res_DeltaT{
-    res: Duration
+    pub res: Duration
 }
 impl gmRes for res_DeltaT{
     fn new() -> Self {
@@ -31,8 +31,8 @@ impl gmRes for res_DeltaT{
 }
 
 pub struct res_Events{
-    activeBuffer: bool,
-    inner: HashMap<&'static str, (Box<dyn Any>, Box<dyn Any>)>,
+    pub activeBuffer: bool,
+    pub inner: HashMap<&'static str, (Box<dyn Any>, Box<dyn Any>)>,
 }
 impl res_Events{
 
