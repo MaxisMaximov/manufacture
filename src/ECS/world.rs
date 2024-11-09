@@ -21,11 +21,11 @@ impl gmWorld{
         }
     }
 
-    pub fn fetch<T>(&self) -> &T::COMP_STORAGE where T: gmComp + 'static{
-        self.components.get(T::COMP_ID()).unwrap().downcast_ref::<T::COMP_STORAGE>().unwrap()
+    pub fn fetch<T>(&self) -> Rc<RefCell<T::COMP_STORAGE>> where T: gmComp + 'static{
+        self.components.get(T::COMP_ID()).unwrap().clone().downcast::<RefCell<T::COMP_STORAGE>>().unwrap()
     }
-    pub fn fetchMut<T>(&mut self) -> &mut T::COMP_STORAGE where T: gmComp + 'static{
-        self.components.get_mut(T::COMP_ID()).unwrap().downcast_mut::<T::COMP_STORAGE>().unwrap()
+    pub fn fetchMut<T>(&mut self) -> Rc<RefCell<T::COMP_STORAGE>> where T: gmComp + 'static{
+        self.components.get_mut(T::COMP_ID()).unwrap().clone().downcast::<RefCell<T::COMP_STORAGE>>().unwrap()
     }
 
     pub fn fetchRes<T>(&self) -> &T where T: gmRes + 'static{
@@ -38,7 +38,7 @@ impl gmWorld{
     pub fn registerComp<T>(&mut self) where T: gmComp + 'static{
         self.components.insert(
             T::COMP_ID(),
-            Box::new(T::COMP_STORAGE::new())
+            Box::new(Rc::new(RefCell::new(T::COMP_STORAGE::new())))
         );
     }
     pub fn unRegisterComp<T>(&mut self) where T: gmComp + 'static{
@@ -62,7 +62,7 @@ impl gmWorld{
     pub fn deleteGmObj(&mut self, IN_id: gmID){
         self.gmObjs.remove(IN_id);
             for COMP in self.components.values_mut(){
-                COMP.downcast_mut::<&mut dyn gmStorageDrop>().unwrap().drop(IN_id);
+                COMP.clone().downcast::<RefCell<&mut dyn gmStorageDrop>>().unwrap().borrow_mut().drop(IN_id);
             }
     }
 }

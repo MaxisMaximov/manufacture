@@ -1,6 +1,8 @@
 #![allow(dead_code)]
 use std::collections::{HashMap, BTreeMap};
 use std::time;
+use std::rc::Rc;
+use std::cell::RefCell;
 use std::any::Any;
 use crossterm::event;
 
@@ -82,7 +84,7 @@ mod tests{
 
     pub struct gmSys_HP{}
     impl<'a> gmSystem<'a> for gmSys_HP{
-        type sysData = gmSysData_HP<'a>;
+        type sysData = gmSysData_HP;
 
         fn new() -> Self {
             Self{}
@@ -93,17 +95,17 @@ mod tests{
         }
 
         fn execute(&mut self, IN_data: Self::sysData) {
-            for COMP_HP in IN_data.comp_HP.inner.iter_mut(){
+            for COMP_HP in IN_data.comp_HP.borrow_mut().inner.iter_mut(){
                 if COMP_HP.val.val > 0{
                     COMP_HP.val.val -= 1
                 }
             }
         }
     }
-    pub struct gmSysData_HP<'a>{
-        pub comp_HP: &'a mut <gmComp_Health as gmComp>::COMP_STORAGE
+    pub struct gmSysData_HP{
+        pub comp_HP: Rc<RefCell<<gmComp_Health as gmComp>::COMP_STORAGE>>
     }
-    impl<'a> gmSystemData<'a> for gmSysData_HP<'a>{
+    impl<'a> gmSystemData<'a> for gmSysData_HP{
         fn fetch(IN_world: &'a mut gmWorld) -> Self {
             Self{
                 comp_HP: IN_world.fetchMut::<gmComp_Health>()
@@ -148,7 +150,7 @@ mod tests{
 
     pub struct gmSys_movement{}
     impl<'a> gmSystem<'a> for gmSys_movement{
-        type sysData = gmSysData_Movement<'a>;
+        type sysData = gmSysData_Movement;
     
         fn new() -> Self {
             Self{}
@@ -162,11 +164,11 @@ mod tests{
             todo!()
         }
     }
-    pub struct gmSysData_Movement<'a>{
-        pub comp_pos: &'a mut <gmComp_Pos as gmComp>::COMP_STORAGE,
-        pub comp_vel: &'a mut <gmComp_Vel as gmComp>::COMP_STORAGE,
+    pub struct gmSysData_Movement{
+        pub comp_pos: Rc<RefCell<<gmComp_Pos as gmComp>::COMP_STORAGE>>,
+        pub comp_vel: Rc<RefCell<<gmComp_Vel as gmComp>::COMP_STORAGE>>,
     }
-    impl<'a> gmSystemData<'a> for gmSysData_Movement<'a>{
+    impl<'a> gmSystemData<'a> for gmSysData_Movement{
         fn fetch(IN_world: &'a mut gmWorld) -> Self {
             Self{
                 comp_pos: IN_world.fetchMut::<gmComp_Pos>(),

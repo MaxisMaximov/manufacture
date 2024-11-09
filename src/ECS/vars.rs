@@ -2,7 +2,7 @@ use super::*;
 
 use misc::gmGenIndex;
 
-pub type gmWorld_COMPMAP = HashMap<&'static str, Box<dyn Any>>;
+pub type gmWorld_COMPMAP = HashMap<&'static str, Box<Rc<dyn Any>>>;
 pub type gmWorld_RESMAP = HashMap<&'static str, Box<dyn Any>>;
 pub type gmObj = gmGenIndex<()>;
 pub type gmID = u16;
