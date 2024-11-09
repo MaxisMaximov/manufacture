@@ -21,22 +21,26 @@ impl gmWorld{
         }
     }
 
-    pub fn fetch<T>(&self) -> Fetch<T::COMP_STORAGE> where T: gmComp + 'static{
+    pub fn fetch<T>(&self) -> Fetch<T> where T: gmComp + 'static{
         Fetch{
             inner: self.components.get(T::COMP_ID()).unwrap().clone().downcast::<RefCell<T::COMP_STORAGE>>().unwrap()
         }
     }
-    pub fn fetchMut<T>(&mut self) -> FetchMut<T::COMP_STORAGE> where T: gmComp + 'static{
+    pub fn fetchMut<T>(&mut self) -> FetchMut<T> where T: gmComp + 'static{
         FetchMut{
             inner: self.components.get_mut(T::COMP_ID()).unwrap().clone().downcast::<RefCell<T::COMP_STORAGE>>().unwrap()
         }
     }
 
-    pub fn fetchRes<T>(&self) -> &T where T: gmRes + 'static{
-        self.resources.get(T::RES_ID()).unwrap().downcast_ref::<T>().unwrap()
+    pub fn fetchRes<T>(&self) -> FetchRes<T> where T: gmRes + 'static{
+        FetchRes{
+            inner: self.resources.get(T::RES_ID()).unwrap().clone().downcast::<RefCell<T>>().unwrap()
+        }
     }
-    pub fn fetchResMut<T>(&mut self) -> &mut T where T: gmRes + 'static{
-        self.resources.get_mut(T::RES_ID()).unwrap().downcast_mut::<T>().unwrap()
+    pub fn fetchResMut<T>(&mut self) -> FetchResMut<T> where T: gmRes + 'static{
+        FetchResMut{
+            inner: self.resources.get_mut(T::RES_ID()).unwrap().clone().downcast::<RefCell<T>>().unwrap()
+        }
     }
 
     pub fn registerComp<T>(&mut self) where T: gmComp + 'static{
@@ -50,7 +54,10 @@ impl gmWorld{
     }
 
     pub fn registerRes<T>(&mut self) where T: gmRes + 'static{
-        self.resources.insert(T::RES_ID(), Box::new(T::new()));
+        self.resources.insert(
+            T::RES_ID(), 
+            Box::new(Rc::new(RefCell::new(T::new())))
+        );
     }
     pub fn unRegisterRes<T>(&mut self) where T: gmRes + 'static{
         self.resources.remove(T::RES_ID());

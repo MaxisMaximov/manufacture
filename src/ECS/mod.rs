@@ -95,7 +95,7 @@ mod tests{
         }
 
         fn execute(&mut self, IN_data: Self::sysData) {
-            for COMP_HP in IN_data.comp_HP.inner.borrow_mut().inner.iter_mut(){
+            for COMP_HP in IN_data.comp_HP.inner.as_ref().borrow_mut().inner.iter_mut(){
                 if COMP_HP.val.val > 0{
                     COMP_HP.val.val -= 1
                 }
@@ -103,7 +103,7 @@ mod tests{
         }
     }
     pub struct gmSysData_HP{
-        pub comp_HP: FetchMut<<gmComp_Health as gmComp>::COMP_STORAGE>
+        pub comp_HP: FetchMut<gmComp_Health>
     }
     impl<'a> gmSystemData<'a> for gmSysData_HP{
         fn fetch(IN_world: &'a mut gmWorld) -> Self {
@@ -115,7 +115,7 @@ mod tests{
 
     pub struct gmSys_input{}
     impl<'a> gmSystem<'a> for gmSys_input{
-        type sysData = gmSysData_Input<'a>;
+        type sysData = gmSysData_Input;
 
         fn new() -> Self {
             Self{}
@@ -127,20 +127,20 @@ mod tests{
 
         fn execute(&mut self, IN_data: Self::sysData) {
             if !poll(Duration::from_secs(0)).unwrap(){
-                IN_data.res_Input.res = KeyEvent::new(KeyCode::Null, KeyModifiers::NONE);
+                IN_data.res_Input.inner.as_ref().borrow_mut().res = KeyEvent::new(KeyCode::Null, KeyModifiers::NONE);
                 return
             }
 
             if let Event::Key(KEY) = read().unwrap(){
-                IN_data.res_Input.res = KEY;
+                IN_data.res_Input.inner.as_ref().borrow_mut().res = KEY;
                 return
             }
         }
     }
-    pub struct gmSysData_Input<'a>{
-        pub res_Input: &'a mut gmRes_PInput
+    pub struct gmSysData_Input{
+        pub res_Input: FetchResMut<gmRes_PInput>
     }
-    impl<'a> gmSystemData<'a> for gmSysData_Input<'a>{
+    impl<'a> gmSystemData<'a> for gmSysData_Input{
         fn fetch(IN_world: &'a mut gmWorld) -> Self {
             Self{
                 res_Input: IN_world.fetchResMut::<gmRes_PInput>()
@@ -165,8 +165,8 @@ mod tests{
         }
     }
     pub struct gmSysData_Movement{
-        pub comp_pos: FetchMut<<gmComp_Pos as gmComp>::COMP_STORAGE>,
-        pub comp_vel: FetchMut<<gmComp_Vel as gmComp>::COMP_STORAGE>,
+        pub comp_pos: FetchMut<gmComp_Pos>,
+        pub comp_vel: FetchMut<gmComp_Vel>,
     }
     impl<'a> gmSystemData<'a> for gmSysData_Movement{
         fn fetch(IN_world: &'a mut gmWorld) -> Self {
