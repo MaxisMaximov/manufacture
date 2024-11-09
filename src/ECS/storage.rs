@@ -4,6 +4,8 @@ use vars::*;
 
 pub trait gmStorage<T>: Any{
     fn new() -> Self where Self: Sized;
+    fn get(&self, IN_id: gmID) -> &T;
+    fn get_mut(&mut self, IN_id: gmID) -> &mut T;
     fn insert(&mut self, IN_id: gmID, IN_item: T);
     fn remove(&mut self, IN_id: gmID) -> Option<T>;
 }
@@ -28,6 +30,14 @@ impl<T: 'static> gmStorage<T> for denseVecStorage<T>{
             proxyMap: HashMap::new(),
             inner: Vec::new()
         }
+    }
+
+    fn get(&self, IN_id: gmID) -> &T {
+        &self.inner.get(*self.proxyMap.get(&IN_id).unwrap()).unwrap().val
+    }
+
+    fn get_mut(&mut self, IN_id: gmID) -> &mut T {
+        &mut self.inner.get_mut(*self.proxyMap.get(&IN_id).unwrap()).unwrap().val
     }
 
     fn insert(&mut self, IN_id: gmID, IN_item: T) {
