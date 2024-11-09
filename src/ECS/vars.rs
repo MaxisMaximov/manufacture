@@ -5,6 +5,9 @@ use misc::gmGenIndex;
 pub struct Fetch<T>{
     pub inner: Rc<RefCell<T>>
 }
+pub struct FetchMut<T>{
+    pub inner: Rc<RefCell<T>>
+}
 
 pub type gmWorld_COMPMAP = HashMap<&'static str, Box<Rc<dyn Any>>>;
 pub type gmWorld_RESMAP = HashMap<&'static str, Box<dyn Any>>;

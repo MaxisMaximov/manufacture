@@ -26,8 +26,8 @@ impl gmWorld{
             inner: self.components.get(T::COMP_ID()).unwrap().clone().downcast::<RefCell<T::COMP_STORAGE>>().unwrap()
         }
     }
-    pub fn fetchMut<T>(&mut self) -> Fetch<T::COMP_STORAGE> where T: gmComp + 'static{
-        Fetch{
+    pub fn fetchMut<T>(&mut self) -> FetchMut<T::COMP_STORAGE> where T: gmComp + 'static{
+        FetchMut{
             inner: self.components.get_mut(T::COMP_ID()).unwrap().clone().downcast::<RefCell<T::COMP_STORAGE>>().unwrap()
         }
     }

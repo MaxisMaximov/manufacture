@@ -103,7 +103,7 @@ mod tests{
         }
     }
     pub struct gmSysData_HP{
-        pub comp_HP: Fetch<<gmComp_Health as gmComp>::COMP_STORAGE>
+        pub comp_HP: FetchMut<<gmComp_Health as gmComp>::COMP_STORAGE>
     }
     impl<'a> gmSystemData<'a> for gmSysData_HP{
         fn fetch(IN_world: &'a mut gmWorld) -> Self {
@@ -165,8 +165,8 @@ mod tests{
         }
     }
     pub struct gmSysData_Movement{
-        pub comp_pos: Fetch<<gmComp_Pos as gmComp>::COMP_STORAGE>,
-        pub comp_vel: Fetch<<gmComp_Vel as gmComp>::COMP_STORAGE>,
+        pub comp_pos: FetchMut<<gmComp_Pos as gmComp>::COMP_STORAGE>,
+        pub comp_vel: FetchMut<<gmComp_Vel as gmComp>::COMP_STORAGE>,
     }
     impl<'a> gmSystemData<'a> for gmSysData_Movement{
         fn fetch(IN_world: &'a mut gmWorld) -> Self {
