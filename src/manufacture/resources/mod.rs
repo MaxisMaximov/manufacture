@@ -85,3 +85,18 @@ impl gmRes for res_Events{
 pub trait gmEvent{
     fn EVENT_ID() -> &'static str;
 }
+
+pub struct res_PID{
+    pub res: HashMap<gmID, gmID> // PID, gmObjID
+}
+impl gmRes for res_PID{
+    fn new() -> Self {
+        Self{
+            res: HashMap::new()
+        }
+    }
+
+    fn RES_ID() -> &'static str {
+        "res_PID"
+    }
+}
