@@ -70,3 +70,48 @@ impl<'a> gmSystemData<'a> for sysData_Input<'a>{
         }
     }
 }
+
+pub struct sys_PMove{}
+impl<'a> gmSystem<'a> for sys_PMove{
+    type sysData = sysData_PMove<'a>;
+
+    fn new() -> Self {
+        Self{}
+    }
+
+    fn SYS_ID() -> &'static str {
+        "sys_PMove"
+    }
+
+    fn execute(&mut self, mut IN_data: Self::sysData) {
+        for (PID, GMOBJID) in IN_data.res_PID.inner.res.iter(){
+            if !IN_data.comp_PController.inner.get(*GMOBJID).active{
+                continue
+            }
+            let w_velComp = IN_data.comp_Vel.inner.get_mut(*GMOBJID);
+            match IN_data.res_PInput.inner.res.code{
+                KeyCode::Up => {w_velComp.x = 0; w_velComp.y = 1}
+                KeyCode::Down => {w_velComp.x = 0; w_velComp.y = -1}
+                KeyCode::Left => {w_velComp.x = -1; w_velComp.y = 0}
+                KeyCode::Right => {w_velComp.x = 1; w_velComp.y = 0}
+                _ => {}
+            }
+        }
+    }
+}
+pub struct sysData_PMove<'a>{
+    res_PInput: FetchRes<'a, res_PInput>,
+    res_PID: FetchRes<'a, res_PID>,
+    comp_PController: Fetch<'a, comp_PController>,
+    comp_Vel: FetchMut<'a, comp_Vel>
+}
+impl<'a> gmSystemData<'a> for sysData_PMove<'a>{
+    fn fetch(IN_world: &'a mut gmWorld) -> Self {
+        Self{
+            res_PInput: IN_world.fetchRes::<res_PInput>(),
+            res_PID: IN_world.fetchRes::<res_PID>(),
+            comp_PController: IN_world.fetch::<comp_PController>(),
+            comp_Vel: IN_world.fetchMut::<comp_Vel>(),
+        }
+    }
+}

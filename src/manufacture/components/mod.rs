@@ -12,8 +12,8 @@ impl gmComp for comp_HP{
 }
 
 pub struct comp_Pos{
-    pub x: usize,
-    pub y: usize
+    pub x: isize,
+    pub y: isize
 }
 impl gmComp for comp_Pos {
     type COMP_STORAGE = denseVecStorage<Self>;
@@ -24,8 +24,8 @@ impl gmComp for comp_Pos {
 }
 
 pub struct comp_Vel{
-    pub x: usize,
-    pub y: usize
+    pub x: isize,
+    pub y: isize
 }
 impl gmComp for comp_Vel {
     type COMP_STORAGE = denseVecStorage<Self>;
