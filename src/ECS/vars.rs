@@ -1,21 +1,23 @@
+use std::cell::{RefMut, Ref};
+
 use super::*;
 
 use misc::gmGenIndex;
 use comp::gmComp;
 use resource::gmRes;
 
-pub struct Fetch<T: gmComp>{
-    pub inner: Rc<RefCell<T::COMP_STORAGE>>
+pub struct Fetch<'a, T: gmComp>{
+    pub inner: Ref<'a, T::COMP_STORAGE>
 }
-pub struct FetchMut<T: gmComp>{
-    pub inner: Rc<RefCell<T::COMP_STORAGE>>
+pub struct FetchMut<'a, T: gmComp>{
+    pub inner: RefMut<'a, T::COMP_STORAGE>
 }
 
-pub struct FetchRes<T: gmRes>{
-    pub inner: Rc<RefCell<T>>
+pub struct FetchRes<'a, T: gmRes>{
+    pub inner: Ref<'a, T>
 }
-pub struct FetchResMut<T: gmRes>{
-    pub inner: Rc<RefCell<T>>
+pub struct FetchResMut<'a, T: gmRes>{
+    pub inner: RefMut<'a, T>
 }
 
 pub type gmWorld_COMPMAP = HashMap<&'static str, Box<Rc<dyn Any>>>;

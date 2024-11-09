@@ -84,7 +84,7 @@ mod tests{
 
     pub struct gmSys_HP{}
     impl<'a> gmSystem<'a> for gmSys_HP{
-        type sysData = gmSysData_HP;
+        type sysData = gmSysData_HP<'a>;
 
         fn new() -> Self {
             Self{}
@@ -94,18 +94,18 @@ mod tests{
             "gmSys_HP"
         }
 
-        fn execute(&mut self, IN_data: Self::sysData) {
-            for COMP_HP in IN_data.comp_HP.inner.as_ref().borrow_mut().inner.iter_mut(){
+        fn execute(&mut self, mut IN_data: Self::sysData) {
+            for COMP_HP in IN_data.comp_HP.inner.inner.iter_mut(){
                 if COMP_HP.val.val > 0{
                     COMP_HP.val.val -= 1
                 }
             }
         }
     }
-    pub struct gmSysData_HP{
-        pub comp_HP: FetchMut<gmComp_Health>
+    pub struct gmSysData_HP<'a>{
+        pub comp_HP: FetchMut<'a, gmComp_Health>
     }
-    impl<'a> gmSystemData<'a> for gmSysData_HP{
+    impl<'a> gmSystemData<'a> for gmSysData_HP<'a>{
         fn fetch(IN_world: &'a mut gmWorld) -> Self {
             Self{
                 comp_HP: IN_world.fetchMut::<gmComp_Health>()
@@ -115,7 +115,7 @@ mod tests{
 
     pub struct gmSys_input{}
     impl<'a> gmSystem<'a> for gmSys_input{
-        type sysData = gmSysData_Input;
+        type sysData = gmSysData_Input<'a>;
 
         fn new() -> Self {
             Self{}
@@ -125,22 +125,22 @@ mod tests{
             "gmSys_input"
         }
 
-        fn execute(&mut self, IN_data: Self::sysData) {
+        fn execute(&mut self, mut IN_data: Self::sysData) {
             if !poll(Duration::from_secs(0)).unwrap(){
-                IN_data.res_Input.inner.as_ref().borrow_mut().res = KeyEvent::new(KeyCode::Null, KeyModifiers::NONE);
+                IN_data.res_Input.inner.res = KeyEvent::new(KeyCode::Null, KeyModifiers::NONE);
                 return
             }
 
             if let Event::Key(KEY) = read().unwrap(){
-                IN_data.res_Input.inner.as_ref().borrow_mut().res = KEY;
+                IN_data.res_Input.inner.res = KEY;
                 return
             }
         }
     }
-    pub struct gmSysData_Input{
-        pub res_Input: FetchResMut<gmRes_PInput>
+    pub struct gmSysData_Input<'a>{
+        pub res_Input: FetchResMut<'a, gmRes_PInput>
     }
-    impl<'a> gmSystemData<'a> for gmSysData_Input{
+    impl<'a> gmSystemData<'a> for gmSysData_Input<'a>{
         fn fetch(IN_world: &'a mut gmWorld) -> Self {
             Self{
                 res_Input: IN_world.fetchResMut::<gmRes_PInput>()
@@ -150,7 +150,7 @@ mod tests{
 
     pub struct gmSys_movement{}
     impl<'a> gmSystem<'a> for gmSys_movement{
-        type sysData = gmSysData_Movement;
+        type sysData = gmSysData_Movement<'a>;
     
         fn new() -> Self {
             Self{}
@@ -164,11 +164,11 @@ mod tests{
             todo!()
         }
     }
-    pub struct gmSysData_Movement{
-        pub comp_pos: FetchMut<gmComp_Pos>,
-        pub comp_vel: FetchMut<gmComp_Vel>,
+    pub struct gmSysData_Movement<'a>{
+        pub comp_pos: FetchMut<'a, gmComp_Pos>,
+        pub comp_vel: FetchMut<'a, gmComp_Vel>,
     }
-    impl<'a> gmSystemData<'a> for gmSysData_Movement{
+    impl<'a> gmSystemData<'a> for gmSysData_Movement<'a>{
         fn fetch(IN_world: &'a mut gmWorld) -> Self {
             Self{
                 comp_pos: IN_world.fetchMut::<gmComp_Pos>(),

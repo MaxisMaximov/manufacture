@@ -21,25 +21,25 @@ impl gmWorld{
         }
     }
 
-    pub fn fetch<T>(&self) -> Fetch<T> where T: gmComp + 'static{
+    pub fn fetch<'a, T>(&'a self) -> Fetch<'a, T> where T: gmComp + 'static{
         Fetch{
-            inner: self.components.get(T::COMP_ID()).unwrap().clone().downcast::<RefCell<T::COMP_STORAGE>>().unwrap()
+            inner: self.components.get(T::COMP_ID()).unwrap().as_ref().downcast_ref::<RefCell<T::COMP_STORAGE>>().unwrap().borrow()
         }
     }
-    pub fn fetchMut<T>(&mut self) -> FetchMut<T> where T: gmComp + 'static{
+    pub fn fetchMut<'a, T>(&'a self) -> FetchMut<'a, T> where T: gmComp + 'static{
         FetchMut{
-            inner: self.components.get_mut(T::COMP_ID()).unwrap().clone().downcast::<RefCell<T::COMP_STORAGE>>().unwrap()
+            inner: self.components.get(T::COMP_ID()).unwrap().as_ref().downcast_ref::<RefCell<T::COMP_STORAGE>>().unwrap().borrow_mut()
         }
     }
 
-    pub fn fetchRes<T>(&self) -> FetchRes<T> where T: gmRes + 'static{
+    pub fn fetchRes<'a, T>(&'a self) -> FetchRes<'a, T> where T: gmRes + 'static{
         FetchRes{
-            inner: self.resources.get(T::RES_ID()).unwrap().clone().downcast::<RefCell<T>>().unwrap()
+            inner: self.resources.get(T::RES_ID()).unwrap().as_ref().downcast_ref::<RefCell<T>>().unwrap().borrow()
         }
     }
-    pub fn fetchResMut<T>(&mut self) -> FetchResMut<T> where T: gmRes + 'static{
+    pub fn fetchResMut<'a, T>(&'a self) -> FetchResMut<'a, T> where T: gmRes + 'static{
         FetchResMut{
-            inner: self.resources.get_mut(T::RES_ID()).unwrap().clone().downcast::<RefCell<T>>().unwrap()
+            inner: self.resources.get(T::RES_ID()).unwrap().as_ref().downcast_ref::<RefCell<T>>().unwrap().borrow_mut()
         }
     }
 
