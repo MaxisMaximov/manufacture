@@ -95,7 +95,7 @@ mod tests{
         }
 
         fn execute(&mut self, IN_data: Self::sysData) {
-            for COMP_HP in IN_data.comp_HP.borrow_mut().inner.iter_mut(){
+            for COMP_HP in IN_data.comp_HP.inner.borrow_mut().inner.iter_mut(){
                 if COMP_HP.val.val > 0{
                     COMP_HP.val.val -= 1
                 }
@@ -103,7 +103,7 @@ mod tests{
         }
     }
     pub struct gmSysData_HP{
-        pub comp_HP: Rc<RefCell<<gmComp_Health as gmComp>::COMP_STORAGE>>
+        pub comp_HP: Fetch<<gmComp_Health as gmComp>::COMP_STORAGE>
     }
     impl<'a> gmSystemData<'a> for gmSysData_HP{
         fn fetch(IN_world: &'a mut gmWorld) -> Self {
@@ -165,8 +165,8 @@ mod tests{
         }
     }
     pub struct gmSysData_Movement{
-        pub comp_pos: Rc<RefCell<<gmComp_Pos as gmComp>::COMP_STORAGE>>,
-        pub comp_vel: Rc<RefCell<<gmComp_Vel as gmComp>::COMP_STORAGE>>,
+        pub comp_pos: Fetch<<gmComp_Pos as gmComp>::COMP_STORAGE>,
+        pub comp_vel: Fetch<<gmComp_Vel as gmComp>::COMP_STORAGE>,
     }
     impl<'a> gmSystemData<'a> for gmSysData_Movement{
         fn fetch(IN_world: &'a mut gmWorld) -> Self {

@@ -21,11 +21,15 @@ impl gmWorld{
         }
     }
 
-    pub fn fetch<T>(&self) -> Rc<RefCell<T::COMP_STORAGE>> where T: gmComp + 'static{
-        self.components.get(T::COMP_ID()).unwrap().clone().downcast::<RefCell<T::COMP_STORAGE>>().unwrap()
+    pub fn fetch<T>(&self) -> Fetch<T::COMP_STORAGE> where T: gmComp + 'static{
+        Fetch{
+            inner: self.components.get(T::COMP_ID()).unwrap().clone().downcast::<RefCell<T::COMP_STORAGE>>().unwrap()
+        }
     }
-    pub fn fetchMut<T>(&mut self) -> Rc<RefCell<T::COMP_STORAGE>> where T: gmComp + 'static{
-        self.components.get_mut(T::COMP_ID()).unwrap().clone().downcast::<RefCell<T::COMP_STORAGE>>().unwrap()
+    pub fn fetchMut<T>(&mut self) -> Fetch<T::COMP_STORAGE> where T: gmComp + 'static{
+        Fetch{
+            inner: self.components.get_mut(T::COMP_ID()).unwrap().clone().downcast::<RefCell<T::COMP_STORAGE>>().unwrap()
+        }
     }
 
     pub fn fetchRes<T>(&self) -> &T where T: gmRes + 'static{
