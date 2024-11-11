@@ -100,3 +100,13 @@ impl gmRes for res_PID{
         "res_PID"
     }
 }
+
+pub struct res_GridWorld{
+    
+}
+pub struct GridWorldChunk{
+
+}
+pub struct GridWorldTile{
+
+}
