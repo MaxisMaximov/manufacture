@@ -106,9 +106,36 @@ impl gmRes for res_PID{
 pub struct res_GridWorld{
     chunks: HashMap<Vector2, GridWorldChunk>
 }
+impl gmRes for res_GridWorld{
+    fn new() -> Self {
+        let mut idkfa_map: HashMap<(isize, isize), GridWorldChunk> = HashMap::new();
+
+        for CH_X in WORLD_X_MIN..WORLD_X_MAX {
+            for CH_Y in WORLD_Y_MIN..WORLD_Y_MAX{
+                idkfa_map.insert((CH_X, CH_Y), GridWorldChunk::new());
+            }
+        }
+
+        Self{
+            chunks: idkfa_map
+        }
+    }
+
+    fn RES_ID() -> &'static str {
+        "res_GridWorld"
+    }
+}
 pub struct GridWorldChunk{
     cells: [GridWorldTile; CHUNK_X * CHUNK_Y]
 }
+impl GridWorldChunk{
+    pub fn new() -> Self{
+        Self{
+            cells: [GridWorldTile{mat: 0}; CHUNK_X * CHUNK_Y]
+        }
+    }
+}
+#[derive(Clone, Copy)]
 pub struct GridWorldTile{
-    mat: u8
+    mat: u8 // Just a number for now
 }
