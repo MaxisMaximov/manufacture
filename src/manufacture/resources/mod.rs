@@ -125,6 +125,14 @@ impl gmRes for res_GridWorld{
         "res_GridWorld"
     }
 }
+impl res_GridWorld{
+    pub fn getChunk(&self, IN_coords: Vector2) -> Option<&GridWorldChunk>{
+        self.chunks.get(&IN_coords)
+    }
+    pub fn getChunkMut(&mut self, IN_coords: Vector2) -> Option<&mut GridWorldChunk>{
+        self.chunks.get_mut(&IN_coords)
+    }
+}
 pub struct GridWorldChunk{
     cells: [GridWorldTile; CHUNK_X * CHUNK_Y]
 }
