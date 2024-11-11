@@ -1,3 +1,5 @@
+use std::ops::{Index, IndexMut};
+
 use super::*;
 
 use vars::*;
@@ -134,13 +136,31 @@ impl res_GridWorld{
     }
 }
 pub struct GridWorldChunk{
-    cells: [GridWorldTile; CHUNK_X * CHUNK_Y]
+    cells: [GridWorldTile; (CHUNK_X * CHUNK_Y) as usize]
 }
 impl GridWorldChunk{
     pub fn new() -> Self{
         Self{
-            cells: [GridWorldTile{mat: 0}; CHUNK_X * CHUNK_Y]
+            cells: [GridWorldTile{mat: 0}; (CHUNK_X * CHUNK_Y) as usize]
         }
+    }
+}
+impl Index<Vector2> for GridWorldChunk{
+    type Output = GridWorldTile;
+
+    fn index(&self, index: Vector2) -> &Self::Output {
+        // Absolute offsets in the chunks
+        let w_XCoord = (index.0 + CHUNK_X) % CHUNK_X;
+        let w_YCoord = (index.1 + CHUNK_Y) % CHUNK_Y;
+        &self.cells[(w_XCoord + w_YCoord * CHUNK_X) as usize]
+    }
+}
+impl IndexMut<Vector2> for GridWorldChunk{
+    fn index_mut(&mut self, index: Vector2) -> &mut Self::Output {
+        // Absolute offsets in the chunks
+        let w_XCoord = (index.0 + CHUNK_X) % CHUNK_X;
+        let w_YCoord = (index.1 + CHUNK_Y) % CHUNK_Y;
+        &mut self.cells[(w_XCoord + w_YCoord * CHUNK_X) as usize]
     }
 }
 #[derive(Clone, Copy)]
