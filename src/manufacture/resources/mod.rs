@@ -1,5 +1,7 @@
 use super::*;
 
+use vars::*;
+
 pub struct res_PInput{
     pub res: KeyEvent
 }
@@ -102,11 +104,11 @@ impl gmRes for res_PID{
 }
 
 pub struct res_GridWorld{
-    
+    chunks: HashMap<Vector2, GridWorldChunk>
 }
 pub struct GridWorldChunk{
-
+    cells: [GridWorldTile; CHUNK_X * CHUNK_Y]
 }
 pub struct GridWorldTile{
-
+    mat: u8
 }
