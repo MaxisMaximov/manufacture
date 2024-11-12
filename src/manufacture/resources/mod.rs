@@ -140,6 +140,24 @@ impl res_GridWorld{
     pub fn getChunkFromTileMut(&mut self, IN_coords: Vector2) -> Option<&mut GridWorldChunk>{
         self.getChunkMut((IN_coords.0 / CHUNK_X, IN_coords.1 / CHUNK_Y))
     }
+    pub fn getTile(&self, IN_coords: Vector2) -> Option<&GridWorldTile>{
+        let w_chunkCoords: Vector2 = (IN_coords.0 / CHUNK_X, IN_coords.1 / CHUNK_Y);
+        let w_tileCoords: Vector2 =  (IN_coords.0 % CHUNK_X, IN_coords.1 % CHUNK_Y);
+
+        if let Some(CHUNK) = self.getChunk(w_chunkCoords){
+            return Some(&CHUNK[w_tileCoords])
+        }
+        None
+    }
+    pub fn getTileMut(&mut self, IN_coords: Vector2) -> Option<&GridWorldTile>{
+        let w_chunkCoords: Vector2 = (IN_coords.0 / CHUNK_X, IN_coords.1 / CHUNK_Y);
+        let w_tileCoords: Vector2 =  (IN_coords.0 % CHUNK_X, IN_coords.1 % CHUNK_Y);
+
+        if let Some(CHUNK) = self.getChunkMut(w_chunkCoords){
+            return Some(&CHUNK[w_tileCoords])
+        }
+        None
+    }
 }
 pub struct GridWorldChunk{
     cells: [GridWorldTile; (CHUNK_X * CHUNK_Y) as usize]
