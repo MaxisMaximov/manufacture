@@ -65,3 +65,14 @@ impl gmEvent for event_TileChange{
         "event_TileChange"
     }
 }
+
+pub struct event_BatchTileChange{
+    pub from: Vector2,
+    pub to: Vector2,
+    pub newTile: u8
+}
+impl gmEvent for event_BatchTileChange{
+    fn EVENT_ID() -> &'static str {
+        "event_BatchTileChange"
+    }
+}
