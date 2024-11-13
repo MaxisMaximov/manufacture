@@ -2,6 +2,7 @@ use super::*;
 
 use components::*;
 use resources::*;
+use vars::*;
 
 pub struct sys_Move{}
 impl<'a> gmSystem<'a> for sys_Move{
@@ -112,6 +113,53 @@ impl<'a> gmSystemData<'a> for sysData_PMove<'a>{
             res_PID: IN_world.fetchRes::<res_PID>(),
             comp_PController: IN_world.fetch::<comp_PController>(),
             comp_Vel: IN_world.fetchMut::<comp_Vel>(),
+        }
+    }
+}
+
+pub struct sys_PTileChange{}
+impl<'a> gmSystem<'a> for sys_PTileChange{
+    type sysData = sysData_PTileChange<'a>;
+
+    fn new() -> Self {
+        Self{}
+    }
+
+    fn SYS_ID() -> &'static str {
+        "sys_PTileChange"
+    }
+
+    fn execute(&mut self, mut IN_data: Self::sysData) {
+        let w_PCoords = IN_data.comp_Pos.inner.get(*IN_data.res_PID.inner.res.get(&1).unwrap());
+        let w_PTile = IN_data.res_World.inner.getTileMut((w_PCoords.x, w_PCoords.y)).unwrap();
+        match IN_data.res_PInput.inner.res.code{
+            KeyCode::Char('f') => {
+                w_PTile.mat += 1;
+            }
+            KeyCode::Char('F') => {
+                w_PTile.mat -= 1;
+            }
+            KeyCode::Char('g') => {
+                w_PTile.mat = 0
+            }
+            _ => {return}
+        }
+    }
+}
+pub struct sysData_PTileChange<'a>{
+    res_World: FetchResMut<'a, res_GridWorld>,
+    res_PInput: FetchRes<'a, res_PInput>,
+    res_PID: FetchRes<'a, res_PID>,
+    comp_Pos: Fetch<'a, comp_Pos>,
+}
+impl<'a> gmSystemData<'a> for sysData_PTileChange<'a>{
+    fn fetch(IN_world: &'a mut gmWorld) -> Self {
+        Self{
+            res_World: IN_world.fetchResMut::<res_GridWorld>(),
+            res_PInput: IN_world.fetchRes::<res_PInput>(),
+            res_PID: IN_world.fetchRes::<res_PID>(),
+            comp_Pos: IN_world.fetch::<comp_Pos>(),
+            
         }
     }
 }

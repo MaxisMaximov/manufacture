@@ -149,12 +149,12 @@ impl res_GridWorld{
         }
         None
     }
-    pub fn getTileMut(&mut self, IN_coords: Vector2) -> Option<&GridWorldTile>{
+    pub fn getTileMut(&mut self, IN_coords: Vector2) -> Option<&mut GridWorldTile>{
         let w_chunkCoords: Vector2 = (IN_coords.0 / CHUNK_X, IN_coords.1 / CHUNK_Y);
         let w_tileCoords: Vector2 =  (IN_coords.0 % CHUNK_X, IN_coords.1 % CHUNK_Y);
 
         if let Some(CHUNK) = self.getChunkMut(w_chunkCoords){
-            return Some(&CHUNK[w_tileCoords])
+            return Some(&mut CHUNK[w_tileCoords])
         }
         None
     }
@@ -189,5 +189,5 @@ impl IndexMut<Vector2> for GridWorldChunk{
 }
 #[derive(Clone, Copy)]
 pub struct GridWorldTile{
-    mat: u8 // Just a number for now
+    pub mat: u8 // Just a number for now
 }
