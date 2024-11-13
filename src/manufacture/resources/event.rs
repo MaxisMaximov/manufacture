@@ -55,3 +55,13 @@ impl gmRes for res_Events{
 pub trait gmEvent{
     fn EVENT_ID() -> &'static str;
 }
+
+pub struct event_TileChange{
+    pub coords: Vector2,
+    pub newTile: u8
+}
+impl gmEvent for event_TileChange{
+    fn EVENT_ID() -> &'static str {
+        "event_TileChange"
+    }
+}
