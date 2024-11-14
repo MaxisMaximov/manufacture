@@ -1,39 +1,43 @@
 use super::*;
 
+use std::rc::Rc;
+use std::cell::{Ref, RefCell, RefMut};
+
 pub struct res_Events{
     pub activeBuffer: bool,
-    pub inner: HashMap<&'static str, (Box<dyn Any>, Box<dyn Any>)>,
+    pub inner: HashMap<&'static str, (Rc<Box<dyn Any>>, Rc<Box<dyn Any>>)>,
 }
 impl res_Events{
 
     pub fn registerEvent<T>(&mut self) where T: gmEvent + 'static{
-        self.inner.entry(T::EVENT_ID()).or_insert((Box::new(Vec::<T>::new()), Box::new(Vec::<T>::new())));
+        self.inner
+            .entry(T::EVENT_ID())
+            .or_insert((Rc::new(Box::new(RefCell::new(Vec::<T>::new()))), Rc::new(Box::new(RefCell::new(Vec::<T>::new())))));
     }
 
     pub fn unRegisterEvent<T>(&mut self) where T: gmEvent + 'static{
         self.inner.remove(T::EVENT_ID());
     }
 
-    fn getActiveBuffer<T>(&mut self) -> &mut Vec<T> where T: gmEvent + 'static{
-        let BUFFERS = self.inner.get_mut(T::EVENT_ID()).unwrap();
-
-        if self.activeBuffer{BUFFERS.1.downcast_mut::<Vec<T>>().unwrap()}
-        else{BUFFERS.0.downcast_mut::<Vec<T>>().unwrap()}
+    fn getBuffer<T>(&self, IN_buffer: bool) -> &Rc<Box<dyn Any>> where T: gmEvent +'static{
+        let idkfa_eventQueue = self.inner.get(T::EVENT_ID()).unwrap();
+        if IN_buffer{
+            return &idkfa_eventQueue.1
+        }
+        &idkfa_eventQueue.0
+        
     }
 
-    fn getAlternateBuffer<T>(&mut self) -> &mut Vec<T> where T: gmEvent + 'static{
-        let BUFFERS = self.inner.get_mut(T::EVENT_ID()).unwrap();
-
-        if self.activeBuffer {BUFFERS.1.downcast_mut::<Vec<T>>().unwrap()}
-        else{BUFFERS.0.downcast_mut::<Vec<T>>().unwrap()}
+    pub fn getEventReader<'a, T>(&'a self) -> FetchEvent<'a, T> where T: gmEvent + 'static{
+        FetchEvent{
+            inner: self.getBuffer::<T>(self.activeBuffer).as_ref().downcast_ref::<RefCell<Vec<T>>>().unwrap().borrow()
+        }
     }
 
-    pub fn read<T>(&mut self) -> &Vec<T> where T: gmEvent + 'static{
-        self.getActiveBuffer::<T>()
-    }
-
-    pub fn push<T>(&mut self, IN_event: T) where T: gmEvent + 'static{
-        self.getAlternateBuffer().push(IN_event)
+    pub fn getEventWriter<'a, T>(&'a self) -> FetchEventMut<'a, T> where T: gmEvent + 'static{
+        FetchEventMut{
+            inner: self.getBuffer::<T>(!self.activeBuffer).as_ref().downcast_ref::<RefCell<Vec<T>>>().unwrap().borrow_mut()
+        }
     }
 
     pub fn switchBuffer(&mut self){
