@@ -75,9 +75,9 @@ impl gmRes for res_GridWorld{
     }
 }
 impl res_GridWorld{
-    fn coordConvert(&self, IN_coords: Vector2) -> (Vector2, Vector2){
+    pub fn coordConvert(&self, IN_coords: Vector2) -> (Vector2, Vector2){
         let mut w_chunkCoords: Vector2 = (IN_coords.0 / CHUNK_X, IN_coords.1 / CHUNK_Y);
-        let w_tileCoords: Vector2 =  (IN_coords.0 % CHUNK_X, IN_coords.1 % CHUNK_Y);
+        let w_tileCoords: Vector2 =  ((CHUNK_X + IN_coords.0) % CHUNK_X, (CHUNK_Y + IN_coords.1) % CHUNK_Y);
 
         // Skip over a chunk/s to not end up in (0, 0)
         if IN_coords.0 < 0{
@@ -118,6 +118,35 @@ impl res_GridWorld{
             return Some(&mut CHUNK[w_tilePos])
         }
         None
+    }
+
+    pub fn getChunkRange(&self, IN_cornerA: Vector2, IN_cornerB: Vector2) -> Vec<Vector2>{
+        let mut OUT_vec = Vec::new();
+
+        let mut w_chunkCornerA = self.coordConvert(IN_cornerA).0;
+        let mut w_chunkCornerB = self.coordConvert(IN_cornerB).0;
+
+        // Swap X coords if A is further ahead
+        if w_chunkCornerA.0 > w_chunkCornerB.0 {
+            (w_chunkCornerA.0, w_chunkCornerB.0) = (w_chunkCornerB.0, w_chunkCornerA.0)
+        }
+
+        // Swap Y coords if A is higher
+        if w_chunkCornerA.1 > w_chunkCornerB.1 {
+            (w_chunkCornerA.1, w_chunkCornerB.1) = (w_chunkCornerB.1, w_chunkCornerA.1)
+        }
+
+        // Reason for all that is to make this iterate properly
+        for XPOS in w_chunkCornerA.0..=w_chunkCornerB.0{
+            for YPOS in w_chunkCornerA.1..=w_chunkCornerB.1{
+
+                if self.chunks.contains_key(&(XPOS, YPOS)){
+                    OUT_vec.push((XPOS, YPOS));
+                }
+            }
+        }
+
+        OUT_vec
     }
 }
 pub struct GridWorldChunk{
