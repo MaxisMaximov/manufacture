@@ -85,16 +85,21 @@ impl<'a> gmSystem<'a> for sys_PMove{
     }
 
     fn execute(&mut self, mut IN_data: Self::sysData) {
-        for (PID, GMOBJID) in IN_data.res_PID.inner.res.iter(){
+        for (_, GMOBJID) in IN_data.res_PID.inner.res.iter(){
             if !IN_data.comp_PController.inner.get(*GMOBJID).active{
                 continue
             }
+            let w_stepSize: isize = if IN_data.res_PInput.inner.res.modifiers == KeyModifiers::SHIFT{
+                    4
+                }else{
+                    1
+                };
             let w_velComp = IN_data.comp_Vel.inner.get_mut(*GMOBJID);
             match IN_data.res_PInput.inner.res.code{
-                KeyCode::Up => {w_velComp.x = 0; w_velComp.y = 1}
-                KeyCode::Down => {w_velComp.x = 0; w_velComp.y = -1}
-                KeyCode::Left => {w_velComp.x = -1; w_velComp.y = 0}
-                KeyCode::Right => {w_velComp.x = 1; w_velComp.y = 0}
+                KeyCode::Up => {w_velComp.x = 0; w_velComp.y = w_stepSize}
+                KeyCode::Down => {w_velComp.x = 0; w_velComp.y = -w_stepSize}
+                KeyCode::Left => {w_velComp.x = -w_stepSize; w_velComp.y = 0}
+                KeyCode::Right => {w_velComp.x = w_stepSize; w_velComp.y = 0}
                 _ => {}
             }
         }
@@ -112,7 +117,7 @@ impl<'a> gmSystemData<'a> for sysData_PMove<'a>{
             res_PInput: IN_world.fetchRes::<res_PInput>(),
             res_PID: IN_world.fetchRes::<res_PID>(),
             comp_PController: IN_world.fetch::<comp_PController>(),
-            comp_Vel: IN_world.fetchMut::<comp_Vel>(),
+            comp_Vel: IN_world.fetchMut::<comp_Vel>()
         }
     }
 }
@@ -131,16 +136,27 @@ impl<'a> gmSystem<'a> for sys_PTileChange{
 
     fn execute(&mut self, mut IN_data: Self::sysData) {
         let w_PCoords = IN_data.comp_Pos.inner.get(*IN_data.res_PID.inner.res.get(&1).unwrap());
-        let w_PTile = IN_data.res_World.inner.getTileMut((w_PCoords.x, w_PCoords.y)).unwrap();
+        let w_oldTile = IN_data.res_World.inner.getTileMut((w_PCoords.x, w_PCoords.y)).unwrap().mat;
+        let mut w_tileChangeEvents = IN_data.res_Events.inner.getEventWriter::<event_TileChange>();
+
         match IN_data.res_PInput.inner.res.code{
             KeyCode::Char('f') => {
-                w_PTile.mat += 1;
+                w_tileChangeEvents.inner.push(event_TileChange{
+                    coords: (w_PCoords.x, w_PCoords.y),
+                    newTile: w_oldTile + 1,
+                });
             }
             KeyCode::Char('F') => {
-                w_PTile.mat -= 1;
+                w_tileChangeEvents.inner.push(event_TileChange{
+                    coords: (w_PCoords.x, w_PCoords.y),
+                    newTile: w_oldTile - 1,
+                });
             }
             KeyCode::Char('g') => {
-                w_PTile.mat = 0
+                w_tileChangeEvents.inner.push(event_TileChange{
+                    coords: (w_PCoords.x, w_PCoords.y),
+                    newTile: 0,
+                });
             }
             _ => {return}
         }
@@ -150,6 +166,7 @@ pub struct sysData_PTileChange<'a>{
     res_World: FetchResMut<'a, res_GridWorld>,
     res_PInput: FetchRes<'a, res_PInput>,
     res_PID: FetchRes<'a, res_PID>,
+    res_Events: FetchRes<'a, res_Events>,
     comp_Pos: Fetch<'a, comp_Pos>,
 }
 impl<'a> gmSystemData<'a> for sysData_PTileChange<'a>{
@@ -158,8 +175,8 @@ impl<'a> gmSystemData<'a> for sysData_PTileChange<'a>{
             res_World: IN_world.fetchResMut::<res_GridWorld>(),
             res_PInput: IN_world.fetchRes::<res_PInput>(),
             res_PID: IN_world.fetchRes::<res_PID>(),
-            comp_Pos: IN_world.fetch::<comp_Pos>(),
-            
+            res_Events: IN_world.fetchRes::<res_Events>(),
+            comp_Pos: IN_world.fetch::<comp_Pos>()
         }
     }
 }
