@@ -75,33 +75,47 @@ impl gmRes for res_GridWorld{
     }
 }
 impl res_GridWorld{
+    fn coordConvert(&self, IN_coords: Vector2) -> (Vector2, Vector2){
+        let mut w_chunkCoords: Vector2 = (IN_coords.0 / CHUNK_X, IN_coords.1 / CHUNK_Y);
+        let w_tileCoords: Vector2 =  (IN_coords.0 % CHUNK_X, IN_coords.1 % CHUNK_Y);
+
+        // Skip over a chunk/s to not end up in (0, 0)
+        if IN_coords.0 < 0{
+            w_chunkCoords.0 -= 1
+        }
+        if IN_coords.1 < 0{
+            w_chunkCoords.1 -= 1
+        }
+
+        (w_chunkCoords, w_tileCoords)
+    }
     pub fn getChunk(&self, IN_coords: Vector2) -> Option<&GridWorldChunk>{
         self.chunks.get(&IN_coords)
     }
     pub fn getChunkMut(&mut self, IN_coords: Vector2) -> Option<&mut GridWorldChunk>{
         self.chunks.get_mut(&IN_coords)
     }
+
     pub fn getChunkFromTile(&self, IN_coords: Vector2) -> Option<&GridWorldChunk>{
-        self.getChunk((IN_coords.0 / CHUNK_X, IN_coords.1 / CHUNK_Y))
+        self.getChunk(self.coordConvert(IN_coords).0)
     }
     pub fn getChunkFromTileMut(&mut self, IN_coords: Vector2) -> Option<&mut GridWorldChunk>{
-        self.getChunkMut((IN_coords.0 / CHUNK_X, IN_coords.1 / CHUNK_Y))
+        self.getChunkMut(self.coordConvert(IN_coords).0)
     }
-    pub fn getTile(&self, IN_coords: Vector2) -> Option<&GridWorldTile>{
-        let w_chunkCoords: Vector2 = (IN_coords.0 / CHUNK_X, IN_coords.1 / CHUNK_Y);
-        let w_tileCoords: Vector2 =  (IN_coords.0 % CHUNK_X, IN_coords.1 % CHUNK_Y);
 
-        if let Some(CHUNK) = self.getChunk(w_chunkCoords){
-            return Some(&CHUNK[w_tileCoords])
+    pub fn getTile(&self, IN_coords: Vector2) -> Option<&GridWorldTile>{
+        let (w_chunkPos, w_tilePos) = self.coordConvert(IN_coords);
+
+        if let Some(CHUNK) = self.getChunk(w_chunkPos){
+            return Some(&CHUNK[w_tilePos])
         }
         None
     }
     pub fn getTileMut(&mut self, IN_coords: Vector2) -> Option<&mut GridWorldTile>{
-        let w_chunkCoords: Vector2 = (IN_coords.0 / CHUNK_X, IN_coords.1 / CHUNK_Y);
-        let w_tileCoords: Vector2 =  (IN_coords.0 % CHUNK_X, IN_coords.1 % CHUNK_Y);
+        let (w_chunkPos, w_tilePos) = self.coordConvert(IN_coords);
 
-        if let Some(CHUNK) = self.getChunkMut(w_chunkCoords){
-            return Some(&mut CHUNK[w_tileCoords])
+        if let Some(CHUNK) = self.getChunkMut(w_chunkPos){
+            return Some(&mut CHUNK[w_tilePos])
         }
         None
     }
