@@ -244,3 +244,53 @@ impl<'a> gmSystemData<'a> for sysData_TileChunkUpdate<'a>{
         }
     }
 }
+
+pub struct sys_TileChunkSpriteUpdate{}
+impl<'a> gmSystem<'a> for sys_TileChunkSpriteUpdate{
+    type sysData = sysData_TileChunkSpriteUpdate<'a>;
+
+    fn new() -> Self {
+        Self{}
+    }
+
+    fn SYS_ID() -> &'static str {
+        "sys_TileChunkSpriteUpdate"
+    }
+
+    fn execute(&mut self, mut IN_data: Self::sysData) {
+        for denseVecEntry{id: GMOBJID, val: CHUNKCOMP} in IN_data.comp_TileTerrain.inner.inner.iter(){
+            if let Some(CHUNK) = IN_data.res_World.inner.getChunkMut(CHUNKCOMP.chunk){
+                if !CHUNK.needsResprite{continue}
+
+                let w_chunkSprite = IN_data.comp_Sprite.inner.get_mut(*GMOBJID);
+
+                use crate::types::styleSet;
+
+                for (INDEX, PIXEL) in w_chunkSprite.sprite.iter_mut().enumerate(){
+                    *PIXEL = match CHUNK.cells[INDEX].mat{
+                        0 => {styleSet{ ch: ' ', fg: Color::Black, bg: Color::Black }} // Empty
+                        1 => {styleSet{ ch: 'w', fg: Color::White, bg: Color::Blue }} // Water
+                        2 => {styleSet{ ch: 't', fg: Color::White, bg: Color::Green }} // Tree
+                        _ => {styleSet{ ch: '0', fg: Color::Black, bg: Color::White }} // UNKNOWN
+                    }
+                }
+
+                CHUNK.needsResprite = false;
+            }
+        }
+    }
+}
+pub struct sysData_TileChunkSpriteUpdate<'a>{
+    pub comp_TileTerrain: Fetch<'a, comp_TileTerrainChunk>,
+    pub comp_Sprite: FetchMut<'a, comp_Sprite>,
+    pub res_World: FetchResMut<'a, res_GridWorld>
+}
+impl<'a> gmSystemData<'a> for sysData_TileChunkSpriteUpdate<'a>{
+    fn fetch(IN_world: &'a mut gmWorld) -> Self {
+        Self{
+            comp_TileTerrain: IN_world.fetch(),
+            comp_Sprite: IN_world.fetchMut(),
+            res_World: IN_world.fetchResMut(),
+        }
+    }
+}

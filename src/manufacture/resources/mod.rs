@@ -150,7 +150,7 @@ impl res_GridWorld{
     }
 }
 pub struct GridWorldChunk{
-    cells: [GridWorldTile; (CHUNK_X * CHUNK_Y) as usize],
+    pub cells: [GridWorldTile; (CHUNK_X * CHUNK_Y) as usize],
     pub needsResprite: bool
 }
 impl GridWorldChunk{
