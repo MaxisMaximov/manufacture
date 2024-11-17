@@ -1,4 +1,5 @@
 use super::*;
+use vars::Vector2;
 
 pub struct comp_HP{
     pub val: u16
@@ -55,6 +56,17 @@ impl gmComp for comp_PController{
     type COMP_STORAGE = denseVecStorage<Self>;
 
     fn COMP_ID() -> &'static str {
-        "comp_PController                   "
+        "comp_PController"
+    }
+}
+
+pub struct comp_TileTerrainChunk{
+    pub chunk: Vector2
+}
+impl gmComp for comp_TileTerrainChunk{
+    type COMP_STORAGE = denseVecStorage<Self>;
+
+    fn COMP_ID() -> &'static str {
+        "comp_TileTerrainChunk"
     }
 }
