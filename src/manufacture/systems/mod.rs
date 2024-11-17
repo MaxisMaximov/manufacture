@@ -224,7 +224,9 @@ impl<'a> gmSystem<'a> for sys_TileChunkUpdate{
                                 ..(min(EVENT.to.1+1, COORDS.1*6+6))/COORDS.1*6{
                                     w_chunk[(XPOS, YPOS)].mat = EVENT.newTile
                                 }
-                    }
+                    };
+                    
+                    w_chunk.needsResprite = true;
                 }
             }
         }
