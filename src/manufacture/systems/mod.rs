@@ -216,12 +216,12 @@ impl<'a> gmSystem<'a> for sys_TileChunkUpdate{
 
                     // Listen chunk iterators are better than accessing constantly from world level
                     for XPOS in
-                        (max(EVENT.from.0, COORDS.0*6))/6 // FROM: Whichever is closer to 0
-                        ..(min(EVENT.to.0+1, COORDS.0*6+6))/6 // TO: Whichever is closer to 0
+                        (max(EVENT.from.0, COORDS.0*6)) - COORDS.0*6 // FROM: Whichever is closer to 0
+                        ..(min(EVENT.to.0+1, COORDS.0*6+6)) - COORDS.0*6 // TO: Whichever is closer to 0
                         {
                             for YPOS in // Same stuff
-                                (max(EVENT.from.1, COORDS.1*6))/COORDS.0*6
-                                ..(min(EVENT.to.1+1, COORDS.1*6+6))/COORDS.1*6{
+                                (max(EVENT.from.1, COORDS.1*6)) - COORDS.1*6
+                                ..(min(EVENT.to.1+1, COORDS.1*6+6)) - COORDS.1*6{
                                     w_chunk[(XPOS, YPOS)].mat = EVENT.newTile
                                 }
                     };
