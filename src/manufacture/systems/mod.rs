@@ -2,7 +2,9 @@ use super::*;
 
 use components::*;
 use resources::*;
-use vars::*;
+
+mod renderer;
+pub use renderer::*;
 
 pub struct sys_Move{}
 impl<'a> gmSystem<'a> for sys_Move{
