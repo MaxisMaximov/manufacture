@@ -27,3 +27,7 @@ pub struct FetchEvent<'a, T: gmEvent>{
 pub struct FetchEventMut<'a, T: gmEvent>{
     pub inner: RefMut<'a, Vec<T>>
 }
+
+pub struct DoubleDArray<T, const X: usize, const Y: usize>{
+    inner: [[T; Y]; X] // RUST PLEASE LET ME USE CONST EXPRESSIONS WITH GENERICS
+}
