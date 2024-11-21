@@ -62,11 +62,21 @@ impl<T, const X: usize, const Y: usize> Index<Vector2> for DoubleDArray<T, X, Y>
     type Output = T;
 
     fn index(&self, index: Vector2) -> &Self::Output {
-        &self.inner[(index.1 as usize).wrapping_add(Y/2)][(index.0 as usize).wrapping_add(X/2)]
+        if let Some(ROW) = self.inner.get((index.1 as usize).wrapping_add(Y/2)){
+            if let Some(TYPE) = ROW.get((index.0 as usize).wrapping_add(X/2)){
+                return TYPE
+            }
+        }
+        &self.dummyT
     }
 }
 impl<T, const X: usize, const Y: usize> IndexMut<Vector2> for DoubleDArray<T, X, Y>{
     fn index_mut(&mut self, index: Vector2) -> &mut Self::Output {
-        &mut self.inner[(index.1 as usize).wrapping_add(Y/2)][(index.0 as usize).wrapping_add(X/2)]
+        if let Some(ROW) = self.inner.get_mut((index.1 as usize).wrapping_add(Y/2)){
+            if let Some(TYPE) = ROW.get_mut((index.0 as usize).wrapping_add(X/2)){
+                return TYPE
+            }
+        }
+        &mut self.dummyT
     }
 }
