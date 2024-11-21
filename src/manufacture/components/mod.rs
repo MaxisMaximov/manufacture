@@ -70,3 +70,16 @@ impl gmComp for comp_TileTerrainChunk{
         "comp_TileTerrainChunk"
     }
 }
+
+pub struct comp_ViewportCamera{
+    pub trackedEntity: gmID,
+    pub offset: Vector2,
+    pub active: bool
+}
+impl gmComp for comp_ViewportCamera{
+    type COMP_STORAGE = denseVecStorage<Self>;
+
+    fn COMP_ID() -> &'static str {
+        "comp_ViewportCamera"
+    }
+}
