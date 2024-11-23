@@ -5,6 +5,7 @@ use crossterm::style::Color;
 
 use super::resources::gmEvent;
 
+// World size in chunks
 pub const WORLD_X_MIN: isize = -5;
 pub const WORLD_X_MAX: isize = 5;
 pub const WORLD_Y_MIN: isize = -5;
@@ -17,6 +18,10 @@ pub const RENDER_VIEWPORT_X_MIN: isize = -5;
 pub const RENDER_VIEWPORT_X_MAX: isize = 5;
 pub const RENDER_VIEWPORT_Y_MIN: isize = -5;
 pub const RENDER_VIEWPORT_Y_MAX: isize = 5;
+
+// Don't touch, full size of the Viewport render
+pub const RENDER_VIEWPORT_X: usize = (RENDER_VIEWPORT_X_MAX - RENDER_VIEWPORT_X_MIN) as usize;
+pub const RENDER_VIEWPORT_Y: usize = (RENDER_VIEWPORT_Y_MAX - RENDER_VIEWPORT_Y_MIN) as usize;
 
 // Yeah smaller than the old buffer, realized I don't use most of it anyway lol
 // Yet
@@ -49,7 +54,7 @@ pub struct FetchEventMut<'a, T: gmEvent>{
 }
 
 pub struct DoubleDArray<T, const X: usize, const Y: usize>{
-    inner: [[T; X]; Y], // RUST PLEASE LET ME USE CONST EXPRESSIONS WITH GENERICS
+    pub inner: [[T; X]; Y], // RUST PLEASE LET ME USE CONST EXPRESSIONS WITH GENERICS
     dummyT: T
 }
 impl<T: Default + Copy, const X: usize, const Y: usize> DoubleDArray<T, X, Y>{
