@@ -31,6 +31,11 @@ pub struct StyleSet{
     fg: Color,
     bg: Color
 }
+impl Default for StyleSet{
+    fn default() -> Self {
+        Self { ch: ' ', fg: Color::White, bg: Color::Black }
+    }
+}
 
 pub struct FetchEvent<'a, T: gmEvent>{
     pub inner: Ref<'a, Vec<T>>
