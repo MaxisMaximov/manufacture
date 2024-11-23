@@ -2,6 +2,7 @@ use super::*;
 
 use components::*;
 use resources::*;
+use vars::*;
 
 mod renderer;
 pub use renderer::*;
@@ -266,14 +267,12 @@ impl<'a> gmSystem<'a> for sys_TileChunkSpriteUpdate{
 
                 let w_chunkSprite = IN_data.comp_Sprite.inner.get_mut(*GMOBJID);
 
-                use crate::types::styleSet;
-
                 for (INDEX, PIXEL) in w_chunkSprite.sprite.iter_mut().enumerate(){
                     *PIXEL = match CHUNK.cells[INDEX].mat{
-                        0 => {styleSet{ ch: ' ', fg: Color::Black, bg: Color::Black }} // Empty
-                        1 => {styleSet{ ch: 'w', fg: Color::White, bg: Color::Blue }} // Water
-                        2 => {styleSet{ ch: 't', fg: Color::White, bg: Color::Green }} // Tree
-                        _ => {styleSet{ ch: '0', fg: Color::Black, bg: Color::White }} // UNKNOWN
+                        0 => {StyleSet{ ch: ' ', fg: Color::Black, bg: Color::Black }} // Empty
+                        1 => {StyleSet{ ch: 'w', fg: Color::White, bg: Color::Blue }} // Water
+                        2 => {StyleSet{ ch: 't', fg: Color::White, bg: Color::Green }} // Tree
+                        _ => {StyleSet{ ch: '0', fg: Color::Black, bg: Color::White }} // UNKNOWN
                     }
                 }
 

@@ -1,5 +1,5 @@
 use super::*;
-use vars::Vector2;
+use vars::{Vector2, StyleSet};
 
 pub struct comp_HP{
     pub val: u16
@@ -39,7 +39,7 @@ impl gmComp for comp_Vel {
 pub struct comp_Sprite{
     pub sizeX: usize,
     pub sizeY: usize,
-    pub sprite: Vec<crate::types::styleSet>
+    pub sprite: Vec<StyleSet>
 }
 impl gmComp for comp_Sprite{
     type COMP_STORAGE = denseVecStorage<Self>;

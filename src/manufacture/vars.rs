@@ -30,9 +30,9 @@ pub type Vector2 = (isize, isize);
 
 #[derive(Clone, Copy)]
 pub struct StyleSet{
-    ch: char,
-    fg: Color,
-    bg: Color
+    pub ch: char,
+    pub fg: Color,
+    pub bg: Color
 }
 impl Default for StyleSet{
     fn default() -> Self {
@@ -49,12 +49,14 @@ pub struct FetchEventMut<'a, T: gmEvent>{
 }
 
 pub struct DoubleDArray<T, const X: usize, const Y: usize>{
-    inner: [[T; X]; Y] // RUST PLEASE LET ME USE CONST EXPRESSIONS WITH GENERICS
+    inner: [[T; X]; Y], // RUST PLEASE LET ME USE CONST EXPRESSIONS WITH GENERICS
+    dummyT: T
 }
 impl<T: Default + Copy, const X: usize, const Y: usize> DoubleDArray<T, X, Y>{
     pub fn new() -> Self{
         Self{
-            inner: [[T::default(); X]; Y]
+            inner: [[T::default(); X]; Y],
+            dummyT: T::default()
         }
     }
 }
