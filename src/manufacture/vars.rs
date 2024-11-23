@@ -26,6 +26,12 @@ pub const RENDER_MARGIN: isize = 4;
 
 pub type Vector2 = (isize, isize);
 
+pub struct StyleSet{
+    ch: char,
+    fg: Color,
+    bg: Color
+}
+
 pub struct FetchEvent<'a, T: gmEvent>{
     pub inner: Ref<'a, Vec<T>>
 }
