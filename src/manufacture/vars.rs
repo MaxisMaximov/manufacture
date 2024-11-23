@@ -1,6 +1,8 @@
 use std::cell::{Ref, RefMut};
 use std::ops::{Index, IndexMut};
 
+use crossterm::style::Color;
+
 use super::resources::gmEvent;
 
 pub const WORLD_X_MIN: isize = -5;
@@ -26,6 +28,7 @@ pub const RENDER_MARGIN: isize = 4;
 
 pub type Vector2 = (isize, isize);
 
+#[derive(Clone, Copy)]
 pub struct StyleSet{
     ch: char,
     fg: Color,
@@ -47,6 +50,13 @@ pub struct FetchEventMut<'a, T: gmEvent>{
 
 pub struct DoubleDArray<T, const X: usize, const Y: usize>{
     inner: [[T; X]; Y] // RUST PLEASE LET ME USE CONST EXPRESSIONS WITH GENERICS
+}
+impl<T: Default + Copy, const X: usize, const Y: usize> DoubleDArray<T, X, Y>{
+    pub fn new() -> Self{
+        Self{
+            inner: [[T::default(); X]; Y]
+        }
+    }
 }
 impl<T, const X: usize, const Y: usize> Index<Vector2> for DoubleDArray<T, X, Y>{
     type Output = T;
