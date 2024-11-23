@@ -30,17 +30,17 @@ pub struct FetchEventMut<'a, T: gmEvent>{
 }
 
 pub struct DoubleDArray<T, const X: usize, const Y: usize>{
-    inner: [[T; Y]; X] // RUST PLEASE LET ME USE CONST EXPRESSIONS WITH GENERICS
+    inner: [[T; X]; Y] // RUST PLEASE LET ME USE CONST EXPRESSIONS WITH GENERICS
 }
 impl<T, const X: usize, const Y: usize> Index<Vector2> for DoubleDArray<T, X, Y>{
     type Output = T;
 
     fn index(&self, index: Vector2) -> &Self::Output {
-        &self.inner[(index.0 as usize).wrapping_add(X/2)][(index.1 as usize).wrapping_add(Y/2)]
+        &self.inner[(index.1 as usize).wrapping_add(Y/2)][(index.0 as usize).wrapping_add(X/2)]
     }
 }
 impl<T, const X: usize, const Y: usize> IndexMut<Vector2> for DoubleDArray<T, X, Y>{
     fn index_mut(&mut self, index: Vector2) -> &mut Self::Output {
-        &mut self.inner[(index.0 as usize).wrapping_add(X/2)][(index.1 as usize).wrapping_add(Y/2)]
+        &mut self.inner[(index.1 as usize).wrapping_add(Y/2)][(index.0 as usize).wrapping_add(X/2)]
     }
 }
