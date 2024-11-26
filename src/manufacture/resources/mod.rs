@@ -194,3 +194,7 @@ pub struct UI_element{
 pub struct UI_request{
     pub id: &'static str
 }
+
+pub struct res_UIData{
+    pub res: HashMap<&'static str, String>
+}
