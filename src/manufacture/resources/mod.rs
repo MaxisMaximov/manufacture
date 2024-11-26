@@ -195,3 +195,14 @@ pub struct UI_element{
 pub struct res_UIData{
     pub res: HashMap<&'static str, String>
 }
+impl gmRes for res_UIData{
+    fn new() -> Self {
+        Self{
+            res: HashMap::new()
+        }
+    }
+
+    fn RES_ID() -> &'static str {
+        "res_UIData"
+    }
+}
