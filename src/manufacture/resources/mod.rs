@@ -190,3 +190,7 @@ pub struct UI_element{
     pub fg: Color,
     pub bg: Color
 }
+
+pub struct UI_request{
+    pub id: &'static str
+}
