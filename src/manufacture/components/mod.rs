@@ -83,3 +83,8 @@ impl gmComp for comp_ViewportCamera{
         "comp_ViewportCamera"
     }
 }
+
+pub struct comp_UIBox{
+    position: Vector2,
+    elements: Vec<todo!()>
+}
