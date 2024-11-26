@@ -187,12 +187,9 @@ pub struct GridWorldTile{
 pub struct UI_element{
     pub position: Vector2,
     pub content: String,
+    pub request: Option<&'static str>,
     pub fg: Color,
     pub bg: Color
-}
-
-pub struct UI_request{
-    pub id: &'static str
 }
 
 pub struct res_UIData{
