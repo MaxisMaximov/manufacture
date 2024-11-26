@@ -183,3 +183,10 @@ impl IndexMut<Vector2> for GridWorldChunk{
 pub struct GridWorldTile{
     pub mat: u8 // Just a number for now
 }
+
+pub struct UI_element{
+    pub position: Vector2,
+    pub content: String,
+    pub fg: Color,
+    pub bg: Color
+}
