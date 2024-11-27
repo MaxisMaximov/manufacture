@@ -2,8 +2,6 @@ use std::io::Write;
 
 use crossterm::style::Stylize;
 
-use vars::*;
-
 use super::*;
 
 pub struct sys_Renderer{
