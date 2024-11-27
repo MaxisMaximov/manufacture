@@ -96,6 +96,26 @@ impl<'a> gmSystem<'a> for sys_Renderer{
             }
         }
 
+        // Render the UI boxes
+        for UIBOX in IN_data.comp_UIBox.inner.inner.iter(){
+            for UIELEM in UIBOX.val.elements.iter(){
+                let w_startCoords: Vector2 = (UIBOX.val.position.0 + UIELEM.position.0, UIBOX.val.position.1 + UIELEM.position.1);
+
+                let mut w_pos = w_startCoords;
+
+                for CHAR in UIELEM.content.chars(){
+                    if CHAR == '\n'{
+                        w_pos.1 += 1;
+                        w_pos.0 = w_startCoords.0;
+                        continue
+                    }
+                    self.frameBuffer[w_pos].ch = CHAR;
+                    w_pos.0 += 1;
+                }
+                
+            }
+        }
+
         // Lock the Output
         let mut STDLOCK = std::io::BufWriter::new(std::io::stdout().lock());
 
@@ -117,14 +137,16 @@ impl<'a> gmSystem<'a> for sys_Renderer{
 pub struct sysData_Renderer<'a>{
     pub comp_Pos: Fetch<'a, comp_Pos>,
     pub comp_Sprite: Fetch<'a, comp_Sprite>,
-    pub comp_ViewportCamera: Fetch<'a, comp_ViewportCamera>
+    pub comp_ViewportCamera: Fetch<'a, comp_ViewportCamera>,
+    pub comp_UIBox: Fetch<'a, comp_UIBox>
 }
 impl<'a> gmSystemData<'a> for sysData_Renderer<'a>{
     fn fetch(IN_world: &'a mut gmWorld) -> Self {
         Self{
             comp_Pos: IN_world.fetch(),
             comp_Sprite: IN_world.fetch(),
-            comp_ViewportCamera: IN_world.fetch()
+            comp_ViewportCamera: IN_world.fetch(),
+            comp_UIBox: IN_world.fetch()
         }
     }
 }
