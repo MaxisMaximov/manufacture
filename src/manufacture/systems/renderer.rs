@@ -99,11 +99,19 @@ impl<'a> gmSystem<'a> for sys_Renderer{
         // Render the UI boxes
         for UIBOX in IN_data.comp_UIBox.inner.inner.iter(){
             for UIELEM in UIBOX.val.elements.iter(){
+                // Get starting offset within the buffer
                 let w_startCoords: Vector2 = (UIBOX.val.position.0 + UIELEM.position.0, UIBOX.val.position.1 + UIELEM.position.1);
 
                 let mut w_pos = w_startCoords;
 
-                for CHAR in UIELEM.content.chars(){
+                // Check if there is a request for this UI item
+                let w_text = match UIELEM.request{
+                    Some(DATAID) => IN_data.res_UIData.inner.res.get(DATAID).unwrap(),
+                    None => &UIELEM.content,
+                };
+
+                for CHAR in w_text.chars(){
+                    // Hacky workaround
                     if CHAR == '\n'{
                         w_pos.1 += 1;
                         w_pos.0 = w_startCoords.0;
@@ -138,7 +146,8 @@ pub struct sysData_Renderer<'a>{
     pub comp_Pos: Fetch<'a, comp_Pos>,
     pub comp_Sprite: Fetch<'a, comp_Sprite>,
     pub comp_ViewportCamera: Fetch<'a, comp_ViewportCamera>,
-    pub comp_UIBox: Fetch<'a, comp_UIBox>
+    pub comp_UIBox: Fetch<'a, comp_UIBox>,
+    pub res_UIData: FetchRes<'a, res_UIData>
 }
 impl<'a> gmSystemData<'a> for sysData_Renderer<'a>{
     fn fetch(IN_world: &'a mut gmWorld) -> Self {
@@ -146,7 +155,8 @@ impl<'a> gmSystemData<'a> for sysData_Renderer<'a>{
             comp_Pos: IN_world.fetch(),
             comp_Sprite: IN_world.fetch(),
             comp_ViewportCamera: IN_world.fetch(),
-            comp_UIBox: IN_world.fetch()
+            comp_UIBox: IN_world.fetch(),
+            res_UIData: IN_world.fetchRes()
         }
     }
 }
