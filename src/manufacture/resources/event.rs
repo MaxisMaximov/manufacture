@@ -2,6 +2,7 @@ use super::*;
 
 use std::rc::Rc;
 use std::cell::RefCell;
+use std::ops::{Deref, DerefMut};
 
 pub struct res_Events{
     pub activeBuffer: bool,

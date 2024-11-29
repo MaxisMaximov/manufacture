@@ -1,9 +1,10 @@
 use std::cell::{Ref, RefMut};
 use std::ops::{Index, IndexMut};
+use std::ops::{Deref, DerefMut};
 
 use crossterm::style::Color;
 
-use super::resources::gmEvent;
+use super::resources::{gmEvent, res_Events};
 
 pub type Vector2 = (isize, isize);
 
@@ -22,9 +23,28 @@ impl Default for StyleSet{
 pub struct FetchEvent<'a, T: gmEvent>{
     pub inner: Ref<'a, Vec<T>>
 }
+impl<'a, T: gmEvent> Deref for FetchEvent<'a, T>{
+    type Target = Ref<'a, Vec<T>>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.inner
+    }
+}
 
 pub struct FetchEventMut<'a, T: gmEvent>{
     pub inner: RefMut<'a, Vec<T>>
+}
+impl<'a, T: gmEvent> Deref for FetchEventMut<'a, T>{
+    type Target = RefMut<'a, Vec<T>>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.inner
+    }
+}
+impl<'a, T: gmEvent> DerefMut for FetchEventMut<'a, T>{
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.inner
+    }
 }
 
 pub struct DoubleDArray<T, const X: usize, const Y: usize>{

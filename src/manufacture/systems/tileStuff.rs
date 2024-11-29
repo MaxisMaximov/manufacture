@@ -14,25 +14,25 @@ impl<'a> gmSystem<'a> for sys_PTileChange{
     }
 
     fn execute(&mut self, IN_data: Self::sysData) {
-        let w_PCoords = IN_data.comp_Pos.inner.get(*IN_data.res_PID.inner.res.get(&1).unwrap());
-        let w_oldTile = IN_data.res_World.inner.getTile((w_PCoords.x, w_PCoords.y)).unwrap().mat;
-        let mut w_tileChangeEvents = IN_data.res_Events.inner.getEventWriter::<event_TileChange>();
+        let w_PCoords = IN_data.comp_Pos.get(*IN_data.res_PID.res.get(&1).unwrap());
+        let w_oldTile = IN_data.res_World.getTile((w_PCoords.x, w_PCoords.y)).unwrap().mat;
+        let mut w_tileChangeEvents = IN_data.res_Events.getEventWriter::<event_TileChange>();
 
-        match IN_data.res_PInput.inner.res.code{
+        match IN_data.res_PInput.res.code{
             KeyCode::Char('f') => {
-                w_tileChangeEvents.inner.push(event_TileChange{
+                w_tileChangeEvents.push(event_TileChange{
                     coords: (w_PCoords.x, w_PCoords.y),
                     newTile: w_oldTile + 1,
                 });
             }
             KeyCode::Char('F') => {
-                w_tileChangeEvents.inner.push(event_TileChange{
+                w_tileChangeEvents.push(event_TileChange{
                     coords: (w_PCoords.x, w_PCoords.y),
                     newTile: w_oldTile - 1,
                 });
             }
             KeyCode::Char('g') => {
-                w_tileChangeEvents.inner.push(event_TileChange{
+                w_tileChangeEvents.push(event_TileChange{
                     coords: (w_PCoords.x, w_PCoords.y),
                     newTile: 0,
                 });
@@ -73,20 +73,20 @@ impl<'a> gmSystem<'a> for sys_TileChunkUpdate{
     }
 
     fn execute(&mut self, mut IN_data: Self::sysData) {
-        let w_Events_TileChange = IN_data.res_Events.inner.getEventReader::<event_TileChange>();
-        let w_Events_BatchTileChange = IN_data.res_Events.inner.getEventReader::<event_BatchTileChange>();
+        let w_Events_TileChange = IN_data.res_Events.getEventReader::<event_TileChange>();
+        let w_Events_BatchTileChange = IN_data.res_Events.getEventReader::<event_BatchTileChange>();
 
-        for EVENT in w_Events_TileChange.inner.iter(){
-            if let Some(TILE) = IN_data.res_World.inner.getTileMut(EVENT.coords){
+        for EVENT in w_Events_TileChange.iter(){
+            if let Some(TILE) = IN_data.res_World.getTileMut(EVENT.coords){
                 TILE.mat = EVENT.newTile
             }
         }
 
-        for EVENT in w_Events_BatchTileChange.inner.iter(){
+        for EVENT in w_Events_BatchTileChange.iter(){
 
-            for COORDS in IN_data.res_World.inner.getChunkRange(EVENT.from, EVENT.to).iter(){
+            for COORDS in IN_data.res_World.getChunkRange(EVENT.from, EVENT.to).iter(){
 
-                if let Some(w_chunk) = IN_data.res_World.inner.getChunkMut(*COORDS){
+                if let Some(w_chunk) = IN_data.res_World.getChunkMut(*COORDS){
                     use std::cmp::{max, min};
                     // This is a mess but I calculated EVERYTHING for 2 hours straight for it to work
                     // Basically constraints iterator to chunk's boundaries and local coordinates

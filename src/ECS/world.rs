@@ -46,7 +46,7 @@ impl gmWorld{
     pub fn registerComp<T>(&mut self) where T: gmComp + 'static{
         self.components.insert(
             T::COMP_ID(),
-            Box::new(Rc::new(RefCell::new(T::COMP_STORAGE::new())))
+            Rc::new(RefCell::new(T::COMP_STORAGE::new()))
         );
     }
     pub fn unRegisterComp<T>(&mut self) where T: gmComp + 'static{
@@ -56,7 +56,7 @@ impl gmWorld{
     pub fn registerRes<T>(&mut self) where T: gmRes + 'static{
         self.resources.insert(
             T::RES_ID(), 
-            Box::new(Rc::new(RefCell::new(T::new())))
+            Rc::new(RefCell::new(T::new()))
         );
     }
     pub fn unRegisterRes<T>(&mut self) where T: gmRes + 'static{

@@ -1,4 +1,4 @@
-use std::ops::{Index, IndexMut};
+use std::ops::{Index, IndexMut, Deref, DerefMut};
 
 use super::*;
 
@@ -24,6 +24,18 @@ impl gmRes for res_PInput{
         "res_PInput"
     }
 }
+impl Deref for res_PInput{
+    type Target = KeyEvent;
+
+    fn deref(&self) -> &Self::Target {
+        &self.res
+    }
+}
+impl DerefMut for res_PInput{
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.res
+    }
+}
 
 pub struct res_DeltaT{
     pub res: Duration
@@ -39,6 +51,18 @@ impl gmRes for res_DeltaT{
         "res_DeltaT"
     }
 }
+impl Deref for res_DeltaT{
+    type Target = Duration;
+
+    fn deref(&self) -> &Self::Target {
+        &self.res
+    }
+}
+impl DerefMut for res_DeltaT{
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.res
+    }
+}
 
 pub struct res_PID{
     pub res: HashMap<gmID, gmID> // PID, gmObjID
@@ -52,6 +76,18 @@ impl gmRes for res_PID{
 
     fn RES_ID() -> &'static str {
         "res_PID"
+    }
+}
+impl Deref for res_PID{
+    type Target = HashMap<gmID, gmID>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.res
+    }
+}
+impl DerefMut for res_PID{
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.res
     }
 }
 
@@ -75,5 +111,17 @@ impl gmRes for res_UIData{
 
     fn RES_ID() -> &'static str {
         "res_UIData"
+    }
+}
+impl Deref for res_UIData{
+    type Target = HashMap<&'static str, String>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.res
+    }
+}
+impl DerefMut for res_UIData{
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.res
     }
 }

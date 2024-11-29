@@ -5,6 +5,7 @@ use std::rc::Rc;
 use std::cell::RefCell;
 use std::any::Any;
 use crossterm::event;
+use std::ops::{Deref, DerefMut};
 
 pub mod comp;
 pub mod storage;
@@ -190,6 +191,18 @@ mod tests{
             "gmRes_deltaT"
         }
     }
+    impl Deref for gmRes_deltaT{
+        type Target = Duration;
+    
+        fn deref(&self) -> &Self::Target {
+            &self.res
+        }
+    }
+    impl DerefMut for gmRes_deltaT{
+        fn deref_mut(&mut self) -> &mut Self::Target {
+            &mut self.res
+        }
+    }
 
     pub struct gmRes_PInput{
         res: KeyEvent
@@ -207,6 +220,18 @@ mod tests{
         }
         fn RES_ID() -> &'static str {
             "gmResPInput"
+        }
+    }
+    impl Deref for gmRes_PInput {
+        type Target = KeyEvent;
+    
+        fn deref(&self) -> &Self::Target {
+            &self.res
+        }
+    }
+    impl DerefMut for gmRes_PInput{
+        fn deref_mut(&mut self) -> &mut Self::Target {
+            &mut self.res
         }
     }
 }
