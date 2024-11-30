@@ -4,8 +4,6 @@ use std::ops::{Deref, DerefMut};
 
 use crossterm::style::Color;
 
-use super::resources::{gmEvent, res_Events};
-
 pub type Vector2 = (isize, isize);
 
 #[derive(Clone, Copy)]
@@ -17,33 +15,6 @@ pub struct StyleSet{
 impl Default for StyleSet{
     fn default() -> Self {
         Self { ch: ' ', fg: Color::White, bg: Color::Black }
-    }
-}
-
-pub struct FetchEvent<'a, T: gmEvent>{
-    pub inner: Ref<'a, Vec<T>>
-}
-impl<'a, T: gmEvent> Deref for FetchEvent<'a, T>{
-    type Target = Ref<'a, Vec<T>>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.inner
-    }
-}
-
-pub struct FetchEventMut<'a, T: gmEvent>{
-    pub inner: RefMut<'a, Vec<T>>
-}
-impl<'a, T: gmEvent> Deref for FetchEventMut<'a, T>{
-    type Target = RefMut<'a, Vec<T>>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.inner
-    }
-}
-impl<'a, T: gmEvent> DerefMut for FetchEventMut<'a, T>{
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.inner
     }
 }
 

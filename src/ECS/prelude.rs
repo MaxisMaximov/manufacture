@@ -9,5 +9,6 @@ pub use super::{comp::*,
     resource::*,
     builders::*,
     dispatcher::*,
-    misc::*
+    misc::*,
+    events::*,
 };

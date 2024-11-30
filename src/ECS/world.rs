@@ -1,5 +1,6 @@
 use super::*;
 
+use events::gmEvent;
 use vars::*;
 use resource::*;
 use comp::*;
@@ -10,6 +11,7 @@ pub struct gmWorld{
     pub gmObjs: gmObjStorage,
     pub components: gmWorld_COMPMAP,
     pub resources: gmWorld_RESMAP,
+    pub events: gmWorld_EVENTMAP
 }
 impl gmWorld{
 
@@ -18,6 +20,7 @@ impl gmWorld{
             gmObjs: gmObjStorage::new(),
             components: HashMap::new(),
             resources: HashMap::new(),
+            events: gmWorld_EVENTMAP::new()
         }
     }
 
@@ -43,6 +46,14 @@ impl gmWorld{
         }
     }
 
+    pub fn fetchEventReader<'a, T>(&'a self) -> EventReader<'a, T> where T: gmEvent + 'static{
+        self.events.getEventReader()
+    }
+
+    pub fn fetchEventWriter<'a, T>(&'a self) -> EventWriter<'a, T> where T: gmEvent + 'static{
+        self.events.getEventWriter()
+    }
+
     pub fn registerComp<T>(&mut self) where T: gmComp + 'static{
         self.components.insert(
             T::COMP_ID(),
@@ -61,6 +72,13 @@ impl gmWorld{
     }
     pub fn unRegisterRes<T>(&mut self) where T: gmRes + 'static{
         self.resources.remove(T::RES_ID());
+    }
+
+    pub fn registerEvent<T>(&mut self) where T: gmEvent + 'static{
+        self.events.registerEvent::<T>();
+    }
+    pub fn unRegisterEvent<T>(&mut self) where T: gmEvent + 'static{
+        self.events.unRegisterEvent::<T>();
     }
 
     pub fn createGmObj(&mut self) -> gmObjBuilder{

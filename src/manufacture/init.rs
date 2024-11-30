@@ -39,8 +39,6 @@ pub fn init(IN_world: &mut gmWorld, IN_dispatch: &mut gmDispatcher){
     // Register Resources
     IN_world.registerRes::<res_DeltaT>();
 
-    IN_world.registerRes::<res_Events>();
-
     IN_world.registerRes::<res_GridWorld>();
 
     IN_world.registerRes::<res_PID>();
@@ -48,4 +46,9 @@ pub fn init(IN_world: &mut gmWorld, IN_dispatch: &mut gmDispatcher){
     IN_world.registerRes::<res_PInput>();
     
     IN_world.registerRes::<res_UIData>();
+
+    // Register Events
+    IN_world.registerEvent::<event_TileChange>();
+
+    IN_world.registerEvent::<event_BatchTileChange>();
 }
