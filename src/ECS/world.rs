@@ -11,7 +11,8 @@ pub struct gmWorld{
     pub gmObjs: gmObjStorage,
     pub components: gmWorld_COMPMAP,
     pub resources: gmWorld_RESMAP,
-    pub events: gmWorld_EVENTMAP
+    pub events: gmWorld_EVENTMAP,
+    pub commands: gmWorld_CMDQUEUE
 }
 impl gmWorld{
 
@@ -20,7 +21,8 @@ impl gmWorld{
             gmObjs: gmObjStorage::new(),
             components: HashMap::new(),
             resources: HashMap::new(),
-            events: gmWorld_EVENTMAP::new()
+            events: gmWorld_EVENTMAP::new(),
+            commands: Vec::new()
         }
     }
 
