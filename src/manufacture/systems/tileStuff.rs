@@ -14,7 +14,7 @@ impl<'a> gmSystem<'a> for sys_PTileChange{
     }
 
     fn execute(&mut self, mut IN_data: Self::sysData) {
-        let w_PCoords = IN_data.comp_Pos.get(*IN_data.res_PID.res.get(&1).unwrap());
+        let w_PCoords = IN_data.comp_Pos.get(IN_data.res_PID.res.get(&1).unwrap());
         let w_oldTile = IN_data.res_World.getTile((w_PCoords.x, w_PCoords.y)).unwrap().mat;
 
         match IN_data.res_PInput.res.code{
@@ -140,7 +140,7 @@ impl<'a> gmSystem<'a> for sys_TileChunkSpriteUpdate{
             if let Some(CHUNK) = IN_data.res_World.inner.getChunkMut(CHUNKCOMP.chunk){
                 if !CHUNK.needsResprite{continue}
 
-                let w_chunkSprite = IN_data.comp_Sprite.inner.get_mut(*GMOBJID);
+                let w_chunkSprite = IN_data.comp_Sprite.inner.get_mut(GMOBJID);
 
                 for (INDEX, PIXEL) in w_chunkSprite.sprite.iter_mut().enumerate(){
                     *PIXEL = match CHUNK.cells[INDEX].mat{

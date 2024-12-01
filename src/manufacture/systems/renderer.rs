@@ -37,7 +37,7 @@ impl<'a> gmSystem<'a> for sys_Renderer{
 
             // Get the tracked entity position
             // Since Chunks are also entities you can attach cameras to them too, fun fact
-            let w_trackPos = IN_data.comp_Pos.get(VIEWPORT.trackedEntity);
+            let w_trackPos = IN_data.comp_Pos.get(&VIEWPORT.trackedEntity);
 
             // Set boundaries
             let w_minCoords: Vector2 = (
@@ -52,7 +52,7 @@ impl<'a> gmSystem<'a> for sys_Renderer{
 
             for OBJ in IN_data.comp_Sprite.inner.inner.iter(){
                 
-                let w_objPos = IN_data.comp_Pos.get(OBJ.id);
+                let w_objPos = IN_data.comp_Pos.get(&OBJ.id);
 
                 // If it's outside the boundaries on ANY axis, ignore it
                 // It's a mess, I know

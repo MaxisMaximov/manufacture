@@ -8,7 +8,7 @@ use world::gmWorld;
 
 pub trait gmCommand: Any{
     fn CMD_ID() -> &'static str;
-    fn execute(&mut self, IN_world: &mut gmWorld);
+    fn execute(self, IN_world: &mut gmWorld);
 }
 
 pub struct cmd_SpawnGmObj{}
@@ -17,7 +17,7 @@ impl gmCommand for cmd_SpawnGmObj{
         "cmd_SpawnGmObj"
     }
 
-    fn execute(&mut self, IN_world: &mut gmWorld) {
+    fn execute(self, IN_world: &mut gmWorld) {
         IN_world.createGmObj();
     }
 }
@@ -31,8 +31,8 @@ impl<T: gmComp> gmCommand for cmd_addComp<T>{
         "cmd_addComp"
     }
 
-    fn execute(&mut self, IN_world: &mut gmWorld) {
-        IN_world.fetchMut::<T>().insert(self.gmObj, self.comp);
+    fn execute(self, IN_world: &mut gmWorld) {
+        IN_world.fetchMut::<T>().insert(&self.gmObj.clone(), self.comp);
     }
 }
 
@@ -45,7 +45,7 @@ impl<T: gmComp> gmCommand for cmd_removeComp<T>{
         "cmd"
     }
 
-    fn execute(&mut self, IN_world: &mut gmWorld) {
-        IN_world.fetchMut::<T>().remove(self.gmObj);
+    fn execute(self, IN_world: &mut gmWorld) {
+        IN_world.fetchMut::<T>().remove(&self.gmObj);
     }
 }

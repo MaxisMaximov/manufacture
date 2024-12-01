@@ -4,17 +4,17 @@ use vars::*;
 
 pub trait gmStorage<T>: Any{
     fn new() -> Self where Self: Sized;
-    fn get(&self, IN_id: gmID) -> &T;
-    fn get_mut(&mut self, IN_id: gmID) -> &mut T;
-    fn insert(&mut self, IN_id: gmID, IN_item: T);
-    fn remove(&mut self, IN_id: gmID) -> Option<T>;
+    fn get(&self, IN_id: &gmID) -> &T;
+    fn get_mut(&mut self, IN_id: &gmID) -> &mut T;
+    fn insert(&mut self, IN_id: &gmID, IN_item: T);
+    fn remove(&mut self, IN_id: &gmID) -> Option<T>;
 }
 pub trait gmStorageDrop: Any{
-    fn drop(&mut self, IN_id: gmID);
+    fn drop(&mut self, IN_id: &gmID);
 }
 impl<T: 'static> gmStorageDrop for dyn gmStorage<T>{
-    fn drop(&mut self, IN_id: gmID) {
-        self.remove(IN_id);
+    fn drop(&mut self, IN_id: &gmID) {
+        self.remove(&IN_id);
     }
 }
 
@@ -32,27 +32,27 @@ impl<T: 'static> gmStorage<T> for denseVecStorage<T>{
         }
     }
 
-    fn get(&self, IN_id: gmID) -> &T {
+    fn get(&self, IN_id: &gmID) -> &T {
         &self.inner.get(*self.proxyMap.get(&IN_id).unwrap()).unwrap().val
     }
 
-    fn get_mut(&mut self, IN_id: gmID) -> &mut T {
+    fn get_mut(&mut self, IN_id: &gmID) -> &mut T {
         &mut self.inner.get_mut(*self.proxyMap.get(&IN_id).unwrap()).unwrap().val
     }
 
-    fn insert(&mut self, IN_id: gmID, IN_item: T) {
+    fn insert(&mut self, IN_id: &gmID, IN_item: T) {
         if self.proxyMap.contains_key(&IN_id){return}
 
-        self.proxyMap.insert(IN_id, self.inner.len()); // Vec length is always the next free index
+        self.proxyMap.insert(*IN_id, self.inner.len()); // Vec length is always the next free index
         self.inner.push(
             denseVecEntry{
-                id: IN_id,
+                id: *IN_id,
                 val: IN_item,
             }
         );
     }
 
-    fn remove(&mut self, IN_id: gmID) -> Option<T> {
+    fn remove(&mut self, IN_id: &gmID) -> Option<T> {
         
         if let Some(INDEX) = self.proxyMap.remove(&IN_id){
 

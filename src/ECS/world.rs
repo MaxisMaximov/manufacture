@@ -93,7 +93,7 @@ impl gmWorld{
     pub fn deleteGmObj(&mut self, IN_id: gmID){
         self.gmObjs.remove(IN_id);
             for COMP in self.components.values_mut(){
-                COMP.clone().downcast::<RefCell<&mut dyn gmStorageDrop>>().unwrap().borrow_mut().drop(IN_id);
+                COMP.clone().downcast::<RefCell<&mut dyn gmStorageDrop>>().unwrap().borrow_mut().drop(&IN_id);
             }
     }
 }
