@@ -2,6 +2,7 @@ use std::marker::PhantomData;
 
 use super::*;
 use comp::gmComp;
+use prefab::gmPrefab;
 use storage::gmStorage;
 use vars::gmID;
 use world::gmWorld;
@@ -47,5 +48,18 @@ impl<T: gmComp> gmCommand for cmd_removeComp<T>{
 
     fn execute(self, IN_world: &mut gmWorld) {
         IN_world.fetchMut::<T>().remove(&self.gmObj);
+    }
+}
+
+pub struct cmd_spawnPrefab<T: gmPrefab>{
+    pub prefab: T
+}
+impl<T: gmPrefab> gmCommand for cmd_spawnPrefab<T>{
+    fn CMD_ID() -> &'static str {
+        "cmd_SpawnPrefab"
+    }
+
+    fn execute(self, IN_world: &mut gmWorld) {
+        self.prefab.spawn(IN_world.createGmObj());
     }
 }
