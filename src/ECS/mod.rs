@@ -18,6 +18,7 @@ pub mod dispatcher;
 pub mod misc;
 pub mod events;
 pub mod commands;
+pub mod prefab;
 
 pub mod prelude;
 
