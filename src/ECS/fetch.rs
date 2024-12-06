@@ -38,3 +38,15 @@ pub struct StorageRef<'a, T: gmComp, D>{
     pub data: D,
     pub _phantom: PhantomData<&'a T>
 }
+impl<'a, T: gmComp, D> Deref for StorageRef<'a, T, D>{
+    type Target = D;
+
+    fn deref(&self) -> &Self::Target {
+        &self.data
+    }
+}
+impl<'a, T: gmComp, D> DerefMut for StorageRef<'a, T, D>{
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.data
+    }
+}
