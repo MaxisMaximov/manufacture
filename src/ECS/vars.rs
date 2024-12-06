@@ -3,7 +3,7 @@ use super::*;
 
 use misc::gmGenIndex;
 use events::gmEvent;
-use fetch::{EventReader, EventWriter};
+use fetch::*;
 
 pub type gmWorld_COMPMAP = HashMap<&'static str, Rc<dyn Any>>;
 pub type gmWorld_RESMAP = HashMap<&'static str, Rc<dyn Any>>;
@@ -43,15 +43,15 @@ impl gmWorld_EVENTMAP{
         
     }
 
-    pub fn getEventReader<'a, T>(&'a self) -> EventReader<'a, T> where T: gmEvent + 'static{
-        EventReader{
-            inner: self.getBuffer::<T>(self.activeBuffer).as_ref().downcast_ref::<RefCell<Vec<T>>>().unwrap().borrow()
+    pub fn getEventReader<'a, T>(&'a self) -> Fetch<'a, Vec<T>> where T: gmEvent + 'static{
+        Fetch{
+            data: self.getBuffer::<T>(self.activeBuffer).as_ref().downcast_ref::<RefCell<Vec<T>>>().unwrap().borrow()
         }
     }
 
-    pub fn getEventWriter<'a, T>(&'a self) -> EventWriter<'a, T> where T: gmEvent + 'static{
-        EventWriter{
-            inner: self.getBuffer::<T>(!self.activeBuffer).as_ref().downcast_ref::<RefCell<Vec<T>>>().unwrap().borrow_mut()
+    pub fn getEventWriter<'a, T>(&'a self) -> FetchMut<'a, Vec<T>> where T: gmEvent + 'static{
+        FetchMut{
+            data: self.getBuffer::<T>(!self.activeBuffer).as_ref().downcast_ref::<RefCell<Vec<T>>>().unwrap().borrow_mut()
         }
     }
 
