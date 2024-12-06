@@ -50,3 +50,6 @@ impl<'a, T: gmComp, D> DerefMut for StorageRef<'a, T, D>{
         &mut self.data
     }
 }
+
+pub type readStorage<'a, T: gmComp> = StorageRef<'a, T, Fetch<'a, T::COMP_STORAGE>>;
+pub type writeStorage<'a, T: gmComp> = StorageRef<'a, T, FetchMut<'a, T::COMP_STORAGE>>;
