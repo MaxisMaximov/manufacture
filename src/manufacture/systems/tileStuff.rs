@@ -44,8 +44,8 @@ pub struct sysData_PTileChange<'a>{
     res_World: Fetch<'a, res_GridWorld>,
     res_PInput: Fetch<'a, res_PInput>,
     res_PID: Fetch<'a, res_PID>,
-    event_TileChange: FetchMut<'a, Vec<event_TileChange>>,
-    comp_Pos: readStorage<'a, comp_Pos>,
+    event_TileChange: EventWriter<'a, event_TileChange>,
+    comp_Pos: ReadStorage<'a, comp_Pos>,
 }
 impl<'a> gmSystemData<'a> for sysData_PTileChange<'a>{
     fn fetch(IN_world: &'a mut gmWorld) -> Self {
@@ -109,8 +109,8 @@ impl<'a> gmSystem<'a> for sys_TileChunkUpdate{
     }
 }
 pub struct sysData_TileChunkUpdate<'a>{
-    pub event_TileChange: Fetch<'a, Vec<event_TileChange>>,
-    pub event_BatchTileChange: Fetch<'a, Vec<event_BatchTileChange>>,
+    pub event_TileChange: EventReader<'a, event_TileChange>,
+    pub event_BatchTileChange: EventReader<'a, event_BatchTileChange>,
     pub res_World: FetchMut<'a, res_GridWorld>
 }
 impl<'a> gmSystemData<'a> for sysData_TileChunkUpdate<'a>{
@@ -157,8 +157,8 @@ impl<'a> gmSystem<'a> for sys_TileChunkSpriteUpdate{
     }
 }
 pub struct sysData_TileChunkSpriteUpdate<'a>{
-    pub comp_TileTerrain: readStorage<'a, comp_TileTerrainChunk>,
-    pub comp_Sprite: writeStorage<'a, comp_Sprite>,
+    pub comp_TileTerrain: ReadStorage<'a, comp_TileTerrainChunk>,
+    pub comp_Sprite: WriteStorage<'a, comp_Sprite>,
     pub res_World: FetchMut<'a, res_GridWorld>
 }
 impl<'a> gmSystemData<'a> for sysData_TileChunkSpriteUpdate<'a>{

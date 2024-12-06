@@ -29,14 +29,14 @@ impl gmWorld{
         }
     }
 
-    pub fn fetch<'a, T>(&'a self) -> readStorage<'a, T> where T: gmComp + 'static{
-        readStorage{
+    pub fn fetch<'a, T>(&'a self) -> ReadStorage<'a, T> where T: gmComp + 'static{
+        ReadStorage{
             data: Fetch{data: self.components.get(T::COMP_ID()).unwrap().as_ref().downcast_ref::<RefCell<T::COMP_STORAGE>>().unwrap().borrow()},
             _phantom: PhantomData
         }
     }
-    pub fn fetchMut<'a, T>(&'a self) -> writeStorage<'a, T> where T: gmComp + 'static{
-        writeStorage{
+    pub fn fetchMut<'a, T>(&'a self) -> WriteStorage<'a, T> where T: gmComp + 'static{
+        WriteStorage{
             data: FetchMut{data: self.components.get(T::COMP_ID()).unwrap().as_ref().downcast_ref::<RefCell<T::COMP_STORAGE>>().unwrap().borrow_mut()},
             _phantom: PhantomData
         }
@@ -53,11 +53,11 @@ impl gmWorld{
         }
     }
 
-    pub fn fetchEventReader<'a, T>(&'a self) -> Fetch<'a, Vec<T>> where T: gmEvent + 'static{
+    pub fn fetchEventReader<'a, T>(&'a self) -> EventReader<'a, T> where T: gmEvent + 'static{
         self.events.getEventReader()
     }
 
-    pub fn fetchEventWriter<'a, T>(&'a self) -> FetchMut<'a, Vec<T>> where T: gmEvent + 'static{
+    pub fn fetchEventWriter<'a, T>(&'a self) -> EventWriter<'a, T> where T: gmEvent + 'static{
         self.events.getEventWriter()
     }
 

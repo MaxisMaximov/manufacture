@@ -34,8 +34,8 @@ impl<'a> gmSystem<'a> for sys_Move{
     }
 }
 pub struct sysData_Move<'a>{
-    comp_Vel: readStorage<'a, comp_Vel>,
-    comp_Pos: writeStorage<'a, comp_Pos>
+    comp_Vel: ReadStorage<'a, comp_Vel>,
+    comp_Pos: WriteStorage<'a, comp_Pos>
 }
 impl<'a> gmSystemData<'a> for sysData_Move<'a>{
     fn fetch(IN_world: &'a mut gmWorld) -> Self {
@@ -115,8 +115,8 @@ impl<'a> gmSystem<'a> for sys_PMove{
 pub struct sysData_PMove<'a>{
     res_PInput: Fetch<'a, res_PInput>,
     res_PID: Fetch<'a, res_PID>,
-    comp_PController: readStorage<'a, comp_PController>,
-    comp_Vel: writeStorage<'a, comp_Vel>
+    comp_PController: ReadStorage<'a, comp_PController>,
+    comp_Vel: WriteStorage<'a, comp_Vel>
 }
 impl<'a> gmSystemData<'a> for sysData_PMove<'a>{
     fn fetch(IN_world: &'a mut gmWorld) -> Self {

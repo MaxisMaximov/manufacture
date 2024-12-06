@@ -143,10 +143,10 @@ impl<'a> gmSystem<'a> for sys_Renderer{
 }
 
 pub struct sysData_Renderer<'a>{
-    pub comp_Pos: readStorage<'a, comp_Pos>,
-    pub comp_Sprite: readStorage<'a, comp_Sprite>,
-    pub comp_ViewportCamera: readStorage<'a, comp_ViewportCamera>,
-    pub comp_UIBox: readStorage<'a, comp_UIBox>,
+    pub comp_Pos: ReadStorage<'a, comp_Pos>,
+    pub comp_Sprite: ReadStorage<'a, comp_Sprite>,
+    pub comp_ViewportCamera: ReadStorage<'a, comp_ViewportCamera>,
+    pub comp_UIBox: ReadStorage<'a, comp_UIBox>,
     pub res_UIData: Fetch<'a, res_UIData>
 }
 impl<'a> gmSystemData<'a> for sysData_Renderer<'a>{

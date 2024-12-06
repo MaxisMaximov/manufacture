@@ -43,14 +43,14 @@ impl gmWorld_EVENTMAP{
         
     }
 
-    pub fn getEventReader<'a, T>(&'a self) -> Fetch<'a, Vec<T>> where T: gmEvent + 'static{
-        Fetch{
+    pub fn getEventReader<'a, T>(&'a self) -> EventReader<'a, T> where T: gmEvent + 'static{
+        EventReader{
             data: self.getBuffer::<T>(self.activeBuffer).as_ref().downcast_ref::<RefCell<Vec<T>>>().unwrap().borrow()
         }
     }
 
-    pub fn getEventWriter<'a, T>(&'a self) -> FetchMut<'a, Vec<T>> where T: gmEvent + 'static{
-        FetchMut{
+    pub fn getEventWriter<'a, T>(&'a self) -> EventWriter<'a, T> where T: gmEvent + 'static{
+        EventWriter{
             data: self.getBuffer::<T>(!self.activeBuffer).as_ref().downcast_ref::<RefCell<Vec<T>>>().unwrap().borrow_mut()
         }
     }

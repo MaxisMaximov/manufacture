@@ -108,7 +108,7 @@ mod tests{
         }
     }
     pub struct gmSysData_HP<'a>{
-        pub comp_HP: writeStorage<'a, gmComp_Health>
+        pub comp_HP: WriteStorage<'a, gmComp_Health>
     }
     impl<'a> gmSystemData<'a> for gmSysData_HP<'a>{
         fn fetch(IN_world: &'a mut gmWorld) -> Self {
@@ -170,8 +170,8 @@ mod tests{
         }
     }
     pub struct gmSysData_Movement<'a>{
-        pub comp_pos: writeStorage<'a, gmComp_Pos>,
-        pub comp_vel: writeStorage<'a, gmComp_Vel>,
+        pub comp_pos: WriteStorage<'a, gmComp_Pos>,
+        pub comp_vel: WriteStorage<'a, gmComp_Vel>,
     }
     impl<'a> gmSystemData<'a> for gmSysData_Movement<'a>{
         fn fetch(IN_world: &'a mut gmWorld) -> Self {

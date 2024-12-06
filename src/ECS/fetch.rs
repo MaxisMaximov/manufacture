@@ -37,7 +37,7 @@ impl<'a, T> DerefMut for FetchMut<'a, T>{
 pub struct StorageRef<'a, T: gmComp, D>{
     pub data: D,
     pub _phantom: PhantomData<&'a T>
-}
+} 
 impl<'a, T: gmComp, D> Deref for StorageRef<'a, T, D>{
     type Target = D;
 
@@ -51,5 +51,8 @@ impl<'a, T: gmComp, D> DerefMut for StorageRef<'a, T, D>{
     }
 }
 
-pub type readStorage<'a, T: gmComp> = StorageRef<'a, T, Fetch<'a, T::COMP_STORAGE>>;
-pub type writeStorage<'a, T: gmComp> = StorageRef<'a, T, FetchMut<'a, T::COMP_STORAGE>>;
+pub type EventReader<'a, T: gmEvent> = Fetch<'a, Vec<T>>;
+pub type EventWriter<'a, T: gmEvent> = FetchMut<'a, Vec<T>>;
+
+pub type ReadStorage<'a, T: gmComp> = StorageRef<'a, T, Fetch<'a, T::COMP_STORAGE>>;
+pub type WriteStorage<'a, T: gmComp> = StorageRef<'a, T, FetchMut<'a, T::COMP_STORAGE>>;
