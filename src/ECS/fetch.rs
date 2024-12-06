@@ -1,5 +1,4 @@
 use std::cell::{RefMut, Ref};
-use std::marker::PhantomData;
 use std::ops::{Deref, DerefMut};
 
 use super::*;
@@ -11,8 +10,27 @@ use resource::gmRes;
 pub struct Fetch<'a, T>{
     data: Ref<'a, T>,
 }
+impl<'a, T> Deref for Fetch<'a, T>{
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target {
+        &self.data
+    }
+}
 pub struct FetchMut<'a, T>{
     data: RefMut<'a, T>
+}
+impl<'a, T> Deref for FetchMut<'a, T>{
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target {
+        &self.data
+    }
+}
+impl<'a, T> DerefMut for FetchMut<'a, T>{
+    fn deref_mut(&mut self) -> &Self::Target {
+        &mut self.data
+    }
 }
 
 pub struct Fetch<'a, T: gmComp>{
