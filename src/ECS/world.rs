@@ -6,6 +6,7 @@ use resource::*;
 use comp::*;
 use builders::gmObjBuilder;
 use storage::*;
+use fetch::*;
 
 pub struct gmWorld{
     pub gmObjs: gmObjStorage,
