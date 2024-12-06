@@ -8,7 +8,7 @@ use events::gmEvent;
 use resource::gmRes;
 
 pub struct Fetch<'a, T>{
-    data: Ref<'a, T>,
+    pub data: Ref<'a, T>,
 }
 impl<'a, T> Deref for Fetch<'a, T>{
     type Target = T;
@@ -18,7 +18,7 @@ impl<'a, T> Deref for Fetch<'a, T>{
     }
 }
 pub struct FetchMut<'a, T>{
-    data: RefMut<'a, T>
+    pub data: RefMut<'a, T>
 }
 impl<'a, T> Deref for FetchMut<'a, T>{
     type Target = T;
@@ -58,33 +58,6 @@ impl<'a, T: gmComp> DerefMut for FetchMut<'a, T>{
         &mut self.inner
     }
 }
-
-pub struct FetchRes<'a, T: gmRes>{
-    pub inner: Ref<'a, T>
-}
-impl<'a, T: gmRes> Deref for FetchRes<'a, T>{
-    type Target = Ref<'a, T>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.inner
-    }
-}
-pub struct FetchResMut<'a, T: gmRes>{
-    pub inner: RefMut<'a, T>
-}
-impl<'a, T: gmRes> Deref for FetchResMut<'a, T>{
-    type Target = RefMut<'a, T>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.inner
-    }
-}
-impl<'a, T: gmRes> DerefMut for FetchResMut<'a, T>{
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.inner
-    }
-}
-
 
 pub struct EventReader<'a, T: gmEvent>{
     pub inner: Ref<'a, Vec<T>>

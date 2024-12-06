@@ -38,14 +38,14 @@ impl gmWorld{
         }
     }
 
-    pub fn fetchRes<'a, T>(&'a self) -> FetchRes<'a, T> where T: gmRes + 'static{
-        FetchRes{
-            inner: self.resources.get(T::RES_ID()).unwrap().as_ref().downcast_ref::<RefCell<T>>().unwrap().borrow()
+    pub fn fetchRes<'a, T>(&'a self) -> Fetch<'a, T> where T: gmRes + 'static{
+        Fetch{
+            data: self.resources.get(T::RES_ID()).unwrap().as_ref().downcast_ref::<RefCell<T>>().unwrap().borrow()
         }
     }
-    pub fn fetchResMut<'a, T>(&'a self) -> FetchResMut<'a, T> where T: gmRes + 'static{
-        FetchResMut{
-            inner: self.resources.get(T::RES_ID()).unwrap().as_ref().downcast_ref::<RefCell<T>>().unwrap().borrow_mut()
+    pub fn fetchResMut<'a, T>(&'a self) -> FetchMut<'a, T> where T: gmRes + 'static{
+        FetchMut{
+            data: self.resources.get(T::RES_ID()).unwrap().as_ref().downcast_ref::<RefCell<T>>().unwrap().borrow_mut()
         }
     }
 
