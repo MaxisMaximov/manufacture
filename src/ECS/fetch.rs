@@ -1,4 +1,5 @@
 use std::cell::{RefMut, Ref};
+use std::marker::PhantomData;
 use std::ops::{Deref, DerefMut};
 
 use super::*;
@@ -31,4 +32,9 @@ impl<'a, T> DerefMut for FetchMut<'a, T>{
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.data
     }
+}
+
+pub struct StorageRef<'a, T: gmComp, D>{
+    pub data: D,
+    pub _phantom: PhantomData<&'a T>
 }
