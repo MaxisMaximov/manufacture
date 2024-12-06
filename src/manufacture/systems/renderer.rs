@@ -25,7 +25,7 @@ impl<'a> gmSystem<'a> for sys_Renderer{
         // First check if an active camera exists
         let mut w_camera: Option<&comp_ViewportCamera> = None;
 
-        for CAM in IN_data.comp_ViewportCamera.inner.inner.iter(){
+        for CAM in IN_data.comp_ViewportCamera.inner.iter(){
             if !CAM.val.active{continue}
             w_camera = Some(&CAM.val);
         }
@@ -50,7 +50,7 @@ impl<'a> gmSystem<'a> for sys_Renderer{
                 w_trackPos.y + VIEWPORT.offset.1 + RENDER_VIEWPORT_Y_MAX + RENDER_MARGIN
             );
 
-            for OBJ in IN_data.comp_Sprite.inner.inner.iter(){
+            for OBJ in IN_data.comp_Sprite.inner.iter(){
                 
                 let w_objPos = IN_data.comp_Pos.get(&OBJ.id);
 
@@ -97,7 +97,7 @@ impl<'a> gmSystem<'a> for sys_Renderer{
         }
 
         // Render the UI boxes
-        for UIBOX in IN_data.comp_UIBox.inner.inner.iter(){
+        for UIBOX in IN_data.comp_UIBox.inner.iter(){
             for UIELEM in UIBOX.val.elements.iter(){
                 // Get starting offset within the buffer
                 let w_startCoords: Vector2 = (UIBOX.val.position.0 + UIELEM.position.0, UIBOX.val.position.1 + UIELEM.position.1);
@@ -143,11 +143,11 @@ impl<'a> gmSystem<'a> for sys_Renderer{
 }
 
 pub struct sysData_Renderer<'a>{
-    pub comp_Pos: Fetch<'a, comp_Pos>,
-    pub comp_Sprite: Fetch<'a, comp_Sprite>,
-    pub comp_ViewportCamera: Fetch<'a, comp_ViewportCamera>,
-    pub comp_UIBox: Fetch<'a, comp_UIBox>,
-    pub res_UIData: FetchRes<'a, res_UIData>
+    pub comp_Pos: readStorage<'a, comp_Pos>,
+    pub comp_Sprite: readStorage<'a, comp_Sprite>,
+    pub comp_ViewportCamera: readStorage<'a, comp_ViewportCamera>,
+    pub comp_UIBox: readStorage<'a, comp_UIBox>,
+    pub res_UIData: Fetch<'a, res_UIData>
 }
 impl<'a> gmSystemData<'a> for sysData_Renderer<'a>{
     fn fetch(IN_world: &'a mut gmWorld) -> Self {

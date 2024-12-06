@@ -100,7 +100,7 @@ mod tests{
         }
 
         fn execute(&mut self, mut IN_data: Self::sysData) {
-            for COMP_HP in IN_data.comp_HP.inner.inner.iter_mut(){
+            for COMP_HP in IN_data.comp_HP.inner.iter_mut(){
                 if COMP_HP.val.val > 0{
                     COMP_HP.val.val -= 1
                 }
@@ -108,7 +108,7 @@ mod tests{
         }
     }
     pub struct gmSysData_HP<'a>{
-        pub comp_HP: FetchMut<'a, gmComp_Health>
+        pub comp_HP: writeStorage<'a, gmComp_Health>
     }
     impl<'a> gmSystemData<'a> for gmSysData_HP<'a>{
         fn fetch(IN_world: &'a mut gmWorld) -> Self {
@@ -132,18 +132,18 @@ mod tests{
 
         fn execute(&mut self, mut IN_data: Self::sysData) {
             if !poll(Duration::from_secs(0)).unwrap(){
-                IN_data.res_Input.inner.res = KeyEvent::new(KeyCode::Null, KeyModifiers::NONE);
+                IN_data.res_Input.res = KeyEvent::new(KeyCode::Null, KeyModifiers::NONE);
                 return
             }
 
             if let Event::Key(KEY) = read().unwrap(){
-                IN_data.res_Input.inner.res = KEY;
+                IN_data.res_Input.res = KEY;
                 return
             }
         }
     }
     pub struct gmSysData_Input<'a>{
-        pub res_Input: FetchResMut<'a, gmRes_PInput>
+        pub res_Input: FetchMut<'a, gmRes_PInput>
     }
     impl<'a> gmSystemData<'a> for gmSysData_Input<'a>{
         fn fetch(IN_world: &'a mut gmWorld) -> Self {
@@ -170,8 +170,8 @@ mod tests{
         }
     }
     pub struct gmSysData_Movement<'a>{
-        pub comp_pos: FetchMut<'a, gmComp_Pos>,
-        pub comp_vel: FetchMut<'a, gmComp_Vel>,
+        pub comp_pos: writeStorage<'a, gmComp_Pos>,
+        pub comp_vel: writeStorage<'a, gmComp_Vel>,
     }
     impl<'a> gmSystemData<'a> for gmSysData_Movement<'a>{
         fn fetch(IN_world: &'a mut gmWorld) -> Self {

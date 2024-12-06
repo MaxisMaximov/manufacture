@@ -1,3 +1,5 @@
+use std::marker::PhantomData;
+
 use super::*;
 
 use events::gmEvent;
@@ -27,14 +29,16 @@ impl gmWorld{
         }
     }
 
-    pub fn fetch<'a, T>(&'a self) -> Fetch<'a, T::COMP_STORAGE> where T: gmComp + 'static{
-        Fetch{
-            data: self.components.get(T::COMP_ID()).unwrap().as_ref().downcast_ref::<RefCell<T::COMP_STORAGE>>().unwrap().borrow()
+    pub fn fetch<'a, T>(&'a self) -> readStorage<'a, T> where T: gmComp + 'static{
+        readStorage{
+            data: Fetch{data: self.components.get(T::COMP_ID()).unwrap().as_ref().downcast_ref::<RefCell<T::COMP_STORAGE>>().unwrap().borrow()},
+            _phantom: PhantomData
         }
     }
-    pub fn fetchMut<'a, T>(&'a self) -> FetchMut<'a, T::COMP_STORAGE> where T: gmComp + 'static{
-        FetchMut{
-            data: self.components.get(T::COMP_ID()).unwrap().as_ref().downcast_ref::<RefCell<T::COMP_STORAGE>>().unwrap().borrow_mut()
+    pub fn fetchMut<'a, T>(&'a self) -> writeStorage<'a, T> where T: gmComp + 'static{
+        writeStorage{
+            data: FetchMut{data: self.components.get(T::COMP_ID()).unwrap().as_ref().downcast_ref::<RefCell<T::COMP_STORAGE>>().unwrap().borrow_mut()},
+            _phantom: PhantomData
         }
     }
 

@@ -41,11 +41,11 @@ impl<'a> gmSystem<'a> for sys_PTileChange{
     }
 }
 pub struct sysData_PTileChange<'a>{
-    res_World: FetchRes<'a, res_GridWorld>,
-    res_PInput: FetchRes<'a, res_PInput>,
-    res_PID: FetchRes<'a, res_PID>,
-    event_TileChange: EventWriter<'a, event_TileChange>,
-    comp_Pos: Fetch<'a, comp_Pos>,
+    res_World: Fetch<'a, res_GridWorld>,
+    res_PInput: Fetch<'a, res_PInput>,
+    res_PID: Fetch<'a, res_PID>,
+    event_TileChange: FetchMut<'a, Vec<event_TileChange>>,
+    comp_Pos: readStorage<'a, comp_Pos>,
 }
 impl<'a> gmSystemData<'a> for sysData_PTileChange<'a>{
     fn fetch(IN_world: &'a mut gmWorld) -> Self {
@@ -109,9 +109,9 @@ impl<'a> gmSystem<'a> for sys_TileChunkUpdate{
     }
 }
 pub struct sysData_TileChunkUpdate<'a>{
-    pub event_TileChange: EventReader<'a, event_TileChange>,
-    pub event_BatchTileChange: EventReader<'a, event_BatchTileChange>,
-    pub res_World: FetchResMut<'a, res_GridWorld>
+    pub event_TileChange: Fetch<'a, Vec<event_TileChange>>,
+    pub event_BatchTileChange: Fetch<'a, Vec<event_BatchTileChange>>,
+    pub res_World: FetchMut<'a, res_GridWorld>
 }
 impl<'a> gmSystemData<'a> for sysData_TileChunkUpdate<'a>{
     fn fetch(IN_world: &'a mut gmWorld) -> Self {
@@ -136,11 +136,11 @@ impl<'a> gmSystem<'a> for sys_TileChunkSpriteUpdate{
     }
 
     fn execute(&mut self, mut IN_data: Self::sysData) {
-        for denseVecEntry{id: GMOBJID, val: CHUNKCOMP} in IN_data.comp_TileTerrain.inner.inner.iter(){
-            if let Some(CHUNK) = IN_data.res_World.inner.getChunkMut(CHUNKCOMP.chunk){
+        for denseVecEntry{id: GMOBJID, val: CHUNKCOMP} in IN_data.comp_TileTerrain.inner.iter(){
+            if let Some(CHUNK) = IN_data.res_World.getChunkMut(CHUNKCOMP.chunk){
                 if !CHUNK.needsResprite{continue}
 
-                let w_chunkSprite = IN_data.comp_Sprite.inner.get_mut(GMOBJID);
+                let w_chunkSprite = IN_data.comp_Sprite.get_mut(GMOBJID);
 
                 for (INDEX, PIXEL) in w_chunkSprite.sprite.iter_mut().enumerate(){
                     *PIXEL = match CHUNK.cells[INDEX].mat{
@@ -157,9 +157,9 @@ impl<'a> gmSystem<'a> for sys_TileChunkSpriteUpdate{
     }
 }
 pub struct sysData_TileChunkSpriteUpdate<'a>{
-    pub comp_TileTerrain: Fetch<'a, comp_TileTerrainChunk>,
-    pub comp_Sprite: FetchMut<'a, comp_Sprite>,
-    pub res_World: FetchResMut<'a, res_GridWorld>
+    pub comp_TileTerrain: readStorage<'a, comp_TileTerrainChunk>,
+    pub comp_Sprite: writeStorage<'a, comp_Sprite>,
+    pub res_World: FetchMut<'a, res_GridWorld>
 }
 impl<'a> gmSystemData<'a> for sysData_TileChunkSpriteUpdate<'a>{
     fn fetch(IN_world: &'a mut gmWorld) -> Self {
