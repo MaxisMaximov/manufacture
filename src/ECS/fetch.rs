@@ -1,4 +1,5 @@
 use std::cell::{RefMut, Ref};
+use std::marker::PhantomData;
 use std::ops::{Deref, DerefMut};
 
 use super::*;
@@ -6,6 +7,13 @@ use super::*;
 use comp::gmComp;
 use events::gmEvent;
 use resource::gmRes;
+
+pub struct Fetch<'a, T>{
+    data: Ref<'a, T>,
+}
+pub struct FetchMut<'a, T>{
+    data: RefMut<'a, T>
+}
 
 pub struct Fetch<'a, T: gmComp>{
     pub inner: Ref<'a, T::COMP_STORAGE>

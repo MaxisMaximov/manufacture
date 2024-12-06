@@ -20,10 +20,10 @@ impl gmWorld{
     pub fn new() -> Self{
         Self{
             gmObjs: gmObjStorage::new(),
-            components: HashMap::new(),
-            resources: HashMap::new(),
+            components: gmWorld_COMPMAP::new(),
+            resources: gmWorld_RESMAP::new(),
             events: gmWorld_EVENTMAP::new(),
-            commands: Vec::new()
+            commands: gmWorld_CMDQUEUE::new()
         }
     }
 
