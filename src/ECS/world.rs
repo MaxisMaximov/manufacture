@@ -95,7 +95,23 @@ impl gmWorld{
         }
     }
 
-    pub fn deleteGmObj(&mut self, IN_id: gmID){
+    /// # I DON'T KNOW WHAT TO DO HERE  
+    /// I've tried everything to fix this function **specifically**
+    /// 
+    /// I tried hotwiring the `gmStorageDrop` trait I made for this specifically, I tried storing `Rc<RefCell<dyn Any>>` instead of `Rc<dyn Any>`,  
+    /// I tried to do some dark magic peckneckiry, tried casting to Any, and that **ALMOST** worked, but apparently doing that returns a temporary borrow, so peck
+    /// 
+    /// For clarification: I want to avoid using `gmGenIndex` in every single storage and do constant checks if the generations are the same,  
+    /// that will make spaghett and iteration so much worse, not to mention the memory waste  
+    /// And no, I won't use `shred`'s MetaTable because **I DON'T KNOW HOW IT WORKS**. I ***refuse*** to use something I don't understand
+    /// 
+    /// However, Rust team is working on trait Upcasting, that has the highest chance of fixing this mess, and I *REALLY* hope it's gonna be stable soon
+    /// 
+    /// So for now, this is Unsafe, Deprecated, and Unreachable  
+    /// That's how painful this was.
+    #[deprecated]
+    pub unsafe fn deleteGmObj(&mut self, IN_id: gmID){
+        unreachable!();
         self.gmObjs.remove(IN_id);
             for COMP in self.components.values_mut(){
                 COMP.clone().downcast::<RefCell<&mut dyn gmStorageDrop>>().unwrap().borrow_mut().drop(&IN_id);

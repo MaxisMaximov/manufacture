@@ -6,7 +6,6 @@ use super::*;
 
 use comp::gmComp;
 use events::gmEvent;
-use resource::gmRes;
 
 pub struct Fetch<'a, T>{
     pub data: Ref<'a, T>,
@@ -34,6 +33,11 @@ impl<'a, T> DerefMut for FetchMut<'a, T>{
     }
 }
 
+// So I'm thinking
+// This thing is basically a wrapper, over a wrapper (Fetch/Mut), over another wrapper (Ref/Mut)
+// And they all 3 implement Derefs, however Ref/Mut use it for safety stuff, Fetch/Mut and StorageRef only use it to give direct access to the storage/resource
+// So in the end they both don't provide anything useful other than type clarity to what's a component and what's a resource fetch
+// Also I'm not sure if Deref³ is a good idea for performance
 pub struct StorageRef<'a, T: gmComp, D>{
     pub data: D,
     pub _phantom: PhantomData<&'a T>

@@ -148,7 +148,7 @@ mod tests{
     impl<'a> gmSystemData<'a> for gmSysData_Input<'a>{
         fn fetch(IN_world: &'a mut gmWorld) -> Self {
             Self{
-                res_Input: IN_world.fetchResMut::<gmRes_PInput>()
+                res_Input: IN_world.fetchResMut()
             }
         }
     }
@@ -176,8 +176,8 @@ mod tests{
     impl<'a> gmSystemData<'a> for gmSysData_Movement<'a>{
         fn fetch(IN_world: &'a mut gmWorld) -> Self {
             Self{
-                comp_pos: IN_world.fetchMut::<gmComp_Pos>(),
-                comp_vel: IN_world.fetchMut::<gmComp_Vel>(),
+                comp_pos: IN_world.fetchMut(),
+                comp_vel: IN_world.fetchMut(),
             }
         }
     }
