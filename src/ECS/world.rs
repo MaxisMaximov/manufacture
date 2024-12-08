@@ -1,4 +1,4 @@
-use std::marker::PhantomData;
+use std::{cell::{Ref, RefMut}, marker::PhantomData};
 
 use super::*;
 
@@ -31,25 +31,29 @@ impl gmWorld{
 
     pub fn fetch<'a, T>(&'a self) -> ReadStorage<'a, T> where T: gmComp + 'static{
         ReadStorage{
-            data: Fetch{data: self.components.get(T::COMP_ID()).unwrap().as_ref().downcast_ref::<RefCell<T::COMP_STORAGE>>().unwrap().borrow()},
+            data: Fetch{
+                data: Ref::map(self.components.get(T::COMP_ID()).unwrap().as_ref().borrow(), |idkfa| idkfa.downcast_ref::<T::COMP_STORAGE>().unwrap())
+            },
             _phantom: PhantomData
         }
     }
     pub fn fetchMut<'a, T>(&'a self) -> WriteStorage<'a, T> where T: gmComp + 'static{
         WriteStorage{
-            data: FetchMut{data: self.components.get(T::COMP_ID()).unwrap().as_ref().downcast_ref::<RefCell<T::COMP_STORAGE>>().unwrap().borrow_mut()},
+            data: FetchMut{
+                data: RefMut::map(self.components.get(T::COMP_ID()).unwrap().as_ref().borrow_mut(), |idkfa| idkfa.downcast_mut::<T::COMP_STORAGE>().unwrap())
+            },
             _phantom: PhantomData
         }
     }
 
     pub fn fetchRes<'a, T>(&'a self) -> Fetch<'a, T> where T: gmRes + 'static{
         Fetch{
-            data: self.resources.get(T::RES_ID()).unwrap().as_ref().downcast_ref::<RefCell<T>>().unwrap().borrow()
+            data: Ref::map(self.resources.get(T::RES_ID()).unwrap().as_ref().borrow(), |idkfa| idkfa.downcast_ref::<T>().unwrap())
         }
     }
     pub fn fetchResMut<'a, T>(&'a self) -> FetchMut<'a, T> where T: gmRes + 'static{
         FetchMut{
-            data: self.resources.get(T::RES_ID()).unwrap().as_ref().downcast_ref::<RefCell<T>>().unwrap().borrow_mut()
+            data: RefMut::map(self.resources.get(T::RES_ID()).unwrap().as_ref().borrow_mut(), |idkfa| idkfa.downcast_mut::<T>().unwrap())
         }
     }
 
@@ -112,10 +116,10 @@ impl gmWorld{
     #[deprecated]
     pub unsafe fn deleteGmObj(&mut self, IN_id: gmID){
         unreachable!();
-        self.gmObjs.remove(IN_id);
-            for COMP in self.components.values_mut(){
-                COMP.clone().downcast::<RefCell<&mut dyn gmStorageDrop>>().unwrap().borrow_mut().drop(&IN_id);
-            }
+        // self.gmObjs.remove(IN_id);
+        // for COMP in self.components.values_mut(){
+        //     COMP.clone().downcast::<RefCell<&mut dyn gmStorageDrop>>().unwrap().borrow_mut().drop(&IN_id);
+        // }
     }
 }
 

@@ -5,8 +5,8 @@ use misc::gmGenIndex;
 use events::gmEvent;
 use fetch::*;
 
-pub type gmWorld_COMPMAP = HashMap<&'static str, Rc<dyn Any>>;
-pub type gmWorld_RESMAP = HashMap<&'static str, Rc<dyn Any>>;
+pub type gmWorld_COMPMAP = HashMap<&'static str, Rc<RefCell<dyn Any>>>;
+pub type gmWorld_RESMAP = HashMap<&'static str, Rc<RefCell<dyn Any>>>;
 pub type gmWorld_CMDQUEUE = Vec<Box<dyn Any>>;
 pub type gmObj = gmGenIndex<()>;
 pub type gmID = u16;

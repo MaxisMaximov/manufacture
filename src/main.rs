@@ -20,6 +20,10 @@ pub use system::*;
 
 // START HERE
 fn main() {
+
+    ECS::tests::main();
+    return;
+
     statics::debug.lock().unwrap().inner.insert(
         ">SYS_SSINIT_data".to_string(),
         debug::debug_item::new(

@@ -23,7 +23,7 @@ pub mod fetch;
 
 pub mod prelude;
 
-mod tests{
+pub mod tests{
     use super::*;
 
     use event::*;
@@ -52,7 +52,9 @@ mod tests{
 
         dispatcher.dispatch(&mut world);
 
-        world.deleteGmObj(0);
+        //world.deleteGmObj(0);
+
+        println!("Success!");
     }
 
     pub struct gmComp_Health{
@@ -166,7 +168,7 @@ mod tests{
         }
     
         fn execute(&mut self, _IN_data: Self::sysData) {
-            todo!()
+            
         }
     }
     pub struct gmSysData_Movement<'a>{
