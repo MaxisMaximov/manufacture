@@ -33,7 +33,7 @@ impl<T: gmComp> gmCommand for cmd_addComp<T>{
     }
 
     fn execute(self, IN_world: &mut gmWorld) {
-        IN_world.fetchMut::<T>().insert(&self.gmObj.clone(), self.comp);
+        IN_world.fetchMut::<T>().insert(self.gmObj.clone(), self.comp);
     }
 }
 
