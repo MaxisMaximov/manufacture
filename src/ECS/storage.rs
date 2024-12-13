@@ -1,5 +1,6 @@
 use super::*;
 
+use comp::gmComp;
 use vars::*;
 
 pub trait gmStorage<T>: Any{
@@ -12,7 +13,9 @@ pub trait gmStorage<T>: Any{
 pub trait gmStorageDrop: Any{
     fn drop(&mut self, IN_id: &gmID);
 }
-impl<T: 'static> gmStorageDrop for dyn gmStorage<T>{
+pub struct gmStorageContainer<T:gmComp>{
+    pub inner: T::COMP_STORAGE
+}
     fn drop(&mut self, IN_id: &gmID) {
         self.remove(&IN_id);
     }
