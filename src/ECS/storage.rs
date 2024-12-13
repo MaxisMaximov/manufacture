@@ -13,6 +13,16 @@ pub trait gmStorage<T>: Any{
 pub trait gmStorageDrop: Any{
     fn drop(&mut self, IN_id: &gmID);
 }
+
+impl dyn gmStorageDrop{
+    pub fn downcast<T: gmComp>(&self) -> &gmStorageContainer<T>{
+        unsafe {&*(self as *const dyn gmStorageDrop as *const gmStorageContainer<T>)}
+    }
+    pub fn downcast_mut<T: gmComp>(&mut self) -> &mut gmStorageContainer<T>{
+        unsafe {&mut *(self as *mut dyn gmStorageDrop as *mut gmStorageContainer<T>)}
+    }
+}
+
 pub struct gmStorageContainer<T:gmComp>{
     pub inner: T::COMP_STORAGE
 }
@@ -26,7 +36,7 @@ pub struct denseVecStorage<T>{
     pub proxyMap: HashMap<gmID, usize>,
     pub inner: Vec<denseVecEntry<T>>
 }
-impl<T: 'static> gmStorage<T> for denseVecStorage<T>{
+impl<T: gmComp + 'static> gmStorage<T> for denseVecStorage<T>{
 
     fn new() -> Self {
         Self{
