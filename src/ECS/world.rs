@@ -111,6 +111,12 @@ impl gmWorld{
             COMP.as_ref().borrow_mut().drop(&IN_id);
         }
     }
+
+    pub fn commandsExec(&mut self){
+        while let Some(COMMAND) = self.commands.pop(){
+            COMMAND.execute(self);
+        }
+    }
 }
 
 pub struct gmObjStorage{

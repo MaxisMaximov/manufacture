@@ -1,6 +1,7 @@
 
 use super::*;
 
+use commands::gmCommand;
 use misc::gmGenIndex;
 use events::gmEvent;
 use fetch::*;
@@ -8,7 +9,7 @@ use storage::gmStorageDrop;
 
 pub type gmWorld_COMPMAP = HashMap<&'static str, Rc<RefCell<dyn gmStorageDrop>>>;
 pub type gmWorld_RESMAP = HashMap<&'static str, Rc<RefCell<dyn Any>>>;
-pub type gmWorld_CMDQUEUE = Vec<Box<dyn Any>>;
+pub type gmWorld_CMDQUEUE = Vec<Box<dyn gmCommand>>;
 pub type gmObj = gmGenIndex<()>;
 pub type gmID = u16;
 pub type gmGen = u16; // There is no way you can even remotely get to 32kth generation -- Consider it a gift
