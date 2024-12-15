@@ -7,3 +7,11 @@ pub struct UI_element{
     pub fg: Color,
     pub bg: Color
 }
+
+pub struct NodeTree<T>{
+    root: Node<T>
+}
+pub struct Node<T>{
+    val: T,
+    nodes: Vec<Node<T>>
+}
