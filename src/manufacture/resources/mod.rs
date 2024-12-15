@@ -10,6 +10,9 @@ pub use event::*;
 mod world;
 pub use world::*;
 
+mod ui;
+pub use ui::*;
+
 pub struct res_PInput{
     pub res: KeyEvent
 }
@@ -89,14 +92,6 @@ impl DerefMut for res_PID{
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.res
     }
-}
-
-pub struct UI_element{
-    pub position: Vector2,
-    pub content: String,
-    pub request: Option<&'static str>,
-    pub fg: Color,
-    pub bg: Color
 }
 
 pub struct res_UIData{
