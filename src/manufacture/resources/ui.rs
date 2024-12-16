@@ -18,3 +18,15 @@ pub struct Node<T>{
     _maxDepth: u16, // Yeah, each node carries the tree's max depth to not do super long recall chain
     nodes: Vec<Node<T>>
 }
+impl<T> Deref for Node<T>{
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target {
+        &self.val
+    }
+}
+impl<T> DerefMut for Node<T>{
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.val
+    }
+}

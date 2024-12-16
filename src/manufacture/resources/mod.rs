@@ -5,12 +5,11 @@ use super::*;
 use types::*;
 
 mod event;
-pub use event::*;
-
 mod world;
-pub use world::*;
-
 mod ui;
+
+pub use event::*;
+pub use world::*;
 pub use ui::*;
 
 pub struct res_PInput{
