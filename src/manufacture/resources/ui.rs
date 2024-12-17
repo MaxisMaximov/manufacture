@@ -47,4 +47,10 @@ impl<T: Clone> Node<T>{
     pub fn removeNode(&mut self, IN_id: usize) -> Node<T>{
         self.nodes.remove(IN_id)
     }
+    pub fn getNode(&self, IN_id: usize) -> Option<&Node<T>>{
+        self.nodes.get(IN_id)
+    }
+    pub fn getNodeMut(&mut self, IN_id: usize) -> Option<&mut Node<T>>{
+        self.nodes.get_mut(IN_id)
+    }
 }
