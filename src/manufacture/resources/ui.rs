@@ -30,3 +30,14 @@ impl<T> DerefMut for Node<T>{
         &mut self.val
     }
 }
+impl<T: Clone> Node<T>{
+    pub fn new(IN_val: T, IN_depth: u16, IN_maxDepth: u16) -> Self{
+        Self{
+            val: IN_val,
+            depth: IN_depth,
+            maxDepth: IN_maxDepth,
+            nodes: Vec::new()
+        }
+    }
+
+}
