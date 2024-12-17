@@ -40,4 +40,11 @@ impl<T: Clone> Node<T>{
         }
     }
 
+    pub fn addNode(&mut self, IN_val: T) -> usize{
+        self.nodes.push(Self::new(IN_val, self.depth + 1, self.maxDepth));
+        self.nodes.len() - 1
+    }
+    pub fn removeNode(&mut self, IN_id: usize) -> Node<T>{
+        self.nodes.remove(IN_id)
+    }
 }
