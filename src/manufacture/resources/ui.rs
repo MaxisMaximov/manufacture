@@ -12,10 +12,11 @@ pub struct NodeTree<T>{
     root: Node<T>,
     maxDepth: u16 // The tree should NOT consist of 32k layers, if it does, you're doing something horribly wrong
 }
+#[derive(Clone)]
 pub struct Node<T>{
     val: T,
-    depth: u16,
-    _maxDepth: u16, // Yeah, each node carries the tree's max depth to not do super long recall chain
+    pub depth: u16,
+    maxDepth: u16, // Yeah, each node carries the tree's max depth to not do super long recall chain
     nodes: Vec<Node<T>>
 }
 impl<T> Deref for Node<T>{
@@ -46,6 +47,22 @@ impl<T: Clone> Node<T>{
     }
     pub fn removeNode(&mut self, IN_id: usize) -> Node<T>{
         self.nodes.remove(IN_id)
+    }
+
+    pub fn nodeCount(&self, IN_recursive: bool) -> usize{
+        if self.nodes.is_empty(){
+            return 0
+        }
+
+        let mut OUT_count = self.nodes.len();
+        
+        if IN_recursive{
+            for NODE in self.nodes.iter(){
+                OUT_count += NODE.nodeCount(true)
+            }
+        }
+
+        OUT_count
     }
     pub fn getNode(&self, IN_id: usize) -> Option<&Node<T>>{
         self.nodes.get(IN_id)
