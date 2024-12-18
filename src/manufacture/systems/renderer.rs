@@ -98,30 +98,7 @@ impl<'a> gmSystem<'a> for sys_Renderer{
 
         // Render the UI boxes
         for UIBOX in IN_data.comp_UIBox.inner.iter(){
-            for UIELEM in UIBOX.val.elements.iter(){
-                // Get starting offset within the buffer
-                let w_startCoords: Vector2 = (UIBOX.val.position.0 + UIELEM.position.0, UIBOX.val.position.1 + UIELEM.position.1);
-
-                let mut w_pos = w_startCoords;
-
-                // Check if there is a request for this UI item
-                let w_text = match UIELEM.request{
-                    Some(DATAID) => IN_data.res_UIData.res.get(DATAID).unwrap(),
-                    None => &UIELEM.content,
-                };
-
-                for CHAR in w_text.chars(){
-                    // Hacky workaround
-                    if CHAR == '\n'{
-                        w_pos.1 += 1;
-                        w_pos.0 = w_startCoords.0;
-                        continue
-                    }
-                    self.frameBuffer[w_pos].ch = CHAR;
-                    w_pos.0 += 1;
-                }
-                
-            }
+            self.renderNode(&UIBOX.val.elements, &UI_data { position: (0, 0) });
         }
 
         // Lock the Output
@@ -139,6 +116,32 @@ impl<'a> gmSystem<'a> for sys_Renderer{
 
         // And drop the lock
         drop(STDLOCK)
+    }
+}
+impl sys_Renderer{
+    pub fn renderNode(&mut self, IN_node: &Node<UI_element>, IN_uiData: &UI_data){
+        let w_startPos = (IN_node.position.0 + IN_uiData.position.0, IN_node.position.1 + IN_uiData.position.1);
+
+        let mut w_pos = w_startPos;
+
+        for CHAR in IN_node.content.chars(){
+            // Hacky workaround
+            if CHAR == '\n'{
+                w_pos.1 += 1;
+                w_pos.0 = w_startPos.0;
+                continue
+            }
+            self.frameBuffer[w_pos].ch = CHAR;
+            w_pos.0 += 1;
+        }
+
+        let w_nextUIData = UI_data{
+            position: w_startPos,
+        };
+
+        for NODE in IN_node.nodes.iter(){
+            self.renderNode(NODE, &w_nextUIData);
+        }
     }
 }
 

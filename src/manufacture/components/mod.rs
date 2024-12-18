@@ -1,5 +1,5 @@
 use super::*;
-use resources::UI_element;
+use resources::{Node, UI_element};
 use types::{Vector2, StyleSet};
 
 pub struct comp_HP{
@@ -87,7 +87,7 @@ impl gmComp for comp_ViewportCamera{
 
 pub struct comp_UIBox{
     pub position: Vector2,
-    pub elements: Vec<UI_element>
+    pub elements: Node<UI_element>
 }
 impl gmComp for comp_UIBox{
     type COMP_STORAGE = denseVecStorage<Self>;
