@@ -7,7 +7,7 @@ pub struct res_GridWorld{
 }
 impl gmRes for res_GridWorld{
     fn new() -> Self {
-        let mut idkfa_map: HashMap<(isize, isize), GridWorldChunk> = HashMap::new();
+        let mut idkfa_map: HashMap<Vector2, GridWorldChunk> = HashMap::new();
 
         for CH_X in WORLD_X_MIN..=WORLD_X_MAX {
             for CH_Y in WORLD_Y_MIN..=WORLD_Y_MAX{
@@ -27,7 +27,7 @@ impl gmRes for res_GridWorld{
 impl res_GridWorld{
     pub fn coordConvert(&self, IN_coords: Vector2) -> (Vector2, Vector2){
         let mut w_chunkCoords: Vector2 = (IN_coords.0 / CHUNK_X, IN_coords.1 / CHUNK_Y);
-        let w_tileCoords: Vector2 =  ((CHUNK_X + IN_coords.0) % CHUNK_X, (CHUNK_Y + IN_coords.1) % CHUNK_Y);
+        let w_tileCoords: Vector2 = ((CHUNK_X + IN_coords.0) % CHUNK_X, (CHUNK_Y + IN_coords.1) % CHUNK_Y);
 
         // Skip over a chunk/s to not end up in (0, 0)
         if IN_coords.0 < 0{

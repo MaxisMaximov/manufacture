@@ -1,6 +1,6 @@
 use super::*;
-use resources::{Node, UI_element};
-use types::{Vector2, StyleSet};
+use resources::UI_element;
+use types::{Vector2, StyleSet, Node};
 
 pub struct comp_HP{
     pub val: u16
