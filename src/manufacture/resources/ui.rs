@@ -3,9 +3,11 @@ use super::*;
 pub struct UI_element{
     pub position: Vector2,
     pub content: String,
-    pub request: Option<&'static str>,
     pub fg: Color,
     pub bg: Color
+}
+pub struct UI_data{
+    pub position: Vector2
 }
 
 pub struct NodeTree<T>{
@@ -16,8 +18,8 @@ pub struct NodeTree<T>{
 pub struct Node<T>{
     val: T,
     pub depth: u16,
-    maxDepth: u16, // Yeah, each node carries the tree's max depth to not do super long recall chain
-    nodes: Vec<Node<T>>
+    pub maxDepth: u16, // Yeah, each node carries the tree's max depth to not do super long recall chain
+    pub nodes: Vec<Node<T>>
 }
 impl<T> Deref for Node<T>{
     type Target = T;
@@ -31,7 +33,7 @@ impl<T> DerefMut for Node<T>{
         &mut self.val
     }
 }
-impl<T: Clone> Node<T>{
+impl<T> Node<T>{
     pub fn new(IN_val: T, IN_depth: u16, IN_maxDepth: u16) -> Self{
         Self{
             val: IN_val,
