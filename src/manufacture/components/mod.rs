@@ -40,7 +40,8 @@ impl gmComp for comp_Vel {
 pub struct comp_Sprite{
     pub sizeX: usize,
     pub sizeY: usize,
-    pub sprite: Vec<StyleSet>
+    pub sprite: Vec<StyleSet>,
+    pub zDepth: u16
 }
 impl gmComp for comp_Sprite{
     type COMP_STORAGE = denseVecStorage<Self>;
