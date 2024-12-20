@@ -16,36 +16,42 @@ impl Default for StyleSet{
     }
 }
 
-pub struct DoubleDArray<T, const X: usize, const Y: usize>{
-    pub inner: [[T; X]; Y], // RUST PLEASE LET ME USE CONST EXPRESSIONS WITH GENERICS
+pub struct DoubleDArray<T>{
+    pub inner: Vec<T>,
+    size: (usize, usize),
     dummyT: T
 }
-impl<T: Default + Copy, const X: usize, const Y: usize> DoubleDArray<T, X, Y>{
-    pub fn new() -> Self{
+impl<T: Default + Copy> DoubleDArray<T>{
+    pub fn new(IN_x: usize, IN_y: usize) -> Self{
         Self{
-            inner: [[T::default(); X]; Y],
+            inner: vec![T::default(); IN_x * IN_y],
+            size: (IN_x, IN_y),
             dummyT: T::default()
         }
     }
 }
-impl<T, const X: usize, const Y: usize> Index<Vector2> for DoubleDArray<T, X, Y>{
+impl<T> Index<Vector2> for DoubleDArray<T>{
     type Output = T;
 
     fn index(&self, index: Vector2) -> &Self::Output {
-        if let Some(ROW) = self.inner.get((index.1 as usize).wrapping_add(Y/2)){
-            if let Some(TYPE) = ROW.get((index.0 as usize).wrapping_add(X/2)){
-                return TYPE
-            }
+
+        let X = (index.0 as usize).wrapping_add(self.size.0/2);
+        let Y = (index.1 as usize).wrapping_add(self.size.1/2);
+
+        if let Some(CELL) = self.inner.get(X + Y * self.size.0){
+            return CELL
         }
         &self.dummyT
     }
 }
-impl<T, const X: usize, const Y: usize> IndexMut<Vector2> for DoubleDArray<T, X, Y>{
+impl<T> IndexMut<Vector2> for DoubleDArray<T>{
     fn index_mut(&mut self, index: Vector2) -> &mut Self::Output {
-        if let Some(ROW) = self.inner.get_mut((index.1 as usize).wrapping_add(Y/2)){
-            if let Some(TYPE) = ROW.get_mut((index.0 as usize).wrapping_add(X/2)){
-                return TYPE
-            }
+        
+        let X = (index.0 as usize).wrapping_add(self.size.0/2);
+        let Y = (index.1 as usize).wrapping_add(self.size.1/2);
+
+        if let Some(CELL) = self.inner.get_mut(X + Y * self.size.0){
+            return CELL
         }
         &mut self.dummyT
     }

@@ -5,14 +5,14 @@ use crossterm::style::Stylize;
 use super::*;
 
 pub struct sys_Renderer{
-    frameBuffer: DoubleDArray<StyleSet, RENDER_BUFFER_X, RENDER_BUFFER_Y>
+    frameBuffer: DoubleDArray<StyleSet>
 }
 impl<'a> gmSystem<'a> for sys_Renderer{
     type sysData = sysData_Renderer<'a>;
 
     fn new() -> Self {
         Self{
-            frameBuffer: DoubleDArray::new()
+            frameBuffer: DoubleDArray::new(RENDER_BUFFER_X, RENDER_BUFFER_Y)
         }
     }
 
@@ -33,7 +33,7 @@ impl<'a> gmSystem<'a> for sys_Renderer{
         if let Some(VIEWPORT) = w_camera{
 
             // Set up the buffer
-            let mut w_WorldBuffer: DoubleDArray<StyleSet, RENDER_VIEWPORT_X, RENDER_VIEWPORT_Y> = DoubleDArray::new();
+            let mut w_WorldBuffer: DoubleDArray<StyleSet,> = DoubleDArray::new(RENDER_VIEWPORT_X, RENDER_VIEWPORT_Y);
 
             // Get the tracked entity position
             // Since Chunks are also entities you can attach cameras to them too, fun fact
@@ -83,8 +83,8 @@ impl<'a> gmSystem<'a> for sys_Renderer{
             }
 
             // Now paste all that into the main buffer
-            // DoubleDArray stores everythong Bottom>>Top so I can iterate over it directly
-            let mut BUFFER_ROWITER = w_WorldBuffer.inner.iter();
+            // DoubleDArray stores everything Bottom>>Top so I can iterate over it directly
+            let mut BUFFER_ROWITER = w_WorldBuffer.inner.chunks(RENDER_VIEWPORT_X);
 
 
             for YPOS in RENDER_VIEWPORT_Y_MIN..=RENDER_VIEWPORT_Y_MAX{
@@ -105,7 +105,7 @@ impl<'a> gmSystem<'a> for sys_Renderer{
         let mut STDLOCK = std::io::BufWriter::new(std::io::stdout().lock());
 
         // Buffer the frame into string output
-        for ROW in self.frameBuffer.inner.iter().rev(){
+        for ROW in self.frameBuffer.inner.chunks(RENDER_BUFFER_X).rev(){
             for CELL in ROW.iter(){
                 let _ = STDLOCK.write(CELL.ch.with(CELL.fg).on(CELL.bg).to_string().as_bytes());
             }
