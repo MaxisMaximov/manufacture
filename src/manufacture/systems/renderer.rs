@@ -32,8 +32,9 @@ impl<'a> gmSystem<'a> for sys_Renderer{
 
         if let Some(VIEWPORT) = w_camera{
 
-            // Set up the buffer
-            let mut w_WorldBuffer: DoubleDArray<StyleSet,> = DoubleDArray::new(RENDER_VIEWPORT_X, RENDER_VIEWPORT_Y);
+            // Set up the buffers
+            let mut w_WorldBuffer: DoubleDArray<StyleSet> = DoubleDArray::new(RENDER_VIEWPORT_X, RENDER_VIEWPORT_Y);
+            let mut w_WorldZBuffer: DoubleDArray<u16> = DoubleDArray::new(RENDER_VIEWPORT_X, RENDER_VIEWPORT_Y);
 
             // Get the tracked entity position
             // Since Chunks are also entities you can attach cameras to them too, fun fact
@@ -77,7 +78,11 @@ impl<'a> gmSystem<'a> for sys_Renderer{
                 // Easier to do an iterator than some dark magic peckneckiry to rearrange images
                 for YPOS in (w_iterEnd.1..w_iterStart.1).rev(){
                     for XPOS in w_iterStart.0..w_iterEnd.0{
-                        w_WorldBuffer[(XPOS, YPOS)] = *SPRITE_PIXELS.next().unwrap()
+                        if !w_WorldZBuffer[(XPOS, YPOS)] < OBJ.val.zDepth{continue}
+
+                        w_WorldBuffer[(XPOS, YPOS)] = *SPRITE_PIXELS.next().unwrap();
+
+                        w_WorldZBuffer[(XPOS, YPOS)] = OBJ.val.zDepth;
                     }
                 }
             }

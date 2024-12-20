@@ -41,7 +41,7 @@ pub struct comp_Sprite{
     pub sizeX: usize,
     pub sizeY: usize,
     pub sprite: Vec<StyleSet>,
-    pub zDepth: u16
+    pub zDepth: u16 // Again, 65k possible values. 255 probably too little, 4mil far too much. If you get ANYWHERE near even 1k go see a doctor
 }
 impl gmComp for comp_Sprite{
     type COMP_STORAGE = denseVecStorage<Self>;
