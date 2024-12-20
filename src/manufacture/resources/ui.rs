@@ -4,7 +4,9 @@ pub struct UI_element{
     pub position: UI_pos,
     pub content: String,
     pub fg: Color,
-    pub bg: Color
+    pub bg: Color,
+    pub border: UI_border,
+    pub borderSize: (usize, usize)
 }
 pub struct UI_data{
     pub position: Vector2
@@ -20,4 +22,7 @@ impl UI_data{
 pub enum UI_pos{
     Abs(Vector2),
     Rel(Vector2)
+}
+pub enum UI_border{
+    singleChar(char)
 }
