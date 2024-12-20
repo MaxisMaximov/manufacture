@@ -1,7 +1,7 @@
 use super::*;
 
 pub struct UI_element{
-    pub position: Vector2,
+    pub position: UI_pos,
     pub content: String,
     pub fg: Color,
     pub bg: Color
@@ -15,4 +15,9 @@ impl UI_data{
             position: (self.position.0 + IN_data.position.0, self.position.1 + IN_data.position.1),
         }
     }
+}
+
+pub enum UI_pos{
+    Abs(Vector2),
+    Rel(Vector2)
 }

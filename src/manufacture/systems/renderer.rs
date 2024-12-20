@@ -120,7 +120,11 @@ impl<'a> gmSystem<'a> for sys_Renderer{
 }
 impl sys_Renderer{
     pub fn renderNode(&mut self, IN_node: &Node<UI_element>, IN_uiData: &UI_data){
-        let w_startPos = (IN_node.position.0 + IN_uiData.position.0, IN_node.position.1 + IN_uiData.position.1);
+        let w_startPos = match IN_node.position{
+            UI_pos::Abs(POS) => (POS.0, POS.1),
+            UI_pos::Rel(POS) => (POS.0 + IN_uiData.position.0, POS.1 + IN_uiData.position.1)
+        
+        };
 
         let mut w_pos = w_startPos;
 
@@ -131,7 +135,11 @@ impl sys_Renderer{
                 w_pos.0 = w_startPos.0;
                 continue
             }
-            self.frameBuffer[w_pos].ch = CHAR;
+            
+            let mut idkfa_cell = self.frameBuffer[w_pos];
+            idkfa_cell.ch = CHAR;
+            idkfa_cell.fg = IN_node.fg;
+            idkfa_cell.bg = IN_node.bg;
             w_pos.0 += 1;
         }
 
