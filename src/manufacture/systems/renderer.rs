@@ -148,6 +148,24 @@ impl sys_Renderer{
             w_pos.0 += 1;
         }
 
+        // Render border
+        let w_borderStart: Vector2 = (w_startPos.0 - 1, w_startPos.1 - 1);
+        let w_borderEnd: Vector2 = (w_startPos.0 + IN_node.borderSize.0 as isize, w_startPos.1 + IN_node.borderSize.1 as isize);
+
+        match IN_node.border {
+            UI_border::singleChar(CHAR) => {
+                // Top
+                self.drawLine((w_borderStart.0, w_borderStart.1), (w_borderEnd.0, w_borderStart.1), StyleSet{ ch: CHAR, fg: Color::White, bg: Color::Black });
+                // Bottom
+                self.drawLine((w_borderStart.0, w_borderEnd.1), (w_borderEnd.0, w_borderEnd.1), StyleSet{ ch: CHAR, fg: Color::White, bg: Color::Black });
+                // Left
+                self.drawLine((w_borderStart.0, w_borderStart.1), (w_borderStart.0, w_borderEnd.1), StyleSet{ ch: CHAR, fg: Color::White, bg: Color::Black });
+                // Right
+                self.drawLine((w_borderEnd.0, w_borderStart.1), (w_borderEnd.0, w_borderEnd.1), StyleSet{ ch: CHAR, fg: Color::White, bg: Color::Black });
+            }
+            _ => unimplemented!()
+        }
+
         let w_nextUIData = UI_data{
             position: w_startPos,
         };
@@ -156,6 +174,7 @@ impl sys_Renderer{
             self.renderNode(NODE, &w_nextUIData);
         }
     }
+
     pub fn drawLine(&mut self, IN_start: Vector2, IN_end: Vector2, IN_styleSet: StyleSet){
         // COPIED FROM OLD MANUFACTURE
         // And slightly adjusted
@@ -174,6 +193,7 @@ impl sys_Renderer{
             
             // Swap if needed
             if !(IN_start.0 < IN_end.0){
+                // Wonder what's the cost of this
                 std::mem::swap(&mut w_startPos, &mut w_endPos);
             }
             
