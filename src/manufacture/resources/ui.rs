@@ -6,7 +6,7 @@ pub struct UI_element{
     pub fg: Color,
     pub bg: Color,
     pub border: UI_border,
-    pub borderSize: (usize, usize)
+    pub borderSize: (usize, usize) // Inner size
 }
 pub struct UI_data{
     pub position: Vector2

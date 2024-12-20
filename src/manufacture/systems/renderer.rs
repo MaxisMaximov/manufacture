@@ -156,6 +156,51 @@ impl sys_Renderer{
             self.renderNode(NODE, &w_nextUIData);
         }
     }
+    pub fn drawLine(&mut self, IN_start: Vector2, IN_end: Vector2, IN_styleSet: StyleSet){
+        // COPIED FROM OLD MANUFACTURE
+        // And slightly adjusted
+
+        
+        // Init start values
+        let mut w_startPos = IN_start;
+        let mut w_endPos = IN_end;
+
+        let mut w_subAx: isize;
+        let w_dir: isize;
+
+        // Calc delta distance between points and check which is the main axis, then set the variables
+        //          Delta X                          Delta Y
+        if IN_start.0.abs_diff(IN_end.0) >= IN_start.1.abs_diff(IN_end.1){ // X Axis
+            
+            // Swap if needed
+            if !(IN_start.0 < IN_end.0){
+                std::mem::swap(&mut w_startPos, &mut w_endPos);
+            }
+            
+            w_subAx = w_startPos.1; // Set subaxis position
+            w_dir = if w_startPos.1 < w_endPos.1{1}else{-1}; // Check what way the line is going, set sign if needed
+        }
+        else{ // Y Axis
+
+            // Swap if needed
+            if !(IN_start.1 < IN_end.1){
+                std::mem::swap(&mut w_startPos, &mut w_endPos);
+            }
+
+            w_subAx = w_startPos.0; // Set subaxis position
+            w_dir = if w_startPos.0 < w_endPos.0{1}else{-1}; // Check what way the line is going, set sign if needed
+        }
+
+        // Finally iterate
+        for SUPAX in w_startPos.1..=w_endPos.1{
+            self.frameBuffer[(w_subAx, SUPAX)] = IN_styleSet;
+
+            if w_subAx.abs_diff(w_endPos.0)*2 > SUPAX.abs_diff(w_endPos.1){
+                // If sign is enabled that means it goes left
+                w_subAx += w_dir
+            }
+        }
+    }
 }
 
 pub struct sysData_Renderer<'a>{
