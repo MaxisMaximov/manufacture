@@ -14,6 +14,9 @@ impl<'a> gmSystem<'a> for sys_PTileChange{
     }
 
     fn execute(&mut self, mut IN_data: Self::sysData) {
+        if IN_data.res_PID.get(&1).is_none(){
+            return
+        }
         let w_PCoords = IN_data.comp_Pos.get(IN_data.res_PID.res.get(&1).unwrap());
         let w_oldTile = IN_data.res_World.getTile((w_PCoords.x, w_PCoords.y)).unwrap().mat;
 

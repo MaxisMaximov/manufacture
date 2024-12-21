@@ -9,5 +9,6 @@ pub mod resources;
 pub mod systems;
 pub mod vars;
 pub mod types;
+pub mod prefabs;
 
 pub mod init;

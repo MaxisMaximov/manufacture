@@ -61,6 +61,7 @@ impl<'a> gmSystem<'a> for sys_Input{
     fn execute(&mut self, mut IN_data: Self::sysData) {
         if !poll(Duration::from_secs(0)).unwrap(){
             IN_data.res_Input.res = KeyEvent::new(KeyCode::Null, KeyModifiers::NONE);
+            return;
         }
 
         if let Event::Key(KEY) = read().unwrap(){

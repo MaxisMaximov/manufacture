@@ -11,5 +11,6 @@ pub use super::{comp::*,
     dispatcher::*,
     misc::*,
     events::*,
-    fetch::*
+    fetch::*,
+    prefab::*
 };

@@ -1,4 +1,6 @@
 use super::*;
+
+use prefabs::*;
 use systems::*;
 use resources::*;
 use components::*;
@@ -51,4 +53,7 @@ pub fn init(IN_world: &mut gmWorld, IN_dispatch: &mut gmDispatcher){
     IN_world.registerEvent::<event_TileChange>();
 
     IN_world.registerEvent::<event_BatchTileChange>();
+
+    prefabs::prefab_Player::spawn(&prefab_Player{}, IN_world.createGmObj());
+    IN_world.createGmObj().addComp(comp_ViewportCamera{ trackedEntity: 0, offset: (0, 0), active: true });
 }

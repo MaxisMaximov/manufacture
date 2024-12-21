@@ -21,7 +21,18 @@ pub use system::*;
 // START HERE
 fn main() {
 
-    ECS::tests::main();
+    // Switch to Raw Mode
+    terminal::enable_raw_mode().unwrap();
+
+    let mut WORLD = ECS::world::gmWorld::new();
+    let mut DISPATCHER = ECS::dispatcher::gmDispatcher::new();
+
+    manufacture::init::init(&mut WORLD, &mut DISPATCHER);
+
+    loop {
+        DISPATCHER.dispatch(&mut WORLD);
+    }
+    
     return;
 
     statics::debug.lock().unwrap().inner.insert(
@@ -46,16 +57,7 @@ fn main() {
         ),
     );
 
-    // Switch to Raw Mode
-    terminal::enable_raw_mode().unwrap();
 
-    // Enter alternate screen and hide the cursor
-    let _ = execute!(stdout(), 
-        terminal::EnterAlternateScreen,
-        terminal::SetSize(vars::RENDERER::RENDER_BUFFER_X as u16, vars::RENDERER::RENDER_BUFFER_Y as u16),
-        terminal::SetTitle("manufacture"),
-        cursor::Hide
-    );
 
     // Generate new world
     // Commented out cuz for whatever reason it gets stuck in loop

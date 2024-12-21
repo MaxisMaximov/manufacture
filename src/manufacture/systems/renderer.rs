@@ -1,4 +1,4 @@
-use std::io::Write;
+use std::io::{BufWriter, Write};
 
 use crossterm::style::Stylize;
 
@@ -92,10 +92,10 @@ impl<'a> gmSystem<'a> for sys_Renderer{
             let mut BUFFER_ROWITER = w_WorldBuffer.inner.chunks(RENDER_VIEWPORT_X);
 
 
-            for YPOS in RENDER_VIEWPORT_Y_MIN..=RENDER_VIEWPORT_Y_MAX{
+            for YPOS in RENDER_VIEWPORT_Y_MIN..RENDER_VIEWPORT_Y_MAX{
                 let mut ROW_ITER = BUFFER_ROWITER.next().unwrap().iter();
 
-                for XPOS in RENDER_VIEWPORT_X_MIN..=RENDER_VIEWPORT_X_MAX{
+                for XPOS in RENDER_VIEWPORT_X_MIN..RENDER_VIEWPORT_X_MAX{
                     self.frameBuffer[(XPOS, YPOS)] = *ROW_ITER.next().unwrap()
                 }
             }
@@ -106,21 +106,33 @@ impl<'a> gmSystem<'a> for sys_Renderer{
             self.renderNode(&UIBOX.val.elements, &UI_data { position: (0, 0) });
         }
 
+        // THIS NEXT PART DOESN'T QUITE WORK
+        // In all seriousness WHY IS CROSSTERM'S CONVOLUTED FORMATTING WORK PERFECTLY with frame sync
+        // But when *I* am trying to do it RAW it DOESN'T????
+
+        // Start sync
+        print!("\x1b[?2026h");
+        
         // Lock the Output
-        let mut STDLOCK = std::io::BufWriter::new(std::io::stdout().lock());
+        let mut STDLOCK = BufWriter::new(std::io::stdout().lock());
+
+        STDLOCK.write(b"\x1b[1J\x1b[H");
 
         // Buffer the frame into string output
         for ROW in self.frameBuffer.inner.chunks(RENDER_BUFFER_X).rev(){
             for CELL in ROW.iter(){
-                let _ = STDLOCK.write(CELL.ch.with(CELL.fg).on(CELL.bg).to_string().as_bytes());
+                STDLOCK.write(CELL.ch.with(CELL.fg).on(CELL.bg).to_string().as_bytes());
             }
+            STDLOCK.write(b"\r\n");
         }
-
-        // And finally print the frame
-        let _ = STDLOCK.flush();
-
+        
+        STDLOCK.flush();
         // And drop the lock
-        drop(STDLOCK)
+        drop(STDLOCK);
+
+        // End sync and finally print the frame
+        print!("\x1b[?2026l");
+
     }
 }
 impl sys_Renderer{
