@@ -79,6 +79,10 @@ impl<'a> gmSystem<'a> for sys_TileChunkUpdate{
         for EVENT in IN_data.event_TileChange.iter(){
             if let Some(TILE) = IN_data.res_World.getTileMut(EVENT.coords){
                 TILE.mat = EVENT.newTile
+
+            }
+            if let Some(CHUNK) = IN_data.res_World.getChunkFromTileMut(EVENT.coords){
+                CHUNK.needsResprite = true
             }
         }
 
