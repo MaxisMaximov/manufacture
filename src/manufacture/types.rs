@@ -38,6 +38,10 @@ impl<T> Index<Vector2> for DoubleDArray<T>{
         let X = (index.0 as usize).wrapping_add(self.size.0/2);
         let Y = (index.1 as usize).wrapping_add(self.size.1/2);
 
+        if X > self.size.0 || Y > self.size.1{
+            return &self.dummyT
+        }
+
         if let Some(CELL) = self.inner.get(X + Y * self.size.0){
             return CELL
         }
@@ -49,6 +53,10 @@ impl<T> IndexMut<Vector2> for DoubleDArray<T>{
         
         let X = (index.0 as usize).wrapping_add(self.size.0/2);
         let Y = (index.1 as usize).wrapping_add(self.size.1/2);
+
+        if X > self.size.0 || Y > self.size.1{
+            return &mut self.dummyT
+        }
 
         if let Some(CELL) = self.inner.get_mut(X + Y * self.size.0){
             return CELL
