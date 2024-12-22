@@ -36,6 +36,19 @@ pub fn init(IN_world: &mut gmWorld, IN_dispatch: &mut gmDispatcher){
     IN_world.registerEvent::<event_TileChange>();
     IN_world.registerEvent::<event_BatchTileChange>();
 
-    prefabs::prefab_Player::spawn(&prefab_Player{}, IN_world.createGmObj());
+    prefab_Player::spawn(&prefab_Player{}, IN_world.createGmObj());
+
+    prefab_GridWorldChunk::spawn(&prefab_GridWorldChunk{ chunk: (0, 0), color: Color::Blue}, IN_world.createGmObj());
+    prefab_GridWorldChunk::spawn(&prefab_GridWorldChunk{ chunk: (1, 0), color: Color::Cyan}, IN_world.createGmObj());
+    prefab_GridWorldChunk::spawn(&prefab_GridWorldChunk{ chunk: (0, 1), color: Color::DarkBlue}, IN_world.createGmObj());
+    prefab_GridWorldChunk::spawn(&prefab_GridWorldChunk{ chunk: (-1, 0), color: Color::DarkCyan}, IN_world.createGmObj());
+    prefab_GridWorldChunk::spawn(&prefab_GridWorldChunk{ chunk: (0, -1), color: Color::DarkGreen}, IN_world.createGmObj());
+    prefab_GridWorldChunk::spawn(&prefab_GridWorldChunk{ chunk: (1, 1), color: Color::DarkGrey}, IN_world.createGmObj());
+    prefab_GridWorldChunk::spawn(&prefab_GridWorldChunk{ chunk: (1, -1), color: Color::DarkMagenta}, IN_world.createGmObj());
+    prefab_GridWorldChunk::spawn(&prefab_GridWorldChunk{ chunk: (-1, -1), color: Color::DarkRed}, IN_world.createGmObj());
+    prefab_GridWorldChunk::spawn(&prefab_GridWorldChunk{ chunk: (-1, 1), color: Color::DarkYellow}, IN_world.createGmObj());
+
+    IN_world.fetchResMut::<res_PID>().insert(1, 0);
+
     IN_world.createGmObj().addComp(comp_ViewportCamera{ trackedEntity: 0, offset: (0, 0), active: true });
 }

@@ -76,8 +76,7 @@ impl<'a> gmSystem<'a> for sys_Renderer{
                 // And finally iterate
                 // Traverses the sprite Top>>Bottom, because that's how images are stored
                 // Easier to do an iterator than some dark magic peckneckiry to rearrange images
-                let mut YPOS = w_iterStart.1;
-                while YPOS > w_iterEnd.1{
+                for YPOS in (w_iterEnd.1 + 1..w_iterStart.1 + 1).rev(){
                     for XPOS in w_iterStart.0..w_iterEnd.0{
                         if w_WorldZBuffer[(XPOS, YPOS)] > OBJ.val.zDepth{continue}
 
@@ -85,7 +84,6 @@ impl<'a> gmSystem<'a> for sys_Renderer{
 
                         w_WorldZBuffer[(XPOS, YPOS)] = OBJ.val.zDepth;
                     }
-                    YPOS -= 1;
                 }
             }
 
