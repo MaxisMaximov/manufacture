@@ -24,12 +24,15 @@ impl<'a> gmSystem<'a> for sys_Move{
     }
 
     fn execute(&mut self, IN_data: Self::sysData) {
-        let sysData_Move{comp_Vel: VELCOMPS, comp_Pos: mut POSCOMPS} = IN_data;
+        let sysData_Move{
+            comp_Vel: VELCOMPS,
+            comp_Pos: mut POSCOMPS} = IN_data;
         
         for (ID, _) in VELCOMPS.proxyMap.iter(){
             let w_velComp = VELCOMPS.get(ID);
             let w_posComp = POSCOMPS.get_mut(ID);
             w_posComp.x += w_velComp.x;
+            w_posComp.y += w_velComp.y;
         }
     }
 }
@@ -97,11 +100,13 @@ impl<'a> gmSystem<'a> for sys_PMove{
             if !IN_data.comp_PController.get(GMOBJID).active{
                 continue
             }
-            let w_stepSize: isize = if IN_data.res_PInput.modifiers == KeyModifiers::SHIFT{
-                    4
-                }else{
-                    1
-                };
+
+            let w_stepSize: isize = match IN_data.res_PInput.modifiers{
+                KeyModifiers::SHIFT => {4}
+                KeyModifiers::NONE => {1}
+                _ => {0}
+            };
+
             let w_velComp = IN_data.comp_Vel.get_mut(GMOBJID);
             match IN_data.res_PInput.code{
                 KeyCode::Up => {w_velComp.x = 0; w_velComp.y = w_stepSize}
