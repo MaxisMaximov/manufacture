@@ -25,25 +25,27 @@ impl<'a> gmSystem<'a> for sys_Move{
 
     fn execute(&mut self, IN_data: Self::sysData) {
         let sysData_Move{
-            comp_Vel: VELCOMPS,
+            comp_Vel: mut VELCOMPS,
             comp_Pos: mut POSCOMPS} = IN_data;
         
-        for (ID, _) in VELCOMPS.proxyMap.iter(){
-            let w_velComp = VELCOMPS.get(ID);
-            let w_posComp = POSCOMPS.get_mut(ID);
-            w_posComp.x += w_velComp.x;
-            w_posComp.y += w_velComp.y;
+        for VELCOMP in VELCOMPS.inner.iter_mut(){
+            let w_posComp = POSCOMPS.get_mut(&VELCOMP.id);
+            w_posComp.x += VELCOMP.val.x;
+            w_posComp.y += VELCOMP.val.y;
+
+            VELCOMP.val.x = 0;
+            VELCOMP.val.y = 0;
         }
     }
 }
 pub struct sysData_Move<'a>{
-    comp_Vel: ReadStorage<'a, comp_Vel>,
+    comp_Vel: WriteStorage<'a, comp_Vel>,
     comp_Pos: WriteStorage<'a, comp_Pos>
 }
 impl<'a> gmSystemData<'a> for sysData_Move<'a>{
     fn fetch(IN_world: &'a mut gmWorld) -> Self {
         Self{
-            comp_Vel: IN_world.fetch::<comp_Vel>(),
+            comp_Vel: IN_world.fetchMut::<comp_Vel>(),
             comp_Pos: IN_world.fetchMut::<comp_Pos>(),
         }
     }
