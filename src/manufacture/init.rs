@@ -31,6 +31,7 @@ pub fn init(IN_world: &mut gmWorld, IN_dispatch: &mut gmDispatcher){
     IN_world.registerRes::<res_PID>();
     IN_world.registerRes::<res_PInput>();
     IN_world.registerRes::<res_UIData>();
+    IN_world.registerRes::<res_LoadedChunks>();
 
     // Register Events
     IN_world.registerEvent::<event_TileChange>();

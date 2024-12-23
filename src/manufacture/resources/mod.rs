@@ -13,7 +13,7 @@ pub use world::*;
 pub use ui::*;
 
 pub struct res_PInput{
-    pub res: KeyEvent
+    res: KeyEvent
 }
 impl gmRes for res_PInput{
     fn new() -> Self {
@@ -40,7 +40,7 @@ impl DerefMut for res_PInput{
 }
 
 pub struct res_DeltaT{
-    pub res: Duration
+    res: Duration
 }
 impl gmRes for res_DeltaT{
     fn new() -> Self {
@@ -67,7 +67,7 @@ impl DerefMut for res_DeltaT{
 }
 
 pub struct res_PID{
-    pub res: HashMap<gmID, gmID> // PID, gmObjID
+    res: HashMap<gmID, gmID> // PID, gmObjID
 }
 impl gmRes for res_PID{
     fn new() -> Self {
@@ -94,7 +94,7 @@ impl DerefMut for res_PID{
 }
 
 pub struct res_UIData{
-    pub res: HashMap<&'static str, String>
+    res: HashMap<&'static str, String>
 }
 impl gmRes for res_UIData{
     fn new() -> Self {
@@ -115,6 +115,33 @@ impl Deref for res_UIData{
     }
 }
 impl DerefMut for res_UIData{
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.res
+    }
+}
+
+pub struct res_LoadedChunks{
+    res: HashMap<Vector2, ()>
+}
+impl gmRes for res_LoadedChunks{
+    fn new() -> Self {
+        Self{
+            res: HashMap::new(),
+        }
+    }
+
+    fn RES_ID() -> &'static str {
+        "res_LoadedChunks"
+    }
+}
+impl Deref for res_LoadedChunks{
+    type Target = HashMap<Vector2, ()>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.res
+    }
+}
+impl DerefMut for res_LoadedChunks{
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.res
     }
