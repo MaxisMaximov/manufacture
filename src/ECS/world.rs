@@ -113,6 +113,15 @@ impl gmWorld{
     }
 
     pub fn commandsExec(&mut self){
+        loop{
+            let idkfa = self.commands.as_ref().borrow_mut().pop();
+            match idkfa{
+                Some(COMMAND) => COMMAND.execute(self),
+                None => break,
+            }
+        }
+    }
+
     pub fn fetchCommandWriter<'a>(&'a self) -> FetchMut<'a, gmWorld_CMDQUEUE>{
         FetchMut{
             data: RefMut::map(self.commands.as_ref().borrow_mut(), |idkfa| {idkfa}),
