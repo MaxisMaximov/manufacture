@@ -65,12 +65,12 @@ impl<'a> gmSystem<'a> for sys_Input{
 
     fn execute(&mut self, mut IN_data: Self::sysData) {
         if !poll(Duration::from_secs(0)).unwrap(){
-            IN_data.res_Input.res = KeyEvent::new(KeyCode::Null, KeyModifiers::NONE);
+            (**IN_data.res_Input) = KeyEvent::new(KeyCode::Null, KeyModifiers::NONE);
             return;
         }
 
         if let Event::Key(KEY) = read().unwrap(){
-            IN_data.res_Input.res = KEY
+            (**IN_data.res_Input) = KEY
         }
     }
 }
@@ -98,7 +98,7 @@ impl<'a> gmSystem<'a> for sys_PMove{
     }
 
     fn execute(&mut self, mut IN_data: Self::sysData) {
-        for (_, GMOBJID) in IN_data.res_PID.res.iter(){
+        for (_, GMOBJID) in IN_data.res_PID.iter(){
             if !IN_data.comp_PController.get(GMOBJID).active{
                 continue
             }
