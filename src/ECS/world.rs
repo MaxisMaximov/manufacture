@@ -11,11 +11,11 @@ use storage::*;
 use fetch::*;
 
 pub struct gmWorld{
-    pub gmObjs: gmObjStorage,
-    pub components: gmWorld_COMPMAP,
-    pub resources: gmWorld_RESMAP,
-    pub events: gmWorld_EVENTMAP,
-    pub commands: gmWorld_CMDQUEUE
+    gmObjs: gmObjStorage,
+    components: gmWorld_COMPMAP,
+    resources: gmWorld_RESMAP,
+    events: gmWorld_EVENTMAP,
+    commands: Rc<RefCell<gmWorld_CMDQUEUE>>
 }
 impl gmWorld{
 
@@ -25,7 +25,7 @@ impl gmWorld{
             components: gmWorld_COMPMAP::new(),
             resources: gmWorld_RESMAP::new(),
             events: gmWorld_EVENTMAP::new(),
-            commands: gmWorld_CMDQUEUE::new()
+            commands: Rc::new(RefCell::new(gmWorld_CMDQUEUE::new()))
         }
     }
 
