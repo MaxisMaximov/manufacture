@@ -23,6 +23,19 @@ impl gmCommand for cmd_SpawnGmObj{
     }
 }
 
+pub struct cmd_DespawnGmObj{
+    pub id: gmID
+}
+impl gmCommand for cmd_DespawnGmObj{
+    fn CMD_ID(&self) -> &'static str {
+        "cmd_DespawnGmObj"
+    }
+
+    fn execute(&self, IN_world: &mut gmWorld) {
+        IN_world.deleteGmObj(self.id);
+    }
+}
+
 pub struct cmd_addComp<T: gmComp>{
     pub gmObj: gmID,
     pub comp: T
