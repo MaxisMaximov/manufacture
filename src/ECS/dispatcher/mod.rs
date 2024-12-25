@@ -60,5 +60,6 @@ impl gmDispatcher{
         for STAGE in self.stages.iter_mut(){
             STAGE.dispatch(IN_world);
         }
+        IN_world.commandsExec();
     }
 }
