@@ -71,4 +71,11 @@ impl<T: gmEvent> eventQueue for Vec<T>{
         self.clear();
     }
 }
+impl dyn eventQueue{
+    pub fn downcast_ref<T: gmEvent>(&self) -> &Vec<T>{
+        unsafe {&*(self as *const dyn eventQueue as *const Vec<T>)}
+    }
+    pub fn downcast_mut<T: gmEvent>(&mut self) -> &mut Vec<T>{
+        unsafe {&mut *(self as *mut dyn eventQueue as *mut Vec<T>)}
+}
 }
