@@ -17,10 +17,10 @@ impl<'a> gmSystem<'a> for sys_PTileChange{
         if IN_data.res_PID.get(&1).is_none(){
             return
         }
-        let w_PCoords = IN_data.comp_Pos.get(IN_data.res_PID.res.get(&1).unwrap());
+        let w_PCoords = IN_data.comp_Pos.get(IN_data.res_PID.get(&1).unwrap());
         let w_oldTile = IN_data.res_World.getTile((w_PCoords.x, w_PCoords.y)).unwrap().mat;
 
-        match IN_data.res_PInput.res.code{
+        match IN_data.res_PInput.code{
             KeyCode::Char('f') => {
                 IN_data.event_TileChange.push(event_TileChange{
                     coords: (w_PCoords.x, w_PCoords.y),

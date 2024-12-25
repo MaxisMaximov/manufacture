@@ -1,7 +1,8 @@
 pub use std::any::Any;
 pub use std::collections::{BTreeMap, HashMap};
 
-pub use super::{comp::*,
+pub use super::{
+    comp::*,
     storage::*,
     system::*,
     vars::*,
@@ -12,5 +13,6 @@ pub use super::{comp::*,
     misc::*,
     events::*,
     fetch::*,
-    prefab::*
+    prefab::*,
+    commands::*
 };

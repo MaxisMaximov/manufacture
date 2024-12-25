@@ -121,7 +121,7 @@ impl DerefMut for res_UIData{
 }
 
 pub struct res_LoadedChunks{
-    res: HashMap<Vector2, ()>
+    res: HashMap<Vector2, gmID>
 }
 impl gmRes for res_LoadedChunks{
     fn new() -> Self {
@@ -135,7 +135,7 @@ impl gmRes for res_LoadedChunks{
     }
 }
 impl Deref for res_LoadedChunks{
-    type Target = HashMap<Vector2, ()>;
+    type Target = HashMap<Vector2, gmID>;
 
     fn deref(&self) -> &Self::Target {
         &self.res
