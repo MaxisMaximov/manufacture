@@ -1,6 +1,7 @@
 use super::*;
 
 use vars::*;
+use utils::*;
 
 pub struct res_GridWorld{
     chunks: HashMap<Vector2, GridWorldChunk>
@@ -25,20 +26,6 @@ impl gmRes for res_GridWorld{
     }
 }
 impl res_GridWorld{
-    pub fn coordConvert(&self, IN_coords: Vector2) -> (Vector2, Vector2){
-        let mut w_chunkCoords: Vector2 = (IN_coords.0 / CHUNK_X, IN_coords.1 / CHUNK_Y);
-        let w_tileCoords: Vector2 = ((CHUNK_X + IN_coords.0) % CHUNK_X, (CHUNK_Y + IN_coords.1) % CHUNK_Y);
-
-        // Skip over a chunk/s to not end up in (0, 0)
-        if IN_coords.0 < 0{
-            w_chunkCoords.0 -= 1
-        }
-        if IN_coords.1 < 0{
-            w_chunkCoords.1 -= 1
-        }
-
-        (w_chunkCoords, w_tileCoords)
-    }
     pub fn getChunk(&self, IN_coords: Vector2) -> Option<&GridWorldChunk>{
         self.chunks.get(&IN_coords)
     }
@@ -47,14 +34,14 @@ impl res_GridWorld{
     }
 
     pub fn getChunkFromTile(&self, IN_coords: Vector2) -> Option<&GridWorldChunk>{
-        self.getChunk(self.coordConvert(IN_coords).0)
+        self.getChunk(util_coordConvert(IN_coords).0)
     }
     pub fn getChunkFromTileMut(&mut self, IN_coords: Vector2) -> Option<&mut GridWorldChunk>{
-        self.getChunkMut(self.coordConvert(IN_coords).0)
+        self.getChunkMut(util_coordConvert(IN_coords).0)
     }
 
     pub fn getTile(&self, IN_coords: Vector2) -> Option<&GridWorldTile>{
-        let (w_chunkPos, w_tilePos) = self.coordConvert(IN_coords);
+        let (w_chunkPos, w_tilePos) = util_coordConvert(IN_coords);
 
         if let Some(CHUNK) = self.getChunk(w_chunkPos){
             return Some(&CHUNK[w_tilePos])
@@ -62,7 +49,7 @@ impl res_GridWorld{
         None
     }
     pub fn getTileMut(&mut self, IN_coords: Vector2) -> Option<&mut GridWorldTile>{
-        let (w_chunkPos, w_tilePos) = self.coordConvert(IN_coords);
+        let (w_chunkPos, w_tilePos) = util_coordConvert(IN_coords);
 
         if let Some(CHUNK) = self.getChunkMut(w_chunkPos){
             return Some(&mut CHUNK[w_tilePos])
@@ -73,8 +60,8 @@ impl res_GridWorld{
     pub fn getChunkRange(&self, IN_cornerA: Vector2, IN_cornerB: Vector2) -> Vec<Vector2>{
         let mut OUT_vec = Vec::new();
 
-        let mut w_chunkCornerA = self.coordConvert(IN_cornerA).0;
-        let mut w_chunkCornerB = self.coordConvert(IN_cornerB).0;
+        let mut w_chunkCornerA = util_coordConvert(IN_cornerA).0;
+        let mut w_chunkCornerB = util_coordConvert(IN_cornerB).0;
 
         // Swap X coords if A is further ahead
         if w_chunkCornerA.0 > w_chunkCornerB.0 {

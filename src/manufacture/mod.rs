@@ -10,5 +10,6 @@ pub mod systems;
 pub mod vars;
 pub mod types;
 pub mod prefabs;
+pub mod utils;
 
 pub mod init;
