@@ -111,6 +111,12 @@ impl gmWorld{
             COMP.as_ref().borrow_mut().drop(&IN_id);
         }
     }
+    
+    pub fn fetchCommandWriter<'a>(&'a self) -> FetchMut<'a, gmWorld_CMDQUEUE>{
+        FetchMut{
+            data: RefMut::map(self.commands.as_ref().borrow_mut(), |idkfa| {idkfa}),
+        }
+    }
 
     pub fn commandsExec(&mut self){
         loop{
@@ -122,10 +128,9 @@ impl gmWorld{
         }
     }
 
-    pub fn fetchCommandWriter<'a>(&'a self) -> FetchMut<'a, gmWorld_CMDQUEUE>{
-        FetchMut{
-            data: RefMut::map(self.commands.as_ref().borrow_mut(), |idkfa| {idkfa}),
-        }
+    pub fn endTick(&mut self){
+        self.commandsExec();
+        self.events.switchNClear();
     }
 }
 
