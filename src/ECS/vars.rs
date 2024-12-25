@@ -63,4 +63,12 @@ impl gmWorld_EVENTMAP{
     pub fn switchBuffer(&mut self){
         self.activeBuffer = !self.activeBuffer
     }
+pub trait eventQueue{
+    fn clear(&mut self);
+}
+impl<T: gmEvent> eventQueue for Vec<T>{
+    fn clear(&mut self) {
+        self.clear();
+    }
+}
 }
