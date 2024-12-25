@@ -36,13 +36,16 @@ impl gmWorld_EVENTMAP{
         self.inner.remove(T::EVENT_ID());
     }
 
-    fn getBuffer<T>(&self, IN_buffer: bool) -> &Rc<dyn Any> where T: gmEvent +'static{
-        let idkfa_eventQueue = self.inner.get(T::EVENT_ID()).unwrap();
+    fn getBuffer<T>(&self, IN_buffer: bool) -> &Rc<RefCell<dyn eventQueue>> where T: gmEvent +'static{
+        self.getBufferByID(T::EVENT_ID(), IN_buffer)
+    }
+
+    fn getBufferByID(&self, IN_id: &str, IN_buffer: bool) -> &Rc<RefCell<dyn eventQueue>>{
+        let idkfa_eventQueue = self.inner.get(IN_id).unwrap();
         if IN_buffer{
             return &idkfa_eventQueue.1
         }
         &idkfa_eventQueue.0
-        
     }
 
     pub fn getEventReader<'a, T>(&'a self) -> EventReader<'a, T> where T: gmEvent + 'static{
