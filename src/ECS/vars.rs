@@ -1,3 +1,4 @@
+use std::cell::{Ref, RefMut};
 
 use super::*;
 
@@ -16,7 +17,7 @@ pub type gmGen = u16; // There is no way you can even remotely get to 32kth gene
 
 pub struct gmWorld_EVENTMAP{
     pub activeBuffer: bool,
-    pub inner: HashMap<&'static str, (Rc<dyn Any>, Rc<dyn Any>)>,
+    pub inner: HashMap<&'static str, (Rc<RefCell<dyn eventQueue>>, Rc<RefCell<dyn eventQueue>>)>,
 }
 impl gmWorld_EVENTMAP{
     pub fn new() -> Self{
@@ -50,13 +51,13 @@ impl gmWorld_EVENTMAP{
 
     pub fn getEventReader<'a, T>(&'a self) -> EventReader<'a, T> where T: gmEvent + 'static{
         EventReader{
-            data: self.getBuffer::<T>(self.activeBuffer).as_ref().downcast_ref::<RefCell<Vec<T>>>().unwrap().borrow()
+            data: Ref::map(self.getBuffer::<T>(self.activeBuffer).as_ref().borrow(), |idkfa| idkfa.downcast_ref::<T>())
         }
     }
 
     pub fn getEventWriter<'a, T>(&'a self) -> EventWriter<'a, T> where T: gmEvent + 'static{
         EventWriter{
-            data: self.getBuffer::<T>(!self.activeBuffer).as_ref().downcast_ref::<RefCell<Vec<T>>>().unwrap().borrow_mut()
+            data: RefMut::map(self.getBuffer::<T>(!self.activeBuffer).as_ref().borrow_mut(), |idkfa| idkfa.downcast_mut::<T>())
         }
     }
 
