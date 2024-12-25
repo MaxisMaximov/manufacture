@@ -64,6 +64,19 @@ impl gmWorld_EVENTMAP{
     pub fn switchBuffer(&mut self){
         self.activeBuffer = !self.activeBuffer
     }
+
+    pub fn switchNClear(&mut self){
+        for (_, EVENT) in self.inner.iter_mut(){
+            if self.activeBuffer{
+                EVENT.1.as_ref().borrow_mut().clear();
+                continue
+            }
+            EVENT.0.as_ref().borrow_mut().clear();
+        }
+        self.switchBuffer();
+    }
+}
+
 pub trait eventQueue{
     fn clear(&mut self);
 }
@@ -78,5 +91,5 @@ impl dyn eventQueue{
     }
     pub fn downcast_mut<T: gmEvent>(&mut self) -> &mut Vec<T>{
         unsafe {&mut *(self as *mut dyn eventQueue as *mut Vec<T>)}
-}
+    }
 }
