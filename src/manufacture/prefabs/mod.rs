@@ -24,8 +24,8 @@ pub struct prefab_GridWorldChunk{
 impl gmPrefab for prefab_GridWorldChunk{
     fn spawn(&self, IN_builder: gmObjBuilder) {
         IN_builder
-            .addComp(comp_Pos{ x: self.chunk.0 * CHUNK_X + CHUNK_X/2, y: self.chunk.1 * CHUNK_Y + CHUNK_Y/2})
-            .addComp(comp_TileTerrainChunk{ chunk: self.chunk })
+            .addComp(comp_Pos{ x: ((self.chunk.0 * CHUNK_X) + CHUNK_X/2), y: ((self.chunk.1 * CHUNK_Y) + CHUNK_Y/2) - 1})
+            .addComp(comp_TileTerrainChunk{ chunk: self.chunk, fresh: true })
             .addComp(comp_Sprite{ sizeX: CHUNK_X as usize, sizeY: CHUNK_Y as usize, sprite: vec![StyleSet{ ch: '0', fg: Color::Black, bg: Color::White }; CHUNK_X as usize * CHUNK_Y as usize], zDepth: 0 });
     }
 }
