@@ -66,21 +66,24 @@ impl<'a> gmSystem<'a> for sys_Renderer{
                 let w_objOffset: Vector2 = (w_objPos.x - w_trackPos.x , w_objPos.y - w_trackPos.y);
 
                 // Set an iterator to avoid the Zip() spaghett
-                let mut SPRITE_PIXELS = OBJ.val.sprite.iter();
+                let mut SPRITE_PIXELS = OBJ.val.sprite.chunks(OBJ.val.sizeX).rev();
 
-                // Settings iterators cuz there's no such thing as Range Offset, or Range(Start, Length), sad
-                let w_iterStart: Vector2 = (w_objOffset.0 - (OBJ.val.sizeX / 2) as isize, w_objOffset.1 + (OBJ.val.sizeY / 2) as isize);
+                // Setting iterators cuz there's no such thing as Range Offset, or Range(Start, Length), sad
+                let w_iterStart: Vector2 = (w_objOffset.0 - (OBJ.val.sizeX / 2) as isize, w_objOffset.1 + (OBJ.val.sizeY / 2) as isize); // TL
                 
-                let w_iterEnd: Vector2 = (w_iterStart.0 + OBJ.val.sizeX as isize, w_iterStart.1 - OBJ.val.sizeY as isize);
+                let w_iterEnd: Vector2 = (w_iterStart.0 + OBJ.val.sizeX as isize, w_iterStart.1 - OBJ.val.sizeY as isize); // BR
 
                 // And finally iterate
-                // Traverses the sprite Top>>Bottom, because that's how images are stored
-                // Easier to do an iterator than some dark magic peckneckiry to rearrange images
-                for YPOS in (w_iterEnd.1 + 1..w_iterStart.1 + 1).rev(){
-                    for XPOS in w_iterStart.0..w_iterEnd.0{
-                        if w_WorldZBuffer[(XPOS, YPOS)] > OBJ.val.zDepth{continue}
+                for YPOS in w_iterEnd.1..w_iterStart.1{
+                    let mut ROW_ITER = SPRITE_PIXELS.next().unwrap().iter();
 
-                        w_WorldBuffer[(XPOS, YPOS)] = *SPRITE_PIXELS.next().unwrap();
+                    for XPOS in w_iterStart.0..w_iterEnd.0{
+                        if w_WorldZBuffer[(XPOS, YPOS)] > OBJ.val.zDepth{
+                            ROW_ITER.next(); // Skip over a pixel if it can't be drawn
+                            continue
+                        }
+
+                        w_WorldBuffer[(XPOS, YPOS)] = *ROW_ITER.next().unwrap();
 
                         w_WorldZBuffer[(XPOS, YPOS)] = OBJ.val.zDepth;
                     }

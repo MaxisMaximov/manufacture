@@ -145,16 +145,20 @@ impl<'a> gmSystem<'a> for sys_TileChunkSpriteUpdate{
     fn execute(&mut self, mut IN_data: Self::sysData) {
         for denseVecEntry{id: GMOBJID, val: CHUNKCOMP} in IN_data.comp_TileTerrain.inner.iter(){
             if let Some(CHUNK) = IN_data.res_World.getChunkMut(CHUNKCOMP.chunk){
-                if !CHUNK.needsResprite{continue}
+                if !CHUNK.needsResprite && !CHUNKCOMP.fresh {continue} // Skip if it doesn't need a resprite or it's not a fresh chunk
 
-                let w_chunkSprite = IN_data.comp_Sprite.get_mut(GMOBJID);
+                let idkfa = IN_data.comp_Sprite.get_mut(GMOBJID);
+                let w_chunkSprite = idkfa.sprite.chunks_mut(idkfa.sizeX).rev();
+                let w_chunkTiles = CHUNK.cells.chunks(CHUNK_X as usize);
 
-                for (INDEX, PIXEL) in w_chunkSprite.sprite.iter_mut().enumerate(){
-                    *PIXEL = match CHUNK.cells[INDEX].mat{
+                for (PIXROW, CHROW) in w_chunkSprite.zip(w_chunkTiles){
+                    for (PIXEL, CELL) in PIXROW.iter_mut().zip(CHROW){
+                        *PIXEL = match CELL.mat{
                         0 => {StyleSet{ ch: ' ', fg: Color::Black, bg: Color::Black }} // Empty
                         1 => {StyleSet{ ch: 'w', fg: Color::White, bg: Color::Blue }} // Water
                         2 => {StyleSet{ ch: 't', fg: Color::White, bg: Color::Green }} // Tree
                         _ => {StyleSet{ ch: '0', fg: Color::Black, bg: Color::White }} // UNKNOWN
+                        }
                     }
                 }
 
