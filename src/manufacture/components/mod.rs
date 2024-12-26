@@ -63,7 +63,8 @@ impl gmComp for comp_PController{
 }
 
 pub struct comp_TileTerrainChunk{
-    pub chunk: Vector2
+    pub chunk: Vector2,
+    pub fresh: bool
 }
 impl gmComp for comp_TileTerrainChunk{
     type COMP_STORAGE = denseVecStorage<Self>;

@@ -24,3 +24,4 @@ pub const RENDER_BUFFER_Y: usize = 20;
 // To still render objects if they're "technically" in view
 pub const RENDER_MARGIN: isize = 4;
 
+pub const CHUNK_UNLOAD_MARGIN: usize = 5;

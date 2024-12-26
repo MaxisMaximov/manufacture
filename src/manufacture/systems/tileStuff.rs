@@ -1,3 +1,5 @@
+use prefabs::prefab_GridWorldChunk;
+
 use super::*;
 
 
@@ -154,10 +156,10 @@ impl<'a> gmSystem<'a> for sys_TileChunkSpriteUpdate{
                 for (PIXROW, CHROW) in w_chunkSprite.zip(w_chunkTiles){
                     for (PIXEL, CELL) in PIXROW.iter_mut().zip(CHROW){
                         *PIXEL = match CELL.mat{
-                        0 => {StyleSet{ ch: ' ', fg: Color::Black, bg: Color::Black }} // Empty
-                        1 => {StyleSet{ ch: 'w', fg: Color::White, bg: Color::Blue }} // Water
-                        2 => {StyleSet{ ch: 't', fg: Color::White, bg: Color::Green }} // Tree
-                        _ => {StyleSet{ ch: '0', fg: Color::Black, bg: Color::White }} // UNKNOWN
+                            0 => {StyleSet{ ch: ' ', fg: Color::Black, bg: Color::Black }} // Empty
+                            1 => {StyleSet{ ch: 'w', fg: Color::White, bg: Color::Blue }} // Water
+                            2 => {StyleSet{ ch: 't', fg: Color::White, bg: Color::Green }} // Tree
+                            _ => {StyleSet{ ch: '0', fg: Color::Black, bg: Color::White }} // UNKNOWN
                         }
                     }
                 }
@@ -178,6 +180,89 @@ impl<'a> gmSystemData<'a> for sysData_TileChunkSpriteUpdate<'a>{
             comp_TileTerrain: IN_world.fetch(),
             comp_Sprite: IN_world.fetchMut(),
             res_World: IN_world.fetchResMut(),
+        }
+    }
+}
+
+pub struct sys_PChunkUnLoad{
+    oldChunk: Vector2
+}
+impl<'a> gmSystem<'a> for sys_PChunkUnLoad{
+    type sysData = sysData_PChunkUnLoad<'a>;
+
+    fn new() -> Self {
+        Self{
+            oldChunk: (0, 0),
+        }
+    }
+
+    fn SYS_ID() -> &'static str {
+        "sys_PChunkUnLoad"
+    }
+    
+    fn execute(&mut self, mut IN_data: Self::sysData) {
+        // First update the chunk list
+        for CHUNK in IN_data.comp_TileTerrainChunk.inner.iter(){
+            IN_data.res_LoadedChunks.entry(CHUNK.val.chunk).or_insert(CHUNK.id);
+        }
+
+        // Get player position
+        let idkfa = IN_data.comp_Pos.get(IN_data.res_PID.get(&1).unwrap());
+        let w_PChunk = utils::util_coordConvert((idkfa.x, idkfa.y)).0;
+        
+        // Don't bother if player hasn't moved from their chunk
+        if w_PChunk == self.oldChunk{
+            return
+        }
+        self.oldChunk = w_PChunk;
+
+        // Set Discarded Vec
+        let mut w_discardedChunks: Vec<(Vector2, gmID)> = Vec::new();
+
+        for (CHUNK, GMID) in IN_data.res_LoadedChunks.iter_mut(){
+
+            let idkfa = IN_data.comp_Pos.get(&GMID);
+            let w_CChunk = utils::util_coordConvert((idkfa.x, idkfa.y)).0; // Chunk Chunk -- Yes it's dumb lol
+
+            // If the chunk is too far away from player chunk, push it to discarded
+            if CHUNK.0.abs_diff(w_PChunk.0) > CHUNK_UNLOAD_MARGIN || CHUNK.1.abs_diff(w_PChunk.1) > CHUNK_UNLOAD_MARGIN{
+                w_discardedChunks.push((*CHUNK, *GMID));
+            }
+        }
+
+        // Send a command to remove the discarded chunks and remove them from the HashMap
+        for (CHUNK, GMID) in w_discardedChunks.iter(){
+            IN_data.cmdqueue.push(Box::new(cmd_DespawnGmObj{id: *GMID}));
+            IN_data.res_LoadedChunks.remove(CHUNK);
+        }
+
+        // And send commands to spawn new visible chunks
+        for XPOS in (w_PChunk.0 - CHUNK_UNLOAD_MARGIN as isize)..(w_PChunk.0 + CHUNK_UNLOAD_MARGIN as isize){
+            for YPOS in (w_PChunk.1 - CHUNK_UNLOAD_MARGIN as isize)..(w_PChunk.1 + CHUNK_UNLOAD_MARGIN as isize){
+                if !IN_data.res_LoadedChunks.contains_key(&(XPOS, YPOS)){
+                    // Unfortunately I can't update the LoadedChunks hashmap right away as I don't know what IDs the new chunks will get
+                    IN_data.cmdqueue.push(Box::new(cmd_spawnPrefab{prefab: prefab_GridWorldChunk::new((XPOS, YPOS))}));
+                }
+            }
+        }
+        
+    }
+}
+pub struct sysData_PChunkUnLoad<'a>{
+    pub comp_Pos: ReadStorage<'a, comp_Pos>,
+    pub comp_TileTerrainChunk: ReadStorage<'a, comp_TileTerrainChunk>,
+    pub res_PID: Fetch<'a, res_PID>,
+    pub res_LoadedChunks: FetchMut<'a, res_LoadedChunks>,
+    pub cmdqueue: FetchMut<'a, gmWorld_CMDQUEUE>
+}
+impl<'a> gmSystemData<'a> for sysData_PChunkUnLoad<'a>{
+    fn fetch(IN_world: &'a mut gmWorld) -> Self {
+        Self{
+            comp_Pos: IN_world.fetch(),
+            comp_TileTerrainChunk: IN_world.fetch(),
+            res_PID: IN_world.fetchRes(),
+            res_LoadedChunks: IN_world.fetchResMut(),
+            cmdqueue: IN_world.fetchCommandWriter(),
         }
     }
 }

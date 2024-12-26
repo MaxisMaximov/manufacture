@@ -13,6 +13,7 @@ pub fn init(IN_world: &mut gmWorld, IN_dispatch: &mut gmDispatcher){
     IN_dispatch.addSys::<sys_PTileChange>(&[]);
     IN_dispatch.addSys::<sys_TileChunkUpdate>(&[]);
     IN_dispatch.addSys::<sys_TileChunkSpriteUpdate>(&[]);
+    IN_dispatch.addSys::<sys_PChunkUnLoad>(&[]);
     IN_dispatch.addSys::<sys_Renderer>(&[]);
 
     // Register Components
