@@ -13,8 +13,9 @@ impl gmPrefab for prefab_Player{
             .addComp(comp_HP{val: 100})
             .addComp(comp_PController{active: true})
             .addComp(comp_Pos{x: 0, y: 0})
-            .addComp(comp_Vel{x: 0, y: 0})
-            .addComp(comp_Sprite{ sizeX: 1, sizeY: 1, sprite: vec![StyleSet{ ch: 'P', fg: Color::White, bg: Color::Cyan }], zDepth: 1 });
+            .addComp(comp_Vel{x: 0, y: 0, frozen: false})
+            .addComp(comp_Sprite{ sizeX: 1, sizeY: 1, sprite: vec![StyleSet{ ch: 'P', fg: Color::White, bg: Color::Cyan }], zDepth: 1 })
+            .finish();
     }
 }
 
@@ -26,7 +27,8 @@ impl gmPrefab for prefab_GridWorldChunk{
         IN_builder
             .addComp(comp_Pos{ x: ((self.chunk.0 * CHUNK_X) + CHUNK_X/2), y: ((self.chunk.1 * CHUNK_Y) + CHUNK_Y/2) - 1})
             .addComp(comp_TileTerrainChunk{ chunk: self.chunk, fresh: true })
-            .addComp(comp_Sprite{ sizeX: CHUNK_X as usize, sizeY: CHUNK_Y as usize, sprite: vec![StyleSet{ ch: '0', fg: Color::Black, bg: Color::White }; CHUNK_X as usize * CHUNK_Y as usize], zDepth: 0 });
+            .addComp(comp_Sprite{ sizeX: CHUNK_X as usize, sizeY: CHUNK_Y as usize, sprite: vec![StyleSet{ ch: '0', fg: Color::Black, bg: Color::White }; CHUNK_X as usize * CHUNK_Y as usize], zDepth: 0 })
+        .finish();
     }
 }
 impl prefab_GridWorldChunk{

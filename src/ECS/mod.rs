@@ -43,12 +43,13 @@ pub mod tests{
         
         world.createGmObj()
             .addComp::<gmComp_Health>(gmComp_Health{val: 100})
-            .addComp::<gmComp_Pos>(gmComp_Pos{x: 0, y: 0});
+            .addComp::<gmComp_Pos>(gmComp_Pos{x: 0, y: 0})
+            .finish();
 
         let mut dispatcher = gmDispatcher::new()
-            .withSys::<gmSys_input>(&[])
-            .withSys::<gmSys_HP>(&[])
-            .withSys::<gmSys_movement>(&[]);
+            .withSys::<gmSys_input>()
+            .withSys::<gmSys_HP>()
+            .withSys::<gmSys_movement>();
 
         dispatcher.dispatch(&mut world);
 
@@ -93,6 +94,8 @@ pub mod tests{
     impl<'a> gmSystem<'a> for gmSys_HP{
         type sysData = gmSysData_HP<'a>;
 
+        const sysDepends: &'static [&'static str] = &[];
+
         fn new() -> Self {
             Self{}
         }
@@ -123,6 +126,8 @@ pub mod tests{
     pub struct gmSys_input{}
     impl<'a> gmSystem<'a> for gmSys_input{
         type sysData = gmSysData_Input<'a>;
+
+        const sysDepends: &'static [&'static str] = &[];
 
         fn new() -> Self {
             Self{}
@@ -158,6 +163,8 @@ pub mod tests{
     pub struct gmSys_movement{}
     impl<'a> gmSystem<'a> for gmSys_movement{
         type sysData = gmSysData_Movement<'a>;
+
+        const sysDepends: &'static [&'static str] = &[];
     
         fn new() -> Self {
             Self{}

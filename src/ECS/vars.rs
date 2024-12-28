@@ -16,8 +16,8 @@ pub type gmID = u16;
 pub type gmGen = u16; // There is no way you can even remotely get to 32kth generation -- Consider it a gift
 
 pub struct gmWorld_EVENTMAP{
-    pub activeBuffer: bool,
-    pub inner: HashMap<&'static str, (Rc<RefCell<dyn eventQueue>>, Rc<RefCell<dyn eventQueue>>)>,
+    activeBuffer: bool,
+    inner: HashMap<&'static str, (Rc<RefCell<dyn eventQueue>>, Rc<RefCell<dyn eventQueue>>)>,
 }
 impl gmWorld_EVENTMAP{
     pub fn new() -> Self{
@@ -28,9 +28,11 @@ impl gmWorld_EVENTMAP{
     }
 
     pub fn registerEvent<T>(&mut self) where T: gmEvent + 'static{
-        self.inner
-            .entry(T::EVENT_ID())
-            .or_insert((Rc::new(RefCell::new(Vec::<T>::new())), Rc::new(RefCell::new(Vec::<T>::new()))));
+        use std::collections::hash_map::Entry;
+        match self.inner.entry(T::EVENT_ID()){
+            Entry::Occupied(_) => panic!("ERROR: Attempted to override an existing event: {}", T::EVENT_ID()),
+            Entry::Vacant(ENTRY) => ENTRY.insert((Rc::new(RefCell::new(Vec::<T>::new())), Rc::new(RefCell::new(Vec::<T>::new())))), // This is a mess
+        };
     }
 
     pub fn unRegisterEvent<T>(&mut self) where T: gmEvent + 'static{
@@ -42,23 +44,27 @@ impl gmWorld_EVENTMAP{
     }
 
     fn getBufferByID(&self, IN_id: &str, IN_buffer: bool) -> &Rc<RefCell<dyn eventQueue>>{
-        let idkfa_eventQueue = self.inner.get(IN_id).unwrap();
-        if IN_buffer{
-            return &idkfa_eventQueue.1
+        match self.inner.get(IN_id){
+            Some(EVQUE) => {
+                if IN_buffer{
+                    return &EVQUE.1
+                }
+                return &EVQUE.0
+            },
+            None => panic!("ERROR: Tried to fetch an unregistered event: {}", IN_id),
         }
-        &idkfa_eventQueue.0
     }
 
     pub fn getEventReader<'a, T>(&'a self) -> EventReader<'a, T> where T: gmEvent + 'static{
-        EventReader{
-            data: Ref::map(self.getBuffer::<T>(self.activeBuffer).as_ref().borrow(), |idkfa| idkfa.downcast_ref::<T>())
-        }
+        EventReader::new(
+            Ref::map(self.getBuffer::<T>(self.activeBuffer).as_ref().borrow(), |idkfa| idkfa.downcast_ref::<T>())
+        )
     }
 
     pub fn getEventWriter<'a, T>(&'a self) -> EventWriter<'a, T> where T: gmEvent + 'static{
-        EventWriter{
-            data: RefMut::map(self.getBuffer::<T>(!self.activeBuffer).as_ref().borrow_mut(), |idkfa| idkfa.downcast_mut::<T>())
-        }
+        EventWriter::new(
+            RefMut::map(self.getBuffer::<T>(!self.activeBuffer).as_ref().borrow_mut(), |idkfa| idkfa.downcast_mut::<T>())
+        )
     }
 
     pub fn switchBuffer(&mut self){
@@ -69,9 +75,9 @@ impl gmWorld_EVENTMAP{
         for (_, EVENT) in self.inner.iter_mut(){
             if self.activeBuffer{
                 EVENT.1.as_ref().borrow_mut().clear();
-                continue
+            }else{
+                EVENT.0.as_ref().borrow_mut().clear();
             }
-            EVENT.0.as_ref().borrow_mut().clear();
         }
         self.switchBuffer();
     }

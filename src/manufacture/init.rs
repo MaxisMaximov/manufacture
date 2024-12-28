@@ -7,14 +7,14 @@ use components::*;
 
 pub fn init(IN_world: &mut gmWorld, IN_dispatch: &mut gmDispatcher){
     // Register Systems
-    IN_dispatch.addSys::<sys_Input>(&[]);
-    IN_dispatch.addSys::<sys_PMove>(&[]);
-    IN_dispatch.addSys::<sys_Move>(&[]);
-    IN_dispatch.addSys::<sys_PTileChange>(&[]);
-    IN_dispatch.addSys::<sys_TileChunkUpdate>(&[]);
-    IN_dispatch.addSys::<sys_TileChunkSpriteUpdate>(&[]);
-    IN_dispatch.addSys::<sys_PChunkUnLoad>(&[]);
-    IN_dispatch.addSys::<sys_Renderer>(&[]);
+    IN_dispatch.addSys::<sys_Input>();
+    IN_dispatch.addSys::<sys_PMove>();
+    IN_dispatch.addSys::<sys_Move>();
+    IN_dispatch.addSys::<sys_PTileChange>();
+    IN_dispatch.addSys::<sys_TileChunkUpdate>();
+    IN_dispatch.addSys::<sys_TileChunkSpriteUpdate>();
+    IN_dispatch.addSys::<sys_PChunkUnLoad>();
+    IN_dispatch.addSys::<sys_Renderer>();
 
     // Register Components
     IN_world.registerComp::<comp_HP>();
@@ -40,17 +40,7 @@ pub fn init(IN_world: &mut gmWorld, IN_dispatch: &mut gmDispatcher){
 
     prefab_Player::spawn(&prefab_Player{}, IN_world.createGmObj());
 
-    prefab_GridWorldChunk::spawn(&prefab_GridWorldChunk::new((0, 0)), IN_world.createGmObj());
-    prefab_GridWorldChunk::spawn(&prefab_GridWorldChunk::new((1, 0)), IN_world.createGmObj());
-    prefab_GridWorldChunk::spawn(&prefab_GridWorldChunk::new((0, 1)), IN_world.createGmObj());
-    prefab_GridWorldChunk::spawn(&prefab_GridWorldChunk::new((-1, 0)), IN_world.createGmObj());
-    prefab_GridWorldChunk::spawn(&prefab_GridWorldChunk::new((0, -1)), IN_world.createGmObj());
-    prefab_GridWorldChunk::spawn(&prefab_GridWorldChunk::new((1, 1)), IN_world.createGmObj());
-    prefab_GridWorldChunk::spawn(&prefab_GridWorldChunk::new((1, -1)), IN_world.createGmObj());
-    prefab_GridWorldChunk::spawn(&prefab_GridWorldChunk::new((-1, -1)), IN_world.createGmObj());
-    prefab_GridWorldChunk::spawn(&prefab_GridWorldChunk::new((-1, 1)), IN_world.createGmObj());
-
     IN_world.fetchResMut::<res_PID>().insert(1, 0);
 
-    IN_world.createGmObj().addComp(comp_ViewportCamera{ trackedEntity: 0, offset: (0, 0), active: true });
+    IN_world.createGmObj().addComp(comp_ViewportCamera{ trackedEntity: 0, offset: (0, 0), active: true }).finish();
 }

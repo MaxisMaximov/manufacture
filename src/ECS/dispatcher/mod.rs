@@ -1,5 +1,7 @@
 use super::*;
 
+use system::*;
+
 mod stage;
 use stage::*;
 
@@ -15,31 +17,31 @@ impl gmDispatcher{
             stages: Vec::from([gmDispatchStage::new()])
         }
     }
-    pub fn withSys<T>(mut self, IN_depends: &[&'static str]) -> Self where T: for<'a> system::gmSystem<'a> + 'static{
-        self.addSys::<T>(IN_depends);
+
+    pub fn withSys<T>(mut self) -> Self where T: for<'a> gmSystem<'a> + 'static{
+        self.addSys::<T>();
         self
     }
-    pub fn addSys<T>(&mut self, IN_depends: &[&'static str]) where T: for<'a> system::gmSystem<'a> + 'static{
+
+    pub fn addSys<T>(&mut self) where T: for<'a> gmSystem<'a> + 'static{
         // Check if the system is registered already
         if self.systems.contains_key(T::SYS_ID()){
-            return
+            panic!("ERROR: Attempted to override an existing system: {}", T::SYS_ID())
         }
 
         let mut w_nextStage: usize = 0;
         
         'CHECKSTAGE:{
             // Exit early if there's no dependencies
-            if IN_depends.is_empty(){
+            if T::sysDepends.is_empty(){
                 break 'CHECKSTAGE;
             }
 
-            for DEPEND in IN_depends.iter(){
+            for DEPEND in T::sysDepends.iter(){
                 // Check if such dependency exists
-                if let Some(STAGEID) = self.systems.get(DEPEND){
-                    // If it's later in processing than latest recorded stage, update it
-                    if *STAGEID > w_nextStage{
-                        w_nextStage = *STAGEID + 1
-                    }
+                let STAGEID = self.systems.get(DEPEND).expect(&format!("ERROR: Dependency {} for system {} Is not registered", DEPEND, T::SYS_ID()));
+                if *STAGEID > w_nextStage{
+                    w_nextStage = *STAGEID + 1
                 }
             }
         }
@@ -53,9 +55,11 @@ impl gmDispatcher{
         self.addStage(gmDispatchStage::new().withSys::<T>());
 
     }
+
     pub fn addStage(&mut self, IN_stage: gmDispatchStage){
         self.stages.push(IN_stage);
     }
+
     pub fn dispatch(&mut self, IN_world: &mut world::gmWorld){
         for STAGE in self.stages.iter_mut(){
             STAGE.dispatch(IN_world);

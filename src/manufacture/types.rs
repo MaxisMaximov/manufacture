@@ -16,12 +16,12 @@ impl Default for StyleSet{
     }
 }
 
-pub struct DoubleDArray<T>{
+pub struct CartesianGrid<T>{ // It's Cartesian and it's a grid -- Just to not confuse with *proper* 2D arrays
     pub inner: Vec<T>,
     size: (usize, usize),
     dummyT: T
 }
-impl<T: Default + Copy> DoubleDArray<T>{
+impl<T: Default + Copy> CartesianGrid<T>{
     pub fn new(IN_x: usize, IN_y: usize) -> Self{
         Self{
             inner: vec![T::default(); IN_x * IN_y],
@@ -30,7 +30,7 @@ impl<T: Default + Copy> DoubleDArray<T>{
         }
     }
 }
-impl<T> Index<Vector2> for DoubleDArray<T>{
+impl<T> Index<Vector2> for CartesianGrid<T>{
     type Output = T;
 
     fn index(&self, index: Vector2) -> &Self::Output {
@@ -48,7 +48,7 @@ impl<T> Index<Vector2> for DoubleDArray<T>{
         &self.dummyT
     }
 }
-impl<T> IndexMut<Vector2> for DoubleDArray<T>{
+impl<T> IndexMut<Vector2> for CartesianGrid<T>{
     fn index_mut(&mut self, index: Vector2) -> &mut Self::Output {
         
         let X = (index.0 as usize).wrapping_add(self.size.0/2);

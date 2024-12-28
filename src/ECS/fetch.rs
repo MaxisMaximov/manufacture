@@ -8,7 +8,14 @@ use comp::gmComp;
 use events::gmEvent;
 
 pub struct Fetch<'a, T>{
-    pub data: Ref<'a, T>,
+    data: Ref<'a, T>,
+}
+impl<'a, T> Fetch<'a, T>{
+    pub fn new(IN_data: Ref<'a, T>) -> Self{
+        Self{
+            data: IN_data
+        }
+    }
 }
 impl<'a, T> Deref for Fetch<'a, T>{
     type Target = T;
@@ -18,7 +25,14 @@ impl<'a, T> Deref for Fetch<'a, T>{
     }
 }
 pub struct FetchMut<'a, T>{
-    pub data: RefMut<'a, T>
+    data: RefMut<'a, T>
+}
+impl<'a, T> FetchMut<'a, T>{
+    pub fn new(IN_data: RefMut<'a, T>) -> Self{
+        Self{
+            data: IN_data
+        }
+    }
 }
 impl<'a, T> Deref for FetchMut<'a, T>{
     type Target = T;
@@ -39,9 +53,17 @@ impl<'a, T> DerefMut for FetchMut<'a, T>{
 // So in the end they both don't provide anything useful other than type clarity to what's a component and what's a resource fetch
 // Also I'm not sure if Deref³ is a good idea for performance
 pub struct StorageRef<'a, T: gmComp, D>{
-    pub data: D,
-    pub _phantom: PhantomData<&'a T>
+    data: D,
+    _phantom: PhantomData<&'a T>
 } 
+impl<'a, T: gmComp, D> StorageRef<'a, T, D>{
+    pub fn new(IN_data: D) -> Self{
+        Self{
+            data: IN_data,
+            _phantom: PhantomData,
+        }
+    }
+}
 impl<'a, T: gmComp, D> Deref for StorageRef<'a, T, D>{
     type Target = D;
 
@@ -55,8 +77,12 @@ impl<'a, T: gmComp, D> DerefMut for StorageRef<'a, T, D>{
     }
 }
 
+#[allow(type_alias_bounds)]
 pub type EventReader<'a, T: gmEvent> = Fetch<'a, Vec<T>>;
+#[allow(type_alias_bounds)]
 pub type EventWriter<'a, T: gmEvent> = FetchMut<'a, Vec<T>>;
 
+#[allow(type_alias_bounds)]
 pub type ReadStorage<'a, T: gmComp> = StorageRef<'a, T, Fetch<'a, T::COMP_STORAGE>>;
+#[allow(type_alias_bounds)]
 pub type WriteStorage<'a, T: gmComp> = StorageRef<'a, T, FetchMut<'a, T::COMP_STORAGE>>;

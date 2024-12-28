@@ -4,11 +4,13 @@ use comp::gmComp;
 use vars::*;
 
 pub trait gmStorage<T: gmComp>: Any{
-    fn new() -> Self where Self: Sized;
-    fn get(&self, IN_id: &gmID) -> &T;
-    fn get_mut(&mut self, IN_id: &gmID) -> &mut T;
+    fn new() -> Self;
+    fn get(&self, IN_id: &gmID) -> Option<&T>;
+    fn get_mut(&mut self, IN_id: &gmID) -> Option<&mut T>;
     fn insert(&mut self, IN_id: gmID, IN_item: T);
     fn remove(&mut self, IN_id: &gmID) -> Option<T>;
+    fn iter(&self) -> impl Iterator;
+    fn iter_mut(&mut self) -> impl Iterator;
 }
 pub trait gmStorageDrop: Any{
     fn drop(&mut self, IN_id: &gmID);
@@ -23,6 +25,7 @@ impl dyn gmStorageDrop{
     }
 }
 
+// Necessary abstraction for `gmStorageDrop` to be used
 pub struct gmStorageContainer<T:gmComp>{
     pub inner: T::COMP_STORAGE
 }
@@ -46,12 +49,22 @@ impl<T: gmComp + 'static> gmStorage<T> for denseVecStorage<T>{
         }
     }
 
-    fn get(&self, IN_id: &gmID) -> &T {
-        &self.inner.get(*self.proxyMap.get(&IN_id).unwrap()).unwrap().val
+    fn get(&self, IN_id: &gmID) -> Option<&T> {
+        match self.proxyMap.get(&IN_id){
+            Some(ID) => {
+                Some(&self.inner.get(*ID).unwrap().val)
+            },
+            None => None,
+        }
     }
 
-    fn get_mut(&mut self, IN_id: &gmID) -> &mut T {
-        &mut self.inner.get_mut(*self.proxyMap.get(&IN_id).unwrap()).unwrap().val
+    fn get_mut(&mut self, IN_id: &gmID) -> Option<&mut T> {
+        match self.proxyMap.get(&IN_id){
+            Some(ID) => {
+                Some(&mut self.inner.get_mut(*ID).unwrap().val)
+            },
+            None => None,
+        }
     }
 
     fn insert(&mut self, IN_id: gmID, IN_item: T) {
@@ -80,6 +93,14 @@ impl<T: gmComp + 'static> gmStorage<T> for denseVecStorage<T>{
         }
         None
 
+    }
+
+    fn iter(&self) -> impl Iterator {
+        self.inner.iter()
+    }
+
+    fn iter_mut(&mut self) -> impl Iterator {
+        self.inner.iter_mut()
     }
 }
 pub struct denseVecEntry<T>{

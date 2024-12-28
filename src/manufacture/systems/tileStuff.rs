@@ -7,6 +7,8 @@ pub struct sys_PTileChange{}
 impl<'a> gmSystem<'a> for sys_PTileChange{
     type sysData = sysData_PTileChange<'a>;
 
+    const sysDepends: &'static [&'static str] = &[];
+
     fn new() -> Self {
         Self{}
     }
@@ -16,32 +18,32 @@ impl<'a> gmSystem<'a> for sys_PTileChange{
     }
 
     fn execute(&mut self, mut IN_data: Self::sysData) {
-        if IN_data.res_PID.get(&1).is_none(){
-            return
-        }
-        let w_PCoords = IN_data.comp_Pos.get(IN_data.res_PID.get(&1).unwrap());
-        let w_oldTile = IN_data.res_World.getTile((w_PCoords.x, w_PCoords.y)).unwrap().mat;
+        if let Some(PID) = IN_data.res_PID.get(&1){
 
-        match IN_data.res_PInput.code{
-            KeyCode::Char('f') => {
-                IN_data.event_TileChange.push(event_TileChange{
-                    coords: (w_PCoords.x, w_PCoords.y),
-                    newTile: w_oldTile + 1,
-                });
+            let w_PCoords = IN_data.comp_Pos.get(PID).expect(&format!("ERROR: Player {PID} has no Position component"));
+            let w_oldTile = IN_data.res_World.getTile((w_PCoords.x, w_PCoords.y)).expect(&format!("ERROR: Tile at {}, {} doesn't exist", w_PCoords.x, w_PCoords.y)).mat;
+
+            match IN_data.res_PInput.code{
+                KeyCode::Char('f') => {
+                    IN_data.event_TileChange.push(event_TileChange{
+                        coords: (w_PCoords.x, w_PCoords.y),
+                        newTile: w_oldTile + 1,
+                    });
+                }
+                KeyCode::Char('F') => {
+                    IN_data.event_TileChange.push(event_TileChange{
+                        coords: (w_PCoords.x, w_PCoords.y),
+                        newTile: w_oldTile - 1,
+                    });
+                }
+                KeyCode::Char('g') => {
+                    IN_data.event_TileChange.push(event_TileChange{
+                        coords: (w_PCoords.x, w_PCoords.y),
+                        newTile: 0,
+                    });
+                }
+                _ => {return}
             }
-            KeyCode::Char('F') => {
-                IN_data.event_TileChange.push(event_TileChange{
-                    coords: (w_PCoords.x, w_PCoords.y),
-                    newTile: w_oldTile - 1,
-                });
-            }
-            KeyCode::Char('g') => {
-                IN_data.event_TileChange.push(event_TileChange{
-                    coords: (w_PCoords.x, w_PCoords.y),
-                    newTile: 0,
-                });
-            }
-            _ => {return}
         }
     }
 }
@@ -67,6 +69,8 @@ impl<'a> gmSystemData<'a> for sysData_PTileChange<'a>{
 pub struct sys_TileChunkUpdate{}
 impl<'a> gmSystem<'a> for sys_TileChunkUpdate{
     type sysData = sysData_TileChunkUpdate<'a>;
+
+    const sysDepends: &'static [&'static str] = &[];
 
     fn new() -> Self {
         Self{}
@@ -136,6 +140,8 @@ pub struct sys_TileChunkSpriteUpdate{}
 impl<'a> gmSystem<'a> for sys_TileChunkSpriteUpdate{
     type sysData = sysData_TileChunkSpriteUpdate<'a>;
 
+    const sysDepends: &'static [&'static str] = &[];
+
     fn new() -> Self {
         Self{}
     }
@@ -149,7 +155,7 @@ impl<'a> gmSystem<'a> for sys_TileChunkSpriteUpdate{
             if let Some(CHUNK) = IN_data.res_World.getChunkMut(CHUNKCOMP.chunk){
                 if !CHUNK.needsResprite && !CHUNKCOMP.fresh {continue} // Skip if it doesn't need a resprite or it's not a fresh chunk
 
-                let idkfa = IN_data.comp_Sprite.get_mut(GMOBJID);
+                let idkfa = IN_data.comp_Sprite.get_mut(GMOBJID).expect(&format!("ERROR: Chunk at {}, {} has no Sprite component", CHUNKCOMP.chunk.0, CHUNKCOMP.chunk.1));
                 let w_chunkSprite = idkfa.sprite.chunks_mut(idkfa.sizeX).rev();
                 let w_chunkTiles = CHUNK.cells.chunks(CHUNK_X as usize);
 
@@ -190,6 +196,8 @@ pub struct sys_PChunkUnLoad{
 impl<'a> gmSystem<'a> for sys_PChunkUnLoad{
     type sysData = sysData_PChunkUnLoad<'a>;
 
+    const sysDepends: &'static [&'static str] = &[];
+
     fn new() -> Self {
         Self{
             oldChunk: (0, 0),
@@ -207,8 +215,9 @@ impl<'a> gmSystem<'a> for sys_PChunkUnLoad{
         }
 
         // Get player position
-        let idkfa = IN_data.comp_Pos.get(IN_data.res_PID.get(&1).unwrap());
-        let w_PChunk = utils::util_coordConvert((idkfa.x, idkfa.y)).0;
+        let PID = IN_data.res_PID.get(&1).expect("ERROR: Player object not present");
+        let idkfa_PPos = IN_data.comp_Pos.get(PID).expect(&format!("ERROR: Player {PID} has no Position component"));
+        let w_PChunk = utils::util_coordConvert((idkfa_PPos.x, idkfa_PPos.y)).0;
         
         // Don't bother if player hasn't moved from their chunk
         if w_PChunk == self.oldChunk{
@@ -220,9 +229,6 @@ impl<'a> gmSystem<'a> for sys_PChunkUnLoad{
         let mut w_discardedChunks: Vec<(Vector2, gmID)> = Vec::new();
 
         for (CHUNK, GMID) in IN_data.res_LoadedChunks.iter_mut(){
-
-            let idkfa = IN_data.comp_Pos.get(&GMID);
-            let w_CChunk = utils::util_coordConvert((idkfa.x, idkfa.y)).0; // Chunk Chunk -- Yes it's dumb lol
 
             // If the chunk is too far away from player chunk, push it to discarded
             if CHUNK.0.abs_diff(w_PChunk.0) > CHUNK_UNLOAD_MARGIN || CHUNK.1.abs_diff(w_PChunk.1) > CHUNK_UNLOAD_MARGIN{

@@ -5,14 +5,16 @@ use crossterm::style::Stylize;
 use super::*;
 
 pub struct sys_Renderer{
-    frameBuffer: DoubleDArray<StyleSet>
+    frameBuffer: CartesianGrid<StyleSet>
 }
 impl<'a> gmSystem<'a> for sys_Renderer{
     type sysData = sysData_Renderer<'a>;
 
+    const sysDepends: &'static [&'static str] = &[];
+
     fn new() -> Self {
         Self{
-            frameBuffer: DoubleDArray::new(RENDER_BUFFER_X, RENDER_BUFFER_Y)
+            frameBuffer: CartesianGrid::new(RENDER_BUFFER_X, RENDER_BUFFER_Y)
         }
     }
 
@@ -33,12 +35,12 @@ impl<'a> gmSystem<'a> for sys_Renderer{
         if let Some(VIEWPORT) = w_camera{
 
             // Set up the buffers
-            let mut w_WorldBuffer: DoubleDArray<StyleSet> = DoubleDArray::new(RENDER_VIEWPORT_X, RENDER_VIEWPORT_Y);
-            let mut w_WorldZBuffer: DoubleDArray<u16> = DoubleDArray::new(RENDER_VIEWPORT_X, RENDER_VIEWPORT_Y);
+            let mut w_WorldBuffer: CartesianGrid<StyleSet> = CartesianGrid::new(RENDER_VIEWPORT_X, RENDER_VIEWPORT_Y);
+            let mut w_WorldZBuffer: CartesianGrid<u16> = CartesianGrid::new(RENDER_VIEWPORT_X, RENDER_VIEWPORT_Y);
 
             // Get the tracked entity position
             // Since Chunks are also entities you can attach cameras to them too, fun fact
-            let w_trackPos = IN_data.comp_Pos.get(&VIEWPORT.trackedEntity);
+            let w_trackPos = IN_data.comp_Pos.get(&VIEWPORT.trackedEntity).expect("ERROR: Viewport camera is tracking a nonexistent entity");
 
             // Set boundaries
             let w_minCoords: Vector2 = (
@@ -53,7 +55,9 @@ impl<'a> gmSystem<'a> for sys_Renderer{
 
             for OBJ in IN_data.comp_Sprite.inner.iter(){
                 
-                let w_objPos = IN_data.comp_Pos.get(&OBJ.id);
+                // If it doesn't have a position then set it to 0, 0
+                // Sprites don't *need* position really
+                let w_objPos = IN_data.comp_Pos.get(&OBJ.id).unwrap_or(&comp_Pos { x: 0, y: 0 });
 
                 // If it's outside the boundaries on ANY axis, ignore it
                 // It's a mess, I know
@@ -88,6 +92,7 @@ impl<'a> gmSystem<'a> for sys_Renderer{
                         w_WorldZBuffer[(XPOS, YPOS)] = OBJ.val.zDepth;
                     }
                 }
+                
             }
 
             // Now paste all that into the main buffer
@@ -102,6 +107,7 @@ impl<'a> gmSystem<'a> for sys_Renderer{
                     self.frameBuffer[(XPOS, YPOS)] = *ROW_ITER.next().unwrap()
                 }
             }
+        
         }
 
         // Render the UI boxes
@@ -110,18 +116,19 @@ impl<'a> gmSystem<'a> for sys_Renderer{
         }
 
         // THIS NEXT PART DOESN'T QUITE WORK
-        // In all seriousness WHY IS CROSSTERM'S CONVOLUTED FORMATTING WORK PERFECTLY with frame sync
+        // In all seriousness WHY DOES CROSSTERM'S CONVOLUTED FORMATTING WORK PERFECTLY with frame sync
         // But when *I* am trying to do it RAW it DOESN'T????
 
-        // Start sync
-        print!("\x1b[?2026h");
+        // "Start" sync (Doesn't work for some reason)
+        println!("\x1b[?2026h");
         
         // Lock the Output
         let mut STDLOCK = BufWriter::new(std::io::stdout().lock());
 
+        // Clear the screen
         STDLOCK.write(b"\x1b[1J\x1b[H");
 
-        // Buffer the frame into string output
+        // Buffer the frame into output
         for ROW in self.frameBuffer.inner.chunks(RENDER_BUFFER_X).rev(){
             for CELL in ROW.iter(){
                 STDLOCK.write(CELL.ch.with(CELL.fg).on(CELL.bg).to_string().as_bytes());
@@ -129,12 +136,13 @@ impl<'a> gmSystem<'a> for sys_Renderer{
             STDLOCK.write(b"\r\n");
         }
         
+
+        // "End" sync and finally print the frame
+        STDLOCK.write(b"\x1b[?2026l");
         STDLOCK.flush();
+
         // And drop the lock
         drop(STDLOCK);
-
-        // End sync and finally print the frame
-        print!("\x1b[?2026l");
 
     }
 }

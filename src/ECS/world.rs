@@ -30,31 +30,29 @@ impl gmWorld{
     }
 
     pub fn fetch<'a, T>(&'a self) -> ReadStorage<'a, T> where T: gmComp + 'static{
-        ReadStorage{
-            data: Fetch{
-                data: Ref::map(self.components.get(T::COMP_ID()).unwrap().as_ref().borrow(), |idkfa| &idkfa.downcast::<T>().inner)
-            },
-            _phantom: PhantomData
-        }
+        ReadStorage::new(
+            Fetch::new(
+                Ref::map(self.components.get(T::COMP_ID()).expect(&format!("ERROR: Tried to fetch an unregistered component: {}", T::COMP_ID())).as_ref().borrow(), |idkfa| &idkfa.downcast::<T>().inner)
+            )
+        )
     }
     pub fn fetchMut<'a, T>(&'a self) -> WriteStorage<'a, T> where T: gmComp + 'static{
-        WriteStorage{
-            data: FetchMut{
-                data: RefMut::map(self.components.get(T::COMP_ID()).unwrap().as_ref().borrow_mut(), |idkfa| &mut idkfa.downcast_mut::<T>().inner)
-            },
-            _phantom: PhantomData
-        }
+        WriteStorage::new(
+            FetchMut::new(
+                RefMut::map(self.components.get(T::COMP_ID()).expect(&format!("ERROR: Tried to fetch an unregistered component: {}", T::COMP_ID())).as_ref().borrow_mut(), |idkfa| &mut idkfa.downcast_mut::<T>().inner)
+            )
+        )
     }
 
     pub fn fetchRes<'a, T>(&'a self) -> Fetch<'a, T> where T: gmRes + 'static{
-        Fetch{
-            data: Ref::map(self.resources.get(T::RES_ID()).unwrap().as_ref().borrow(), |idkfa| idkfa.downcast_ref::<T>().unwrap())
-        }
+        Fetch::new(
+            Ref::map(self.resources.get(T::RES_ID()).expect(&format!("ERROR: Tried to fetch an unregistered resource: {}", T::RES_ID())).as_ref().borrow(), |idkfa| idkfa.downcast_ref::<T>().unwrap())
+        )
     }
     pub fn fetchResMut<'a, T>(&'a self) -> FetchMut<'a, T> where T: gmRes + 'static{
-        FetchMut{
-            data: RefMut::map(self.resources.get(T::RES_ID()).unwrap().as_ref().borrow_mut(), |idkfa| idkfa.downcast_mut::<T>().unwrap())
-        }
+        FetchMut::new(
+            RefMut::map(self.resources.get(T::RES_ID()).expect(&format!("ERROR: Tried to fetch an unregistered resource: {}", T::RES_ID())).as_ref().borrow_mut(), |idkfa| idkfa.downcast_mut::<T>().unwrap())
+        )
     }
 
     pub fn fetchEventReader<'a, T>(&'a self) -> EventReader<'a, T> where T: gmEvent + 'static{
@@ -66,26 +64,25 @@ impl gmWorld{
     }
 
     pub fn registerComp<T>(&mut self) where T: gmComp + 'static{
-        self.components.insert(
-            T::COMP_ID(),
-            Rc::new(
-                RefCell::new(
-                    gmStorageContainer::<T>{
-                        inner: T::COMP_STORAGE::new()
-                    }
-                )
-            )
-        );
+        use std::collections::hash_map::Entry;
+        match self.components.entry(T::COMP_ID()){
+            Entry::Occupied(_) => panic!("ERROR: Attempted to override an existing component: {}", T::COMP_ID()),
+            Entry::Vacant(ENTRY) => ENTRY.insert(
+                    Rc::new(
+                        RefCell::new(
+                            gmStorageContainer::<T>{inner: T::COMP_STORAGE::new()})))
+        };
     }
     pub fn unRegisterComp<T>(&mut self) where T: gmComp + 'static{
         self.components.remove(T::COMP_ID());
     }
 
     pub fn registerRes<T>(&mut self) where T: gmRes + 'static{
-        self.resources.insert(
-            T::RES_ID(), 
-            Rc::new(RefCell::new(T::new()))
-        );
+        use std::collections::hash_map::Entry;
+        match self.resources.entry(T::RES_ID()){
+            Entry::Occupied(_) => panic!("ERROR: Attempted to override an existing resource: {}", T::RES_ID()),
+            Entry::Vacant(ENTRY) => ENTRY.insert(Rc::new(RefCell::new(T::new())))
+        };
     }
     pub fn unRegisterRes<T>(&mut self) where T: gmRes + 'static{
         self.resources.remove(T::RES_ID());
@@ -99,23 +96,28 @@ impl gmWorld{
     }
 
     pub fn createGmObj(&mut self) -> gmObjBuilder{
-        gmObjBuilder{
-            gmObjID: self.gmObjs.insertNextFree(),
-            worldRef: self,
-        }
+        gmObjBuilder::new(
+             self.gmObjs.insertNextFree(),
+            self,
+        )
     }
 
-    pub fn deleteGmObj(&mut self, IN_id: gmID){
-        self.gmObjs.remove(IN_id);
-        for COMP in self.components.values_mut(){
-            COMP.as_ref().borrow_mut().drop(&IN_id);
+    pub fn deleteGmObj(&mut self, IN_id: gmID) -> Result<(), ()>{
+        match self.gmObjs.remove(IN_id){
+            Ok(_) => {
+                for COMP in self.components.values_mut(){
+                    COMP.as_ref().borrow_mut().drop(&IN_id);
+                }
+                return Ok(())
+            }
+            Err(_) => {Err(())}
         }
     }
     
     pub fn fetchCommandWriter<'a>(&'a self) -> FetchMut<'a, gmWorld_CMDQUEUE>{
-        FetchMut{
-            data: RefMut::map(self.commands.as_ref().borrow_mut(), |idkfa| {idkfa}),
-        }
+        FetchMut::new(
+            RefMut::map(self.commands.as_ref().borrow_mut(), |idkfa| idkfa),
+        )
     }
 
     pub fn commandsExec(&mut self){
@@ -160,10 +162,12 @@ impl gmObjStorage{
         return w_nextIndex
     }
 
-    pub fn remove(&mut self, IN_id: gmID){
+    pub fn remove(&mut self, IN_id: gmID) -> Result<(), ()>{
         if let Some(ENTRY) = self.gmObjMap.get_mut(&IN_id){
             ENTRY.unset();
             self.nextFree.insert(IN_id, ());
+            return Ok(());
         }
+        Err(())
     }
 }
