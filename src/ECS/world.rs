@@ -101,7 +101,6 @@ impl gmWorld{
             self,
         )
     }
-
     pub fn deleteGmObj(&mut self, IN_id: gmID) -> Result<(), ()>{
         match self.gmObjs.remove(IN_id){
             Ok(_) => {
@@ -150,7 +149,7 @@ impl gmObjStorage{
 
     pub fn insert(&mut self, IN_id: gmID){
         self.gmObjMap.entry(IN_id)
-            .and_modify(|ENTRY| ENTRY.set(()))
+            .and_modify(|ENTRY| **ENTRY = Some(()))
             .or_insert(gmObj::new(IN_id, Some(())));
     }
 
