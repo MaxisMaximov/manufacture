@@ -2,27 +2,14 @@
 #![allow(unused_labels)]
 #![warn(unused_crate_dependencies)]
 
-use std::thread::sleep;
-
-pub use once_cell::sync::Lazy;
-pub use crossterm::{style::{Color, Stylize}, *};
-pub use std::{any::Any, collections::{HashMap, BTreeMap}, sync::Mutex, fmt::{self, Write as fmtWrite}, io::{stdout, Write as ioWrite}, time, ops::{Index, IndexMut}};
-
-// Define all subsystems
-mod system;
-mod logic;
-mod renderer;
 pub mod ECS;
 pub mod manufacture;
-
-// This is system stuff so yeah
-pub use system::*;
 
 // START HERE
 fn main() {
 
     // Switch to Raw Mode
-    terminal::enable_raw_mode().unwrap();
+    crossterm::terminal::enable_raw_mode().unwrap();
 
     let mut WORLD = ECS::world::gmWorld::new();
     let mut DISPATCHER = ECS::dispatcher::gmDispatcher::new();
@@ -34,65 +21,4 @@ fn main() {
     }
     
     return;
-
-    statics::debug.lock().unwrap().inner.insert(
-        ">SYS_SSINIT_data".to_string(),
-        debug::debug_item::new(
-            debug::class::info,
-            ".SYS/.SSINIT/#data",
-            vars::MISC::PATHS::PATH_DEBUG,
-            &[],
-            40,
-        ),
-    );
-
-    statics::debug.lock().unwrap().inner.insert(
-        ">SYS_processSpeed".to_string(),
-        debug::debug_item::new(
-            debug::class::info,
-            ".SYS/#processSpeed",
-            vars::MISC::PATHS::PATH_DEBUG,
-            &[("{time}", "".to_owned())],
-            255,
-        ),
-    );
-
-
-
-    // Generate new world
-    // Commented out cuz for whatever reason it gets stuck in loop
-    // Will fix it with new world gen
-    //data.lock().unwrap().DATA_world.w_generateRandom();
-
-    // "Initialize" the subsystems
-    renderer::init();
-    logic::init();
-    input::init();
-    json::init();
-
-    // # THE GAME LOOP
-    loop {
-        // Start the timer
-        let loopStart: time::Instant = time::Instant::now();
-
-        // Get player input
-        input::main();
-
-        // Process the game
-        logic::main();
-
-        // Render everything
-        renderer::main();
-
-        // Log how long it took to process everything
-        statics::debug.lock().unwrap().inner
-            .get_mut(">SYS_processSpeed")
-            .unwrap()
-            .values[0].1 = format!("{:?}", loopStart.elapsed());
-
-        let loop_elapsedTime: time::Duration = loopStart.elapsed();
-        if loop_elapsedTime < vars::SYS::TICKTIME {
-            sleep(vars::SYS::TICKTIME - loop_elapsedTime)
-        }
-    }
 }
