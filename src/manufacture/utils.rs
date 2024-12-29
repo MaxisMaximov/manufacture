@@ -32,4 +32,16 @@ pub mod rangeStuff{
             }
         }
     }
+
+    pub trait RangeExtend<U>{
+        fn extend(self, IN_extension: U) -> Self;
+    }
+    impl<T, U> RangeExtend<U> for Range<T> where T: Add<U, Output = T>{
+        fn extend(self, IN_extension: U) -> Self {
+            Range{
+                start: self.start,
+                end: self.end + IN_extension,
+            }
+        }
+    }
 }
