@@ -44,4 +44,16 @@ pub mod rangeStuff{
             }
         }
     }
+
+    pub trait RangeShift<U>{
+        fn shift(self, IN_shift: U) -> Self;
+    }
+    impl<T, U> RangeShift<U> for Range<T> where T: Add<U, Output = T>{
+        fn shift(self, IN_shift: U) -> Self {
+            Range{
+                start: self.start + IN_shift,
+                end: self.end
+            }
+        }
+    }
 }
