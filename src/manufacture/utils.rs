@@ -25,7 +25,7 @@ pub mod rangeStuff{
         fn offset(self, IN_offset: U) -> Self;
     }
     impl<T, U> RangeOffset<U> for Range<T> where T: Add<U, Output = T>, U: Copy{
-        fn offset(self, IN_offset: U) -> Self{
+        fn offset(self, IN_offset: U) -> Self {
             Range{
                 start: self.start + IN_offset,
                 end: self.end + IN_offset,
@@ -53,6 +53,19 @@ pub mod rangeStuff{
             Range{
                 start: self.start + IN_shift,
                 end: self.end
+            }
+        }
+    }
+
+    // Shift and Extend in one
+    pub trait RangeShiftExtend<U>{
+        fn shiftExtend(self, IN_startShift: U, IN_endShift: U) -> Self;
+    }
+    impl<T, U> RangeShiftExtend<U> for Range<T> where T: Add<U, Output = T>{
+        fn shiftExtend(self, IN_startShift: U, IN_endShift: U) -> Self {
+            Range{
+                start: self.start + IN_startShift,
+                end: self.end + IN_endShift,
             }
         }
     }
