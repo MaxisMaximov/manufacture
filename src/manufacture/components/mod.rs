@@ -102,7 +102,7 @@ impl gmComp for comp_UIBox{
 
 pub struct comp_Inventory{
     pub capacity: u16, // 32k items. Come on now.
-    pub items: Vec<u8>
+    pub items: Vec<types::inv_Item>
 }
 impl gmComp for comp_Inventory{
     type COMP_STORAGE = denseVecStorage<Self>;

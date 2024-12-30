@@ -16,6 +16,8 @@ impl Default for StyleSet{
     }
 }
 
+pub type inv_Item = u8;
+
 pub struct CartesianGrid<T>{ // It's Cartesian and it's a grid -- Just to not confuse with *proper* 2D arrays
     pub inner: Vec<T>,
     size: (usize, usize),
