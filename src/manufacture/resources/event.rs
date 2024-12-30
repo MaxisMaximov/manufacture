@@ -20,3 +20,8 @@ impl gmEvent for event_BatchTileChange{
         "event_BatchTileChange"
     }
 }
+
+pub struct event_InvOp_AddItem{
+    pub item: types::inv_Item,
+    pub inventory: gmID
+}
