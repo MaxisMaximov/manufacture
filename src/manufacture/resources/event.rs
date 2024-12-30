@@ -25,8 +25,18 @@ pub struct event_InvOp_AddItem{
     pub item: types::inv_Item,
     pub target: gmID
 }
+impl gmEvent for event_InvOp_AddItem{
+    fn EVENT_ID() -> &'static str {
+        "event_InvOp_AddItem"
+    }
+}
+
 pub struct event_InvOp_RemoveItem{
     pub item: u16,
     pub target: gmID
 }
+impl gmEvent for event_InvOp_RemoveItem{
+    fn EVENT_ID() -> &'static str {
+        "event_InvOp_AddItem"
+    }
 }
