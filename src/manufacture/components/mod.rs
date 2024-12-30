@@ -99,3 +99,15 @@ impl gmComp for comp_UIBox{
         "comp_UIBox"
     }
 }
+
+pub struct comp_Inventory{
+    pub capacity: u16, // 32k items. Come on now.
+    pub items: Vec<u8>
+}
+impl gmComp for comp_Inventory{
+    type COMP_STORAGE = denseVecStorage<Self>;
+
+    fn COMP_ID() -> &'static str {
+        "comp_Inventory"
+    }
+}
