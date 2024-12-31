@@ -101,7 +101,7 @@ impl gmComp for comp_UIBox{
 }
 
 pub struct comp_Inventory{
-    pub capacity: usize, // If you get even above 1k I will punch you.
+    pub capacity: usize, // If you get even above 1k I will punch you. -- Will later switch to capacity in Volume, cuz peck you holding 500 giant machines lol
     pub items: Vec<types::inv_Item>
 }
 impl gmComp for comp_Inventory{

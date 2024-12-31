@@ -15,6 +15,7 @@ pub fn init(IN_world: &mut gmWorld, IN_dispatch: &mut gmDispatcher){
     IN_dispatch.addSys::<sys_TileChunkSpriteUpdate>();
     IN_dispatch.addSys::<sys_PChunkUnLoad>();
     IN_dispatch.addSys::<sys_Renderer>();
+    IN_dispatch.addSys::<sys_InvOps>();
 
     // Register Components
     IN_world.registerComp::<comp_HP>();
