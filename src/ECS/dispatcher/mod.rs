@@ -49,10 +49,11 @@ impl gmDispatcher{
         // Check if the desired stage exists
         if let Some(STAGE) = self.stages.get_mut(w_nextStage){
             STAGE.addSys::<T>();
-            return
+        }else{
+            // If not, add a new stage with the system
+            self.addStage(gmDispatchStage::new().withSys::<T>());
         }
-        // If not, add a new stage with the system
-        self.addStage(gmDispatchStage::new().withSys::<T>());
+        self.systems.insert(T::SYS_ID(), w_nextStage);
 
     }
 

@@ -109,7 +109,7 @@ pub struct sys_PMove{}
 impl<'a> gmSystem<'a> for sys_PMove{
     type sysData = sysData_PMove<'a>;
 
-    const sysDepends: &'static [&'static str] = &[];
+    const sysDepends: &'static [&'static str] = &["sys_Input"];
 
     fn new() -> Self {
         Self{}

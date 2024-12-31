@@ -37,6 +37,6 @@ pub struct event_InvOp_RemoveItem{
 }
 impl gmEvent for event_InvOp_RemoveItem{
     fn EVENT_ID() -> &'static str {
-        "event_InvOp_AddItem"
+        "event_InvOp_RemoveItem"
     }
 }

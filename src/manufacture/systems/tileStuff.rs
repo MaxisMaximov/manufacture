@@ -7,7 +7,7 @@ pub struct sys_PTileChange{}
 impl<'a> gmSystem<'a> for sys_PTileChange{
     type sysData = sysData_PTileChange<'a>;
 
-    const sysDepends: &'static [&'static str] = &[];
+    const sysDepends: &'static [&'static str] = &["sys_Input"];
 
     fn new() -> Self {
         Self{}
@@ -140,7 +140,7 @@ pub struct sys_TileChunkSpriteUpdate{}
 impl<'a> gmSystem<'a> for sys_TileChunkSpriteUpdate{
     type sysData = sysData_TileChunkSpriteUpdate<'a>;
 
-    const sysDepends: &'static [&'static str] = &[];
+    const sysDepends: &'static [&'static str] = &["sys_TileChunkUpdate"];
 
     fn new() -> Self {
         Self{}

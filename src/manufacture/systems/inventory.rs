@@ -46,3 +46,52 @@ impl<'a> gmSystemData<'a> for sysData_InvOps<'a>{
         }
     }
 }
+
+pub struct sys_PInvOps{}
+impl<'a> gmSystem<'a> for sys_PInvOps{
+    type sysData = sysData_PInvOps<'a>;
+
+    const sysDepends: &'static [&'static str] = &["sys_Input"];
+
+    fn new() -> Self {
+        Self{}
+    }
+
+    fn SYS_ID() -> &'static str {
+        "sys_PInvOps"
+    }
+
+    fn execute(&mut self, mut IN_data: Self::sysData){
+        match IN_data.res_PInput.code{
+            KeyCode::Char('E') => {
+                IN_data.event_InvOp_AddItem.push(
+                    event_InvOp_AddItem{
+                        item: 2,
+                        target: *IN_data.res_PID.get(&1).expect(&format!("ERROR: PID of player 1 points to an object without an Inventory component"))});
+            }
+            KeyCode::Char('R') => {
+                IN_data.event_InvOp_RemoveItem.push(
+                    event_InvOp_RemoveItem{
+                        item: 2,
+                        target: *IN_data.res_PID.get(&1).expect(&format!("ERROR: PID of player 1 points to an object without an Inventory component"))});
+            }
+            _ => {}
+        }
+    }
+}
+pub struct sysData_PInvOps<'a>{
+    res_PInput: Fetch<'a, res_PInput>,
+    res_PID: Fetch<'a, res_PID>,
+    event_InvOp_AddItem: EventWriter<'a, event_InvOp_AddItem>,
+    event_InvOp_RemoveItem: EventWriter<'a, event_InvOp_RemoveItem>
+}
+impl<'a> gmSystemData<'a> for sysData_PInvOps<'a>{
+    fn fetch(IN_world: &'a mut gmWorld) -> Self {
+        Self{
+            res_PInput: IN_world.fetchRes(),
+            res_PID: IN_world.fetchRes(),
+            event_InvOp_AddItem: IN_world.fetchEventWriter(),
+            event_InvOp_RemoveItem: IN_world.fetchEventWriter(),
+        }
+    }
+}

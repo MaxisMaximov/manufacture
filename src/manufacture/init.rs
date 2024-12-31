@@ -7,15 +7,19 @@ use components::*;
 
 pub fn init(IN_world: &mut gmWorld, IN_dispatch: &mut gmDispatcher){
     // Register Systems
+    // Player stuff
     IN_dispatch.addSys::<sys_Input>();
     IN_dispatch.addSys::<sys_PMove>();
-    IN_dispatch.addSys::<sys_Move>();
     IN_dispatch.addSys::<sys_PTileChange>();
+    IN_dispatch.addSys::<sys_PInvOps>();
+    // Misc
+    IN_dispatch.addSys::<sys_Move>();
+    // System stuff
+    IN_dispatch.addSys::<sys_PChunkUnLoad>();
     IN_dispatch.addSys::<sys_TileChunkUpdate>();
     IN_dispatch.addSys::<sys_TileChunkSpriteUpdate>();
-    IN_dispatch.addSys::<sys_PChunkUnLoad>();
-    IN_dispatch.addSys::<sys_Renderer>();
     IN_dispatch.addSys::<sys_InvOps>();
+    IN_dispatch.addSys::<sys_Renderer>();
 
     // Register Components
     IN_world.registerComp::<comp_HP>();
@@ -26,6 +30,7 @@ pub fn init(IN_world: &mut gmWorld, IN_dispatch: &mut gmDispatcher){
     IN_world.registerComp::<comp_TileTerrainChunk>();
     IN_world.registerComp::<comp_UIBox>();
     IN_world.registerComp::<comp_ViewportCamera>();
+    IN_world.registerComp::<comp_Inventory>();
 
     // Register Resources
     IN_world.registerRes::<res_DeltaT>();
@@ -38,6 +43,8 @@ pub fn init(IN_world: &mut gmWorld, IN_dispatch: &mut gmDispatcher){
     // Register Events
     IN_world.registerEvent::<event_TileChange>();
     IN_world.registerEvent::<event_BatchTileChange>();
+    IN_world.registerEvent::<event_InvOp_AddItem>();
+    IN_world.registerEvent::<event_InvOp_RemoveItem>();
 
     prefab_Player::spawn(&prefab_Player{}, IN_world.createGmObj());
 
