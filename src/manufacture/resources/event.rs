@@ -32,7 +32,7 @@ impl gmEvent for event_InvOp_AddItem{
 }
 
 pub struct event_InvOp_RemoveItem{
-    pub item: u16,
+    pub item: u8,
     pub target: gmID
 }
 impl gmEvent for event_InvOp_RemoveItem{
