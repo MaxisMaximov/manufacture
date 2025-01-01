@@ -148,32 +148,30 @@ impl<'a> gmSystem<'a> for sys_Renderer{
 }
 impl sys_Renderer{
     pub fn renderNode(&mut self, IN_node: &Node<UI_element>, IN_uiData: &UI_data, IN_resUIData: &res_UIData){
-        let w_startPos = match IN_node.style.position{
-            UI_pos::Abs(POS) => (POS.0, POS.1),
-            UI_pos::Rel(POS) => (POS.0 + IN_uiData.position.0, POS.1 + IN_uiData.position.1)
-        
-        };
+        let w_NodeUIData = IN_uiData.concatStyle(&IN_node.style);
 
-        let mut w_pos = w_startPos;
+        let w_startPos = w_NodeUIData.position;
+
+        let mut w_charPos = w_startPos;
 
         for CHAR in (IN_node.content)(IN_resUIData).chars(){
             // Hacky workaround
             if CHAR == '\n'{
-                w_pos.1 += 1;
-                w_pos.0 = w_startPos.0;
+                w_charPos.1 += 1;
+                w_charPos.0 = w_startPos.0;
                 continue
             }
             
-            let mut idkfa_cell = self.frameBuffer[w_pos];
+            let mut idkfa_cell = self.frameBuffer[w_charPos];
             idkfa_cell.ch = CHAR;
             idkfa_cell.fg = IN_node.style.fg;
             idkfa_cell.bg = IN_node.style.bg;
-            w_pos.0 += 1;
+            w_charPos.0 += 1;
         }
 
         // Render border
         let w_borderStart: Vector2 = (w_startPos.0 - 1, w_startPos.1 - 1);
-        let w_borderEnd: Vector2 = (w_startPos.0 + IN_node.style.borderSize.0 as isize, w_startPos.1 + IN_node.style.borderSize.1 as isize);
+        let w_borderEnd: Vector2 = (w_startPos.0 + IN_node.style.size.0 as isize, w_startPos.1 + IN_node.style.size.1 as isize);
 
         match IN_node.style.border {
             UI_border::singleChar(CHAR) => {
@@ -189,12 +187,8 @@ impl sys_Renderer{
             _ => unimplemented!()
         }
 
-        let w_nextUIData = UI_data{
-            position: w_startPos,
-        };
-
         for NODE in IN_node.nodes.iter(){
-            self.renderNode(NODE, &w_nextUIData, IN_resUIData);
+            self.renderNode(NODE, &w_NodeUIData, IN_resUIData);
         }
     }
 
