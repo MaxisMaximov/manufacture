@@ -17,22 +17,31 @@ impl UI_data{
                     UI_pos::Rel(POS) => POS,
                 }
             },
-            size: IN_style.size
+            size: {
+                match IN_style.size{
+                    UI_size::Abs(SIZE) => SIZE,
+                    UI_size::Frac(FRAC) => ((self.size.0 * 100) / (FRAC.0 * 100), (self.size.1 * 100) / (FRAC.1 * 100)), // /5/6 == /(5*6)
+                }
+            }
         }
     }
 }
 
 pub struct UI_style{
     pub position: UI_pos,
+    pub size: UI_size,
     pub fg: Color,
     pub bg: Color,
     pub border: UI_border,
-    pub size: (usize, usize)
 }
 
 pub enum UI_pos{
     Abs(Vector2),
     Rel(Vector2)
+}
+pub enum UI_size<T = (usize, usize)>{ // A generic to not rewrite constantly lol
+    Abs(T),
+    Frac(T)
 }
 pub enum UI_border{
     singleChar(char)

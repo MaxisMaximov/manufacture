@@ -177,7 +177,7 @@ impl sys_Renderer{
 
         // Render border
         let w_borderStart: Vector2 = (w_startPos.0 - 1, w_startPos.1 - 1);
-        let w_borderEnd: Vector2 = (w_startPos.0 + IN_node.style.size.0 as isize, w_startPos.1 + IN_node.style.size.1 as isize);
+        let w_borderEnd: Vector2 = (w_startPos.0 + w_NodeUIData.size.0 as isize, w_startPos.1 + w_NodeUIData.size.1 as isize);
 
         match IN_node.style.border {
             UI_border::singleChar(CHAR) => {
