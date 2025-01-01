@@ -1,12 +1,8 @@
 use super::*;
 
 pub struct UI_element{
-    pub position: UI_pos,
     pub content: fn(&res_UIData) -> String,
-    pub fg: Color,
-    pub bg: Color,
-    pub border: UI_border,
-    pub borderSize: (usize, usize) // Inner size
+    pub style: UI_style
 }
 pub struct UI_data{
     pub position: Vector2
@@ -25,4 +21,12 @@ pub enum UI_pos{
 }
 pub enum UI_border{
     singleChar(char)
+}
+
+pub struct UI_style{
+    pub position: UI_pos,
+    pub fg: Color,
+    pub bg: Color,
+    pub border: UI_border,
+    pub borderSize: (usize, usize) // Inner size
 }

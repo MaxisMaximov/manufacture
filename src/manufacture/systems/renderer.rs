@@ -148,7 +148,7 @@ impl<'a> gmSystem<'a> for sys_Renderer{
 }
 impl sys_Renderer{
     pub fn renderNode(&mut self, IN_node: &Node<UI_element>, IN_uiData: &UI_data, IN_resUIData: &res_UIData){
-        let w_startPos = match IN_node.position{
+        let w_startPos = match IN_node.style.position{
             UI_pos::Abs(POS) => (POS.0, POS.1),
             UI_pos::Rel(POS) => (POS.0 + IN_uiData.position.0, POS.1 + IN_uiData.position.1)
         
@@ -166,16 +166,16 @@ impl sys_Renderer{
             
             let mut idkfa_cell = self.frameBuffer[w_pos];
             idkfa_cell.ch = CHAR;
-            idkfa_cell.fg = IN_node.fg;
-            idkfa_cell.bg = IN_node.bg;
+            idkfa_cell.fg = IN_node.style.fg;
+            idkfa_cell.bg = IN_node.style.bg;
             w_pos.0 += 1;
         }
 
         // Render border
         let w_borderStart: Vector2 = (w_startPos.0 - 1, w_startPos.1 - 1);
-        let w_borderEnd: Vector2 = (w_startPos.0 + IN_node.borderSize.0 as isize, w_startPos.1 + IN_node.borderSize.1 as isize);
+        let w_borderEnd: Vector2 = (w_startPos.0 + IN_node.style.borderSize.0 as isize, w_startPos.1 + IN_node.style.borderSize.1 as isize);
 
-        match IN_node.border {
+        match IN_node.style.border {
             UI_border::singleChar(CHAR) => {
                 // Top
                 self.drawLine((w_borderStart.0, w_borderStart.1), (w_borderEnd.0, w_borderStart.1), StyleSet{ ch: CHAR, fg: Color::White, bg: Color::Black });
