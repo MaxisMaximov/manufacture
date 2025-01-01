@@ -2,7 +2,7 @@ use super::*;
 
 pub struct UI_element{
     pub position: UI_pos,
-    pub content: String,
+    pub content: fn(&res_UIData) -> String,
     pub fg: Color,
     pub bg: Color,
     pub border: UI_border,
