@@ -112,7 +112,13 @@ impl<'a> gmSystem<'a> for sys_Renderer{
 
         // Render the UI boxes
         for UIBOX in IN_data.comp_UIBox.inner.iter(){
-            self.renderNode(&UIBOX.val.elements, &UI_data { position: (0, 0) }, &IN_data.res_UIData);
+            self.renderNode(
+                &UIBOX.val.elements, 
+                &UI_data{
+                    position: (0, 0),
+                    size: (RENDER_BUFFER_X, RENDER_BUFFER_Y)
+                }, 
+                &IN_data.res_UIData);
         }
 
         // THIS NEXT PART DOESN'T QUITE WORK
