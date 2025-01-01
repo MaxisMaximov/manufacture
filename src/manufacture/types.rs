@@ -119,10 +119,15 @@ impl<T> Node<T>{
 
         OUT_count
     }
+
     pub fn getNode(&self, IN_id: usize) -> Option<&Node<T>>{
         self.nodes.get(IN_id)
     }
     pub fn getNodeMut(&mut self, IN_id: usize) -> Option<&mut Node<T>>{
         self.nodes.get_mut(IN_id)
+    }
+
+    pub fn mapNodes(&mut self, IN_function: fn(&mut Node<T>)){
+        IN_function(self);
     }
 }
