@@ -43,4 +43,6 @@ pub fn init(IN_world: &mut gmWorld, IN_dispatch: &mut gmDispatcher){
     IN_world.fetchResMut::<res_PID>().insert(1, 0);
 
     IN_world.createGmObj().addComp(comp_ViewportCamera{ trackedEntity: 0, offset: (0, 0), active: true }).finish();
+    
+    idkfa_UI::spawn(&idkfa_UI{}, IN_world.createGmObj());
 }

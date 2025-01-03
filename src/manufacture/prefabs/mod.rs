@@ -1,7 +1,7 @@
 use super::*;
 
 use components::*;
-use types::{StyleSet, Vector2};
+use types::{Node, StyleSet, Vector2};
 use vars::*;
 
 use super::gmPrefab;
@@ -36,5 +36,29 @@ impl prefab_GridWorldChunk{
         Self{
             chunk: IN_chunk,
         }
+    }
+}
+
+pub struct idkfa_UI{}
+impl gmPrefab for idkfa_UI{
+    fn spawn(&self, IN_builder: gmObjBuilder) {
+        use resources::ui::*;
+
+        IN_builder
+            .addComp(comp_UIBox{
+                position: (0, 0),
+                elements: Node::new(
+                    UI_element{
+                        content: |_| "idkfa".to_owned(),
+                        style: UI_style{
+                            position: UI_pos::Rel((-5, 5)),
+                            size: UI_size::Frac((50, 50)),
+                            fg: Color::White,
+                            bg: Color::Black,
+                            border: UI_border::fancy,
+                        },
+                    }, 0, 5),
+            })
+            .finish();
     }
 }

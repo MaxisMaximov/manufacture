@@ -163,12 +163,12 @@ impl sys_Renderer{
         for CHAR in (IN_node.content)(IN_resUIData).chars(){
             // Hacky workaround
             if CHAR == '\n'{
-                w_charPos.1 += 1;
+                w_charPos.1 -= 1;
                 w_charPos.0 = w_startPos.0;
                 continue
             }
             
-            let mut idkfa_cell = self.frameBuffer[w_charPos];
+            let idkfa_cell = &mut self.frameBuffer[w_charPos];
             idkfa_cell.ch = CHAR;
             idkfa_cell.fg = IN_node.style.fg;
             idkfa_cell.bg = IN_node.style.bg;
@@ -176,10 +176,11 @@ impl sys_Renderer{
         }
 
         // Render border
-        let w_borderStart: Vector2 = (w_NodeUIData.position.0 - 1, w_NodeUIData.position.1 - 1);
-        let w_borderEnd: Vector2 = (w_NodeUIData.position.0 + w_NodeUIData.size.0 as isize, w_NodeUIData.position.1 + w_NodeUIData.size.1 as isize);
+        let w_borderStart: Vector2 = (w_NodeUIData.position.0 - 1, w_NodeUIData.position.1 + 1);
+        let w_borderEnd: Vector2 = (w_NodeUIData.position.0 + w_NodeUIData.size.0 as isize, w_NodeUIData.position.1 - w_NodeUIData.size.1 as isize);
 
         match IN_node.style.border {
+            UI_border::none => {}
             UI_border::singleChar(CHAR) => {
                 // Top
                 self.drawLine((w_borderStart.0, w_borderStart.1), (w_borderEnd.0, w_borderStart.1), StyleSet{ ch: CHAR, fg: Color::White, bg: Color::Black });
@@ -190,7 +191,22 @@ impl sys_Renderer{
                 // Right
                 self.drawLine((w_borderEnd.0, w_borderStart.1), (w_borderEnd.0, w_borderEnd.1), StyleSet{ ch: CHAR, fg: Color::White, bg: Color::Black });
             }
-            _ => unimplemented!()
+            UI_border::fancy =>{
+                // Top
+                self.drawLine((w_borderStart.0, w_borderStart.1), (w_borderEnd.0, w_borderStart.1), StyleSet{ ch: '═', fg: Color::White, bg: Color::Black });
+                // Bottom
+                self.drawLine((w_borderStart.0, w_borderEnd.1), (w_borderEnd.0, w_borderEnd.1), StyleSet{ ch: '═', fg: Color::White, bg: Color::Black });
+                // Left
+                self.drawLine((w_borderStart.0, w_borderStart.1), (w_borderStart.0, w_borderEnd.1), StyleSet{ ch: '║', fg: Color::White, bg: Color::Black });
+                // Right
+                self.drawLine((w_borderEnd.0, w_borderStart.1), (w_borderEnd.0, w_borderEnd.1), StyleSet{ ch: '║', fg: Color::White, bg: Color::Black });
+
+                // Corners
+                self.frameBuffer[(w_borderStart.0, w_borderStart.1)] = StyleSet{ ch: '╔', fg: Color::White, bg: Color::Black }; // TL
+                self.frameBuffer[(w_borderEnd.0, w_borderStart.1)] = StyleSet{ ch: '╗', fg: Color::White, bg: Color::Black }; // TR
+                self.frameBuffer[(w_borderStart.0, w_borderEnd.1)] = StyleSet{ ch: '╚', fg: Color::White, bg: Color::Black }; // BL
+                self.frameBuffer[(w_borderEnd.0, w_borderEnd.1)] = StyleSet{ ch: '╝', fg: Color::White, bg: Color::Black }; // BR
+            }
         }
 
         for NODE in IN_node.nodes.iter(){
@@ -207,9 +223,6 @@ impl sys_Renderer{
         let mut w_startPos = IN_start;
         let mut w_endPos = IN_end;
 
-        let mut w_subAx: isize;
-        let w_dir: isize;
-
         // Calc delta distance between points and check which is the main axis, then set the variables
         //          Delta X                          Delta Y
         if IN_start.0.abs_diff(IN_end.0) >= IN_start.1.abs_diff(IN_end.1){ // X Axis
@@ -221,14 +234,14 @@ impl sys_Renderer{
             }
             
             let mut w_yPos = w_startPos.1; // Set subaxis position
-            let w_dir = if w_startPos.1 < w_endPos.1{1}else{-1}; // Check what way the line is going, set sign if needed
+            let w_dir = if w_startPos.1 < w_endPos.1{1}else{-1}; // Check what way the line is going, set sign if needed -- Sign goes down
 
             // Finally iterate
             for XPOS in w_startPos.0..=w_endPos.0{
                 self.frameBuffer[(XPOS, w_yPos)] = IN_styleSet;
     
                 if w_yPos.abs_diff(w_endPos.1)*2 > XPOS.abs_diff(w_endPos.0){
-                    // If sign is enabled that means it goes left
+
                     w_yPos += w_dir
                 }
             }
@@ -241,14 +254,13 @@ impl sys_Renderer{
             }
 
             let mut w_xPos = w_startPos.0; // Set subaxis position
-            let w_dir = if w_startPos.0 < w_endPos.0{1}else{-1}; // Check what way the line is going, set sign if needed
+            let w_dir = if w_startPos.0 < w_endPos.0{1}else{-1}; // Check what way the line is going, set sign if needed -- Sign goes left
 
             // Finally iterate
             for YPOS in w_startPos.1..=w_endPos.1{
                 self.frameBuffer[(w_xPos, YPOS)] = IN_styleSet;
     
                 if w_xPos.abs_diff(w_endPos.0)*2 > YPOS.abs_diff(w_endPos.1){
-                    // If sign is enabled that means it goes left
                     w_xPos += w_dir
                 }
             }
