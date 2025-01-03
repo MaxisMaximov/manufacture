@@ -55,4 +55,7 @@ pub mod specials{
         " ".repeat(IN_length) // Empty progressbar
             .replacen(" ", "█", w_filledIn) // Replace
     }
+    pub fn percent(IN_val: usize, IN_maxVal: usize) -> String{
+        format!("{}%", ((IN_val * 100) / IN_maxVal))
+    }
 }
