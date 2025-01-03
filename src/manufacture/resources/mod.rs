@@ -4,9 +4,9 @@ use super::*;
 
 use types::*;
 
-mod event;
-mod world;
-mod ui;
+pub mod event;
+pub mod world;
+pub mod ui;
 
 pub use event::*;
 pub use world::*;

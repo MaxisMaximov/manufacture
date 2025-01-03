@@ -13,14 +13,14 @@ impl UI_data{
         Self{
             position: {
                 match IN_style.position {
-                    UI_pos::Abs(POS) => (self.position.0 + POS.0, self.position.1 + POS.1),
-                    UI_pos::Rel(POS) => POS,
+                    UI_pos::Abs(POS) => POS,
+                    UI_pos::Rel(POS) => (self.position.0 + POS.0, self.position.1 + POS.1),
                 }
             },
             size: {
                 match IN_style.size{
                     UI_size::Abs(SIZE) => SIZE,
-                    UI_size::Frac(FRAC) => ((self.size.0 * 100) / (FRAC.0 * 100), (self.size.1 * 100) / (FRAC.1 * 100)), // /5/6 == /(5*6)
+                    UI_size::Frac(FRAC) => ((self.size.0 * FRAC.0) / 100, (self.size.1 * FRAC.1) / 100),
                 }
             }
         }
