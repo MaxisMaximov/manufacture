@@ -49,7 +49,7 @@ impl gmPrefab for idkfa_UI{
                 position: (0, 0),
                 elements: Node::new(
                     UI_element{
-                        content: |_| "idkfa".to_owned(),
+                        content: |_| specials::progressBar(8, 10, 20),
                         style: UI_style{
                             position: UI_pos::Rel((-5, 5)),
                             size: UI_size::Frac((50, 50)),
