@@ -131,8 +131,8 @@ impl<'a> gmSystem<'a> for sys_Renderer{
         // Lock the Output
         let mut STDLOCK = BufWriter::new(std::io::stdout().lock());
 
-        // Clear the screen
-        STDLOCK.write(b"\x1b[1J\x1b[H");
+        // Go to the start of the screen
+        STDLOCK.write(b"\x1b[H");
 
         // Buffer the frame into output
         for ROW in self.frameBuffer.inner.chunks(RENDER_BUFFER_X).rev(){
@@ -176,8 +176,8 @@ impl sys_Renderer{
         }
 
         // Render border
-        let w_borderStart: Vector2 = (w_startPos.0 - 1, w_startPos.1 - 1);
-        let w_borderEnd: Vector2 = (w_startPos.0 + w_NodeUIData.size.0 as isize, w_startPos.1 + w_NodeUIData.size.1 as isize);
+        let w_borderStart: Vector2 = (w_NodeUIData.position.0 - 1, w_NodeUIData.position.1 - 1);
+        let w_borderEnd: Vector2 = (w_NodeUIData.position.0 + w_NodeUIData.size.0 as isize, w_NodeUIData.position.1 + w_NodeUIData.size.1 as isize);
 
         match IN_node.style.border {
             UI_border::singleChar(CHAR) => {
@@ -220,8 +220,18 @@ impl sys_Renderer{
                 std::mem::swap(&mut w_startPos, &mut w_endPos);
             }
             
-            w_subAx = w_startPos.1; // Set subaxis position
-            w_dir = if w_startPos.1 < w_endPos.1{1}else{-1}; // Check what way the line is going, set sign if needed
+            let mut w_yPos = w_startPos.1; // Set subaxis position
+            let w_dir = if w_startPos.1 < w_endPos.1{1}else{-1}; // Check what way the line is going, set sign if needed
+
+            // Finally iterate
+            for XPOS in w_startPos.0..=w_endPos.0{
+                self.frameBuffer[(XPOS, w_yPos)] = IN_styleSet;
+    
+                if w_yPos.abs_diff(w_endPos.1)*2 > XPOS.abs_diff(w_endPos.0){
+                    // If sign is enabled that means it goes left
+                    w_yPos += w_dir
+                }
+            }
         }
         else{ // Y Axis
 
@@ -230,17 +240,17 @@ impl sys_Renderer{
                 std::mem::swap(&mut w_startPos, &mut w_endPos);
             }
 
-            w_subAx = w_startPos.0; // Set subaxis position
-            w_dir = if w_startPos.0 < w_endPos.0{1}else{-1}; // Check what way the line is going, set sign if needed
-        }
+            let mut w_xPos = w_startPos.0; // Set subaxis position
+            let w_dir = if w_startPos.0 < w_endPos.0{1}else{-1}; // Check what way the line is going, set sign if needed
 
-        // Finally iterate
-        for SUPAX in w_startPos.1..=w_endPos.1{
-            self.frameBuffer[(w_subAx, SUPAX)] = IN_styleSet;
-
-            if w_subAx.abs_diff(w_endPos.0)*2 > SUPAX.abs_diff(w_endPos.1){
-                // If sign is enabled that means it goes left
-                w_subAx += w_dir
+            // Finally iterate
+            for YPOS in w_startPos.1..=w_endPos.1{
+                self.frameBuffer[(w_xPos, YPOS)] = IN_styleSet;
+    
+                if w_xPos.abs_diff(w_endPos.0)*2 > YPOS.abs_diff(w_endPos.1){
+                    // If sign is enabled that means it goes left
+                    w_xPos += w_dir
+                }
             }
         }
     }
