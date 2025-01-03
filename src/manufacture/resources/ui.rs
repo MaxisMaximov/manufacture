@@ -44,5 +44,7 @@ pub enum UI_size<T = (usize, usize)>{ // A generic to not rewrite constantly lol
     Frac(T)
 }
 pub enum UI_border{
-    singleChar(char)
+    none,
+    singleChar(char),
+    fancy
 }
