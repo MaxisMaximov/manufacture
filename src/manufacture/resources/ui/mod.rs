@@ -3,7 +3,7 @@ use super::*;
 pub mod specials;
 
 pub struct UI_element{
-    pub content: fn(&res_UIData) -> String,
+    pub content: UI_content,
     pub style: UI_style
 }
 pub struct UI_data{
@@ -27,6 +27,11 @@ impl UI_data{
             }
         }
     }
+}
+
+pub enum UI_content{
+    text(String),
+    special(Box<dyn specials::UI_Special>)
 }
 
 pub struct UI_style{

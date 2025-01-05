@@ -160,7 +160,12 @@ impl sys_Renderer{
 
         let mut w_charPos = w_startPos;
 
-        for CHAR in (IN_node.content)(IN_resUIData).chars(){
+        let w_nodeContent = match &IN_node.content{
+            UI_content::text(TEXT) => TEXT,
+            UI_content::special(SPECIAL) => &SPECIAL.render(IN_resUIData),
+        };
+
+        for CHAR in w_nodeContent.chars(){
             // Hacky workaround
             if CHAR == '\n'{
                 w_charPos.1 -= 1;
