@@ -94,7 +94,7 @@ impl DerefMut for res_PID{
 }
 
 pub struct res_UIData{
-    res: HashMap<&'static str, String>
+    res: HashMap<String, Box<dyn Any>>
 }
 impl gmRes for res_UIData{
     fn new() -> Self {
@@ -108,7 +108,7 @@ impl gmRes for res_UIData{
     }
 }
 impl Deref for res_UIData{
-    type Target = HashMap<&'static str, String>;
+    type Target = HashMap<String, Box<dyn Any>>;
 
     fn deref(&self) -> &Self::Target {
         &self.res
