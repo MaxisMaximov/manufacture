@@ -1,3 +1,8 @@
+use super::*;
+
+pub trait UI_Special{
+    fn render(&self, IN_UIData: &res_UIData) -> String;
+}
 
 pub fn progressBar(IN_length: usize, IN_val: usize, IN_maxVal: usize) -> String{
     let w_filledIn = (IN_length * ((IN_val * 100) / IN_maxVal)) / 100; // (LEN * PERCENT) / 100
