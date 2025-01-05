@@ -58,4 +58,19 @@ pub mod specials{
     pub fn percent(IN_val: usize, IN_maxVal: usize) -> String{
         format!("{}%", ((IN_val * 100) / IN_maxVal))
     }
+    pub fn list(IN_items: &[String], IN_maxWidth: usize, IN_vertical: bool) -> String{
+        let mut OUT_str = String::new();
+
+        for ITEM in IN_items.iter(){
+            OUT_str.push_str(&ITEM[0..IN_maxWidth]);
+            if IN_vertical{
+                OUT_str.push('\n'); // Newline append
+            }
+            else{
+                OUT_str.push_str(" | ");
+            }
+        }
+
+        OUT_str
+    }
 }
