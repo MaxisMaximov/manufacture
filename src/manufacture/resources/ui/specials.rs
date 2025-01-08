@@ -1,7 +1,7 @@
 use super::*;
 
 pub trait UI_Special{
-    fn render(&self, IN_UIData: &res_UIData) -> String;
+    fn parse(&self, IN_resUIData: &res_UIData) -> Node<UI_element>;
 }
 
 pub struct UISpec_progressBar{
