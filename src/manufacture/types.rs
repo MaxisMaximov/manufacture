@@ -127,7 +127,8 @@ impl<T> Node<T>{
         self.nodes.get_mut(IN_id)
     }
 
-    pub fn mapNodes(&mut self, IN_function: fn(&mut Node<T>)){
-        IN_function(self);
+    pub fn withNodes<F: Fn(&mut Node<T>)>(mut self, IN_function: F) -> Self{
+        IN_function(&mut self);
+        self
     }
 }
