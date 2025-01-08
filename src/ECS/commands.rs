@@ -19,7 +19,7 @@ impl gmCommand for cmd_SpawnGmObj{
     }
 
     fn execute(&self, IN_world: &mut gmWorld) {
-        IN_world.createGmObj();
+        let _ = IN_world.createGmObj();
     }
 }
 
@@ -32,7 +32,7 @@ impl gmCommand for cmd_DespawnGmObj{
     }
 
     fn execute(&self, IN_world: &mut gmWorld) {
-        IN_world.deleteGmObj(self.id);
+        let _ = IN_world.deleteGmObj(self.id);
     }
 }
 

@@ -53,7 +53,7 @@ pub mod tests{
 
         dispatcher.dispatch(&mut world);
 
-        world.deleteGmObj(0);
+        let _ = world.deleteGmObj(0);
 
         println!("Success!");
     }

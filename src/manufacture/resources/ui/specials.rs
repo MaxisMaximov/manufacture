@@ -10,18 +10,32 @@ pub struct UISpec_progressBar{
     pub trackVal: String
 }
 impl UI_Special for UISpec_progressBar{
-    fn render(&self, IN_UIData: &res_UIData) -> String {
+    fn parse(&self, IN_resUIData: &res_UIData) -> Node<UI_element> {
 
-        let idkfa_val =
-            IN_UIData.get(&self.trackVal)
+        let w_val =
+            IN_resUIData.get(&self.trackVal)
                 .expect(&format!("ERROR: Value {} for ProgressBar Special does not exist", self.trackVal))
             .downcast_ref::<usize>()
                 .expect(&format!("ERROR: Value {} for ProgressBar Special is not a usize", self.trackVal));
 
-        let w_filledIn = (self.length * ((idkfa_val * 100) / self.maxVal)) / 100; // (LEN * PERCENT) / 100
+        let w_filledIn = (self.length * ((w_val * 100) / self.maxVal)) / 100; // (LEN * PERCENT) / 100
 
-        " ".repeat(self.length)
-            .replacen(" ", "█", w_filledIn)
+        Node::new(
+            UI_element{
+                content: UI_content::text(" ".repeat(self.length).replacen(" ", "█", w_filledIn)),
+                style: UI_style{
+                    position: UI_pos::Rel((0, 0)),
+                    size: UI_size::Abs((self.length, 1)),
+                    fg: Color::White,
+                    bg: Color::Black,
+                    border: UI_border::none,
+                },
+            },
+            0,
+            0
+        )
+
+        
     }
 }
 
@@ -30,14 +44,29 @@ pub struct UISpec_percent{
     pub trackVal: String
 }
 impl UI_Special for UISpec_percent{
-    fn render(&self, IN_UIData: &res_UIData) -> String {
-        let idkfa_val =
-            IN_UIData.get(&self.trackVal)
+    fn parse(&self, IN_resUIData: &res_UIData) -> Node<UI_element> {
+        let w_val =
+            IN_resUIData.get(&self.trackVal)
                 .expect(&format!("ERROR: Value {} for Percent Special does not exist", self.trackVal))
             .downcast_ref::<usize>()
                 .expect(&format!("ERROR: Value {} for Percent Special is not a usize", self.trackVal));
 
-        format!("{}%", ((idkfa_val * 100) / self.maxVal))
+        Node::new(
+            UI_element{
+                content: UI_content::text(format!("{}%", ((w_val * 100) / self.maxVal))),
+                style: UI_style{
+                    position: UI_pos::Rel((0, 0)),
+                    size: UI_size::Abs((self.maxVal + 1, 1)), // +1 is the % symbol
+                    fg: Color::White,
+                    bg: Color::Black,
+                    border: UI_border::none,
+                },
+            },
+            0,
+            0
+        )
+
+        
     }
 }
 
@@ -47,27 +76,60 @@ pub struct UISpec_list{
     pub trackVal: String
 }
 impl UI_Special for UISpec_list{
-    fn render(&self, IN_UIData: &res_UIData) -> String {
-        let idkfa_val =
-            IN_UIData.get(&self.trackVal)
+    fn parse(&self, IN_resUIData: &res_UIData) -> Node<UI_element> {
+        let w_val =
+            IN_resUIData.get(&self.trackVal)
                 .expect(&format!("ERROR: Value {} for List Special does not exist", self.trackVal))
             .downcast_ref::<Vec<String>>()
                 .expect(&format!("ERROR: Value {} for List Special is not a String Vector", self.trackVal));
-        
-        let mut OUT_str = String::new();
 
-        for ITEM in idkfa_val.iter(){
+        let w_selfSize: (usize, usize) = match self.vertical{
+            true => (self.maxItemSize, w_val.len()),
+            //                                     There is always n-1 paddings in a horizontal list
+            false => ((self.maxItemSize * w_val.len()) + (3 * (w_val.len() - 1)), 1),
+        };
 
-            OUT_str.push_str(&ITEM[0..self.maxItemSize]);
+        Node::new(
+            UI_element{
+                content: UI_content::text("".to_owned()),
+                style: UI_style{
+                    position: UI_pos::Rel((0, 0)),
+                    size: UI_size::Abs(w_selfSize),
+                    fg: Color::White,
+                    bg: Color::Black,
+                    border: UI_border::none,
+                },
+            },
+            0,
+            1
+        ).withNodes(|parent| {
+            let mut w_pos: Vector2;
+            let mut w_content: String;
 
-            if self.vertical{
-                OUT_str.push('\n'); // Newline append
+            for (INDEX, ITEM) in w_val.iter().enumerate(){
+                match self.vertical{
+                    true => {
+                        w_pos = (0, -(INDEX as isize));
+                        w_content = ITEM.clone();
+                    },
+                    false => {
+                        w_pos = (((self.maxItemSize + 3) * INDEX) as isize, 0);
+                        w_content = ITEM.clone() + " | ";
+                    },
+                }
+                let _ = parent.addNode(
+                    UI_element{
+                        content: UI_content::text(w_content),
+                        style: UI_style{
+                            position: UI_pos::Rel(w_pos),
+                            size: UI_size::Abs((self.maxItemSize, 1)),
+                            fg: Color::White,
+                            bg: Color::Black,
+                            border: UI_border::none,
+                        },
+                    }
+                );
             }
-            else{
-                OUT_str.push_str(" | ");
-            }
-        }
-
-        OUT_str
+        })
     }
 }
