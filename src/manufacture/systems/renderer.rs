@@ -112,7 +112,7 @@ impl<'a> gmSystem<'a> for sys_Renderer{
 
         // Render the UI boxes
         for UIBOX in IN_data.comp_UIBox.inner.iter(){
-            self.renderNode(
+            self.renderUINode(
                 &UIBOX.val.elements, 
                 &UI_data{
                     position: (0, 0),
@@ -153,32 +153,30 @@ impl<'a> gmSystem<'a> for sys_Renderer{
     }
 }
 impl sys_Renderer{
-    pub fn renderNode(&mut self, IN_node: &Node<UI_element>, IN_uiData: &UI_data, IN_resUIData: &res_UIData){
-        let w_NodeUIData = IN_uiData.concatStyle(&IN_node.style);
-
-        let w_startPos = w_NodeUIData.position;
-
-        let mut w_charPos = w_startPos;
+    pub fn renderUINode(&mut self, IN_node: &Node<UI_element>, IN_parentUiData: &UI_data, IN_resUIData: &res_UIData){
+        let w_NodeUIData = IN_parentUiData.concatStyle(&IN_node.style);
 
         match &IN_node.content{
             UI_content::text(TEXT) => {
+                let mut w_charPos = w_NodeUIData.position;
                 for CHAR in TEXT.chars(){
                     // Hacky workaround
                     if CHAR == '\n'{
                         w_charPos.1 -= 1;
-                        w_charPos.0 = w_startPos.0;
+                        w_charPos.0 = w_NodeUIData.position.0;
                         continue
                     }
                     
-                    let idkfa_cell = &mut self.frameBuffer[w_charPos];
-                    idkfa_cell.ch = CHAR;
-                    idkfa_cell.fg = IN_node.style.fg;
-                    idkfa_cell.bg = IN_node.style.bg;
+                    self.frameBuffer[w_charPos] = StyleSet{
+                        ch: CHAR,
+                        fg: IN_node.style.fg,
+                        bg: IN_node.style.bg,
+                    };
                     w_charPos.0 += 1;
                 }
             },
             UI_content::special(SPECIAL) => {
-                self.renderNode(&SPECIAL.parse(IN_resUIData), IN_uiData, IN_resUIData);
+                self.renderUINode(&SPECIAL.parse(IN_resUIData), IN_parentUiData, IN_resUIData);
             },
         };
 
@@ -217,7 +215,7 @@ impl sys_Renderer{
         }
 
         for NODE in IN_node.nodes.iter(){
-            self.renderNode(NODE, &w_NodeUIData, IN_resUIData);
+            self.renderUINode(NODE, &w_NodeUIData, IN_resUIData);
         }
     }
 

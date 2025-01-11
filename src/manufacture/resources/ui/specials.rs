@@ -4,6 +4,26 @@ pub trait UI_Special{
     fn parse(&self, IN_resUIData: &res_UIData) -> Node<UI_element>;
 }
 
+impl Node<UI_element>{
+    pub fn UI_error(IN_errorStr: String) -> Self{
+        let idkfa_len = IN_errorStr.len();
+        Node::new(
+            UI_element{
+                content: UI_content::text(IN_errorStr),
+                style: UI_style{
+                    position: UI_pos::Rel((0, 0)),
+                    size: UI_size::Abs((idkfa_len, 1)),
+                    fg: Color::White,
+                    bg: Color::Black,
+                    border: UI_border::fancy,
+                },
+            },
+            0,
+            1
+        )
+    }
+}
+
 pub struct UISpec_progressBar{
     pub length: usize,
     pub maxVal: usize,
@@ -12,11 +32,15 @@ pub struct UISpec_progressBar{
 impl UI_Special for UISpec_progressBar{
     fn parse(&self, IN_resUIData: &res_UIData) -> Node<UI_element> {
 
-        let w_val =
-            IN_resUIData.get(&self.trackVal)
-                .expect(&format!("ERROR: Value {} for ProgressBar Special does not exist", self.trackVal))
-            .downcast_ref::<usize>()
-                .expect(&format!("ERROR: Value {} for ProgressBar Special is not a usize", self.trackVal));
+        let w_val = match IN_resUIData.get(&self.trackVal){
+            Some(BOX) => {
+                match BOX.downcast_ref::<usize>(){
+                    Some(VAL) => VAL,
+                    None => return Node::UI_error(format!("ERROR: Value {} for ProgressBar Special is not a usize", self.trackVal))
+                }
+            },
+            None => return Node::UI_error(format!("ERROR: Value {} for ProgressBar Special does not exist", self.trackVal)),
+        };
 
         let w_filledIn = (self.length * ((w_val * 100) / self.maxVal)) / 100; // (LEN * PERCENT) / 100
 
@@ -45,11 +69,16 @@ pub struct UISpec_percent{
 }
 impl UI_Special for UISpec_percent{
     fn parse(&self, IN_resUIData: &res_UIData) -> Node<UI_element> {
-        let w_val =
-            IN_resUIData.get(&self.trackVal)
-                .expect(&format!("ERROR: Value {} for Percent Special does not exist", self.trackVal))
-            .downcast_ref::<usize>()
-                .expect(&format!("ERROR: Value {} for Percent Special is not a usize", self.trackVal));
+
+        let w_val = match IN_resUIData.get(&self.trackVal){
+            Some(BOX) => {
+                match BOX.downcast_ref::<usize>(){
+                    Some(VAL) => VAL,
+                    None => return Node::UI_error(format!("ERROR: Value {} for Percent Special is not a usize", self.trackVal))
+                }
+            },
+            None => return Node::UI_error(format!("ERROR: Value {} for Percent Special does not exist", self.trackVal)),
+        };
 
         Node::new(
             UI_element{
@@ -77,11 +106,16 @@ pub struct UISpec_list{
 }
 impl UI_Special for UISpec_list{
     fn parse(&self, IN_resUIData: &res_UIData) -> Node<UI_element> {
-        let w_val =
-            IN_resUIData.get(&self.trackVal)
-                .expect(&format!("ERROR: Value {} for List Special does not exist", self.trackVal))
-            .downcast_ref::<Vec<String>>()
-                .expect(&format!("ERROR: Value {} for List Special is not a String Vector", self.trackVal));
+
+        let w_val = match IN_resUIData.get(&self.trackVal){
+            Some(BOX) => {
+                match BOX.downcast_ref::<Vec<String>>(){
+                    Some(VAL) => VAL,
+                    None => return Node::UI_error(format!("ERROR: Value {} for List Special is not a String Vector", self.trackVal))
+                }
+            },
+            None => return Node::UI_error(format!("ERROR: Value {} for List Special does not exist", self.trackVal)),
+        };
 
         let w_selfSize: (usize, usize) = match self.vertical{
             true => (self.maxItemSize, w_val.len()),
@@ -107,15 +141,12 @@ impl UI_Special for UISpec_list{
             let mut w_content: String;
 
             for (INDEX, ITEM) in w_val.iter().enumerate(){
-                match self.vertical{
-                    true => {
-                        w_pos = (0, -(INDEX as isize));
-                        w_content = ITEM.clone();
-                    },
-                    false => {
-                        w_pos = (((self.maxItemSize + 3) * INDEX) as isize, 0);
-                        w_content = ITEM.clone() + " | ";
-                    },
+                if self.vertical{
+                    w_pos = (0, -(INDEX as isize));
+                    w_content = ITEM.clone();
+                }else{
+                    w_pos = (((self.maxItemSize + 3) * INDEX) as isize, 0);
+                    w_content = ITEM.clone() + " | ";
                 }
                 let _ = parent.addNode(
                     UI_element{
