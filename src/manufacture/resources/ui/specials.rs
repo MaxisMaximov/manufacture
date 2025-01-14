@@ -9,7 +9,7 @@ impl Node<UI_element>{
         let idkfa_len = IN_errorStr.len();
         Node::new(
             UI_element{
-                content: UI_content::text(IN_errorStr),
+                type_: UI_type::text(IN_errorStr),
                 style: UI_style{
                     position: UI_pos::Rel((0, 0)),
                     size: UI_size::Abs((idkfa_len, 1)),
@@ -46,7 +46,7 @@ impl UI_Special for UISpec_progressBar{
 
         Node::new(
             UI_element{
-                content: UI_content::text(" ".repeat(self.length).replacen(" ", "█", w_filledIn)),
+                type_: UI_type::text(" ".repeat(self.length).replacen(" ", "█", w_filledIn)),
                 style: UI_style{
                     position: UI_pos::Rel((0, 0)),
                     size: UI_size::Abs((self.length, 1)),
@@ -82,7 +82,7 @@ impl UI_Special for UISpec_percent{
 
         Node::new(
             UI_element{
-                content: UI_content::text(format!("{}%", ((w_val * 100) / self.maxVal))),
+                type_: UI_type::text(format!("{}%", ((w_val * 100) / self.maxVal))),
                 style: UI_style{
                     position: UI_pos::Rel((0, 0)),
                     size: UI_size::Abs((self.maxVal + 1, 1)), // +1 is the % symbol
@@ -125,7 +125,7 @@ impl UI_Special for UISpec_list{
 
         Node::new(
             UI_element{
-                content: UI_content::text("".to_owned()),
+                type_: UI_type::text("".to_owned()),
                 style: UI_style{
                     position: UI_pos::Rel((0, 0)),
                     size: UI_size::Abs(w_selfSize),
@@ -150,7 +150,7 @@ impl UI_Special for UISpec_list{
                 }
                 let _ = parent.addNode(
                     UI_element{
-                        content: UI_content::text(w_content),
+                        type_: UI_type::text(w_content),
                         style: UI_style{
                             position: UI_pos::Rel(w_pos),
                             size: UI_size::Abs((self.maxItemSize, 1)),

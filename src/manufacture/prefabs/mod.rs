@@ -49,7 +49,7 @@ impl gmPrefab for idkfa_UI{
                 position: (0, 0),
                 elements: Node::new(
                     UI_element{
-                        content: UI_content::special(
+                        type_: UI_type::special(
                             Box::new(
                                 specials::UISpec_progressBar{
                                     length: 8,

@@ -114,7 +114,7 @@ impl<'a> gmSystem<'a> for sys_Renderer{
         for UIBOX in IN_data.comp_UIBox.inner.iter(){
             self.renderUINode(
                 &UIBOX.val.elements, 
-                &UI_data{
+                &UI_parentData{
                     position: (0, 0),
                     size: (RENDER_BUFFER_X, RENDER_BUFFER_Y)
                 }, 
@@ -153,11 +153,12 @@ impl<'a> gmSystem<'a> for sys_Renderer{
     }
 }
 impl sys_Renderer{
-    pub fn renderUINode(&mut self, IN_node: &Node<UI_element>, IN_parentUiData: &UI_data, IN_resUIData: &res_UIData){
+    pub fn renderUINode(&mut self, IN_node: &Node<UI_element>, IN_parentUiData: &UI_parentData, IN_resUIData: &res_UIData){
         let w_NodeUIData = IN_parentUiData.concatStyle(&IN_node.style);
 
-        match &IN_node.content{
-            UI_content::text(TEXT) => {
+        match &IN_node.type_{
+            UI_type::container => {}
+            UI_type::text(TEXT) => {
                 let mut w_charPos = w_NodeUIData.position;
                 for CHAR in TEXT.chars(){
                     // Hacky workaround
@@ -175,7 +176,7 @@ impl sys_Renderer{
                     w_charPos.0 += 1;
                 }
             },
-            UI_content::special(SPECIAL) => {
+            UI_type::special(SPECIAL) => {
                 self.renderUINode(&SPECIAL.parse(IN_resUIData), IN_parentUiData, IN_resUIData);
             },
         };

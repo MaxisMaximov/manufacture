@@ -3,15 +3,15 @@ use super::*;
 pub mod specials;
 
 pub struct UI_element{
-    pub content: UI_content,
+    pub type_: UI_type,
     pub style: UI_style
 }
-pub struct UI_data{
+pub struct UI_parentData{
     pub position: Vector2,
     pub size: (usize, usize)
 }
-impl UI_data{
-    pub fn concatStyle(&self, IN_style: &UI_style) -> UI_data{
+impl UI_parentData{
+    pub fn concatStyle(&self, IN_style: &UI_style) -> UI_parentData{
         Self{
             position: {
                 match IN_style.position {
@@ -29,7 +29,8 @@ impl UI_data{
     }
 }
 
-pub enum UI_content{
+pub enum UI_type{
+    container,
     text(String),
     special(Box<dyn specials::UI_Special>)
 }
