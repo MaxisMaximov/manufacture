@@ -3,7 +3,7 @@ use super::*;
 pub mod specials;
 
 pub struct UI_element{
-    pub type_: UI_type,
+    pub tag: UI_tag,
     pub style: UI_style
 }
 pub struct UI_parentData{
@@ -29,10 +29,23 @@ impl UI_parentData{
     }
 }
 
-pub enum UI_type{
-    container,
+pub enum UI_tag{
+    none,
     text(String),
+    /// # WARNING
+    /// The node **MUST NOT HAVE** subnodes  
+    /// Specials fully reconstruct their nodes
     special(Box<dyn specials::UI_Special>)
+}
+impl UI_tag{
+    pub fn take(&mut self) -> UI_tag{
+        std::mem::replace(self, UI_tag::none)
+    }
+    /// Yes, this is stupid  
+    /// But I like it lol
+    pub fn giveBack(&mut self, IN_val: Self){
+        let _ = std::mem::replace(self, IN_val);
+    }
 }
 
 pub struct UI_style{

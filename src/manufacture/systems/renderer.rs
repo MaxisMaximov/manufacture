@@ -22,7 +22,7 @@ impl<'a> gmSystem<'a> for sys_Renderer{
         "sys_Renderer"
     }
 
-    fn execute(&mut self, IN_data: Self::sysData) {
+    fn execute(&mut self, mut IN_data: Self::sysData) {
 
         // First check if an active camera exists
         let mut w_camera: Option<&comp_ViewportCamera> = None;
@@ -32,6 +32,7 @@ impl<'a> gmSystem<'a> for sys_Renderer{
             w_camera = Some(&CAM.val);
         }
 
+        // Render world
         if let Some(VIEWPORT) = w_camera{
 
             // Set up the buffers
@@ -111,9 +112,9 @@ impl<'a> gmSystem<'a> for sys_Renderer{
         }
 
         // Render the UI boxes
-        for UIBOX in IN_data.comp_UIBox.inner.iter(){
+        for UIBOX in IN_data.comp_UIBox.inner.iter_mut(){
             self.renderUINode(
-                &UIBOX.val.elements, 
+                &mut UIBOX.val.elements, 
                 &UI_parentData{
                     position: (0, 0),
                     size: (RENDER_BUFFER_X, RENDER_BUFFER_Y)
@@ -153,12 +154,14 @@ impl<'a> gmSystem<'a> for sys_Renderer{
     }
 }
 impl sys_Renderer{
-    pub fn renderUINode(&mut self, IN_node: &Node<UI_element>, IN_parentUiData: &UI_parentData, IN_resUIData: &res_UIData){
+    pub fn renderUINode(&mut self, IN_node: &mut Node<UI_element>, IN_parentUiData: &UI_parentData, IN_resUIData: &res_UIData){
         let w_NodeUIData = IN_parentUiData.concatStyle(&IN_node.style);
 
-        match &IN_node.type_{
-            UI_type::container => {}
-            UI_type::text(TEXT) => {
+        let idkfa_nodeTag = IN_node.tag.take();
+
+        match &idkfa_nodeTag{
+            UI_tag::none => {}
+            UI_tag::text(TEXT) => {
                 let mut w_charPos = w_NodeUIData.position;
                 for CHAR in TEXT.chars(){
                     // Hacky workaround
@@ -176,10 +179,12 @@ impl sys_Renderer{
                     w_charPos.0 += 1;
                 }
             },
-            UI_type::special(SPECIAL) => {
-                self.renderUINode(&SPECIAL.parse(IN_resUIData), IN_parentUiData, IN_resUIData);
+            UI_tag::special(SPECIAL) => {
+                SPECIAL.parse(IN_node, IN_resUIData);
             },
         };
+
+        IN_node.tag.giveBack(idkfa_nodeTag);
 
         // Render border
         let w_borderStart: Vector2 = (w_NodeUIData.position.0 - 1, w_NodeUIData.position.1 + 1);
@@ -215,7 +220,7 @@ impl sys_Renderer{
             }
         }
 
-        for NODE in IN_node.nodes.iter(){
+        for NODE in IN_node.nodes.iter_mut(){
             self.renderUINode(NODE, &w_NodeUIData, IN_resUIData);
         }
     }
@@ -278,7 +283,7 @@ pub struct sysData_Renderer<'a>{
     pub comp_Pos: ReadStorage<'a, comp_Pos>,
     pub comp_Sprite: ReadStorage<'a, comp_Sprite>,
     pub comp_ViewportCamera: ReadStorage<'a, comp_ViewportCamera>,
-    pub comp_UIBox: ReadStorage<'a, comp_UIBox>,
+    pub comp_UIBox: WriteStorage<'a, comp_UIBox>,
     pub res_UIData: Fetch<'a, res_UIData>
 }
 impl<'a> gmSystemData<'a> for sysData_Renderer<'a>{
@@ -287,7 +292,7 @@ impl<'a> gmSystemData<'a> for sysData_Renderer<'a>{
             comp_Pos: IN_world.fetch(),
             comp_Sprite: IN_world.fetch(),
             comp_ViewportCamera: IN_world.fetch(),
-            comp_UIBox: IN_world.fetch(),
+            comp_UIBox: IN_world.fetchMut(),
             res_UIData: IN_world.fetchRes()
         }
     }

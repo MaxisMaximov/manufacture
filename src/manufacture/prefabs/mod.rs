@@ -44,27 +44,25 @@ impl gmPrefab for idkfa_UI{
     fn spawn(&self, IN_builder: gmObjBuilder) {
         use resources::ui::*;
 
-        IN_builder
-            .addComp(comp_UIBox{
-                position: (0, 0),
-                elements: Node::new(
-                    UI_element{
-                        type_: UI_type::special(
-                            Box::new(
-                                specials::UISpec_progressBar{
-                                    length: 8,
-                                    maxVal: 20,
-                                    trackVal: "idkfa".to_owned(),
-                        })),
-                        style: UI_style{
-                            position: UI_pos::Rel((-5, 5)),
-                            size: UI_size::Frac((50, 50)),
-                            fg: Color::White,
-                            bg: Color::Black,
-                            border: UI_border::fancy,
-                        },
-                    }, 0, 5),
-            })
-            .finish();
+        IN_builder.addComp(comp_UIBox{
+            position: (0, 0),
+            elements: Node::new(
+                UI_element{
+                    tag: UI_tag::special(
+                        Box::new(
+                            specials::UISpec_progressBar{
+                                length: 8,
+                                maxVal: 20,
+                                trackVal: "idkfa".to_owned(),
+                    })),
+                    style: UI_style{
+                        position: UI_pos::Rel((-5, 5)),
+                        size: UI_size::Frac((50, 50)),
+                        fg: Color::White,
+                        bg: Color::Black,
+                        border: UI_border::fancy,
+                    },
+                }, 0),
+        }).finish();
     }
 }

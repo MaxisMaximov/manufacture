@@ -1,26 +1,24 @@
 use super::*;
 
 pub trait UI_Special{
-    fn parse(&self, IN_resUIData: &res_UIData) -> Node<UI_element>;
+    fn parse(&self, IN_node: &mut Node<UI_element>, IN_resUIData: &res_UIData);
 }
 
 impl Node<UI_element>{
-    pub fn UI_error(IN_errorStr: String) -> Self{
+    pub fn UI_ERROR(&mut self, IN_errorStr: String){
         let idkfa_len = IN_errorStr.len();
-        Node::new(
+        self.addNode(
             UI_element{
-                type_: UI_type::text(IN_errorStr),
+                tag: UI_tag::text(IN_errorStr),
                 style: UI_style{
                     position: UI_pos::Rel((0, 0)),
                     size: UI_size::Abs((idkfa_len, 1)),
                     fg: Color::White,
-                    bg: Color::Black,
+                    bg: Color::Red,
                     border: UI_border::fancy,
                 },
-            },
-            0,
-            1
-        )
+            }
+        );
     }
 }
 
@@ -30,36 +28,30 @@ pub struct UISpec_progressBar{
     pub trackVal: String
 }
 impl UI_Special for UISpec_progressBar{
-    fn parse(&self, IN_resUIData: &res_UIData) -> Node<UI_element> {
+    fn parse(&self, IN_node: &mut Node<UI_element>, IN_resUIData: &res_UIData){
 
         let w_val = match IN_resUIData.get(&self.trackVal){
             Some(BOX) => {
                 match BOX.downcast_ref::<usize>(){
                     Some(VAL) => VAL,
-                    None => return Node::UI_error(format!("ERROR: Value {} for ProgressBar Special is not a usize", self.trackVal))
+                    None => return IN_node.UI_ERROR(format!("ERROR: Value {} for ProgressBar Special is not a usize", self.trackVal))
                 }
-            },
-            None => return Node::UI_error(format!("ERROR: Value {} for ProgressBar Special does not exist", self.trackVal)),
+            }, // I can just Return with the function as the return type is null in both lol
+            None => return IN_node.UI_ERROR(format!("ERROR: Value {} for ProgressBar Special does not exist", self.trackVal))
         };
 
         let w_filledIn = (self.length * ((w_val * 100) / self.maxVal)) / 100; // (LEN * PERCENT) / 100
 
-        Node::new(
+        IN_node.addNode(
             UI_element{
-                type_: UI_type::text(" ".repeat(self.length).replacen(" ", "█", w_filledIn)),
+                tag: UI_tag::text(" ".repeat(self.length).replacen(" ", "█", w_filledIn)),
                 style: UI_style{
                     position: UI_pos::Rel((0, 0)),
                     size: UI_size::Abs((self.length, 1)),
                     fg: Color::White,
                     bg: Color::Black,
                     border: UI_border::none,
-                },
-            },
-            0,
-            0
-        )
-
-        
+                }});
     }
 }
 
@@ -68,34 +60,31 @@ pub struct UISpec_percent{
     pub trackVal: String
 }
 impl UI_Special for UISpec_percent{
-    fn parse(&self, IN_resUIData: &res_UIData) -> Node<UI_element> {
+    fn parse(&self, IN_node: &mut Node<UI_element>, IN_resUIData: &res_UIData){
 
         let w_val = match IN_resUIData.get(&self.trackVal){
             Some(BOX) => {
                 match BOX.downcast_ref::<usize>(){
                     Some(VAL) => VAL,
-                    None => return Node::UI_error(format!("ERROR: Value {} for Percent Special is not a usize", self.trackVal))
+                    None => return IN_node.UI_ERROR(format!("ERROR: Value {} for Percent Special is not a usize", self.trackVal))
                 }
             },
-            None => return Node::UI_error(format!("ERROR: Value {} for Percent Special does not exist", self.trackVal)),
+            None => return IN_node.UI_ERROR(format!("ERROR: Value {} for Percent Special does not exist", self.trackVal)),
         };
 
-        Node::new(
+        let idkfa_str = format!("{}%", ((w_val * 100) / self.maxVal));
+        let idkfa_len = idkfa_str.len();
+
+        IN_node.addNode(
             UI_element{
-                type_: UI_type::text(format!("{}%", ((w_val * 100) / self.maxVal))),
+                tag: UI_tag::text(idkfa_str),
                 style: UI_style{
                     position: UI_pos::Rel((0, 0)),
-                    size: UI_size::Abs((self.maxVal + 1, 1)), // +1 is the % symbol
+                    size: UI_size::Abs((idkfa_len, 1)), // +1 X is the % symbol
                     fg: Color::White,
                     bg: Color::Black,
                     border: UI_border::none,
-                },
-            },
-            0,
-            0
-        )
-
-        
+                }});
     }
 }
 
@@ -105,38 +94,19 @@ pub struct UISpec_list{
     pub trackVal: String
 }
 impl UI_Special for UISpec_list{
-    fn parse(&self, IN_resUIData: &res_UIData) -> Node<UI_element> {
+    fn parse(&self, IN_node: &mut Node<UI_element>, IN_resUIData: &res_UIData){
 
         let w_val = match IN_resUIData.get(&self.trackVal){
             Some(BOX) => {
                 match BOX.downcast_ref::<Vec<String>>(){
                     Some(VAL) => VAL,
-                    None => return Node::UI_error(format!("ERROR: Value {} for List Special is not a String Vector", self.trackVal))
+                    None => return IN_node.UI_ERROR(format!("ERROR: Value {} for List Special is not a String Vector", self.trackVal))
                 }
             },
-            None => return Node::UI_error(format!("ERROR: Value {} for List Special does not exist", self.trackVal)),
+            None => return IN_node.UI_ERROR(format!("ERROR: Value {} for List Special does not exist", self.trackVal)),
         };
 
-        let w_selfSize: (usize, usize) = match self.vertical{
-            true => (self.maxItemSize, w_val.len()),
-            //                                     There is always n-1 paddings in a horizontal list
-            false => ((self.maxItemSize * w_val.len()) + (3 * (w_val.len() - 1)), 1),
-        };
-
-        Node::new(
-            UI_element{
-                type_: UI_type::text("".to_owned()),
-                style: UI_style{
-                    position: UI_pos::Rel((0, 0)),
-                    size: UI_size::Abs(w_selfSize),
-                    fg: Color::White,
-                    bg: Color::Black,
-                    border: UI_border::none,
-                },
-            },
-            0,
-            1
-        ).withNodes(|parent| {
+        IN_node.map(|parent| {
             let mut w_pos: Vector2;
             let mut w_content: String;
 
@@ -150,7 +120,7 @@ impl UI_Special for UISpec_list{
                 }
                 let _ = parent.addNode(
                     UI_element{
-                        type_: UI_type::text(w_content),
+                        tag: UI_tag::text(w_content),
                         style: UI_style{
                             position: UI_pos::Rel(w_pos),
                             size: UI_size::Abs((self.maxItemSize, 1)),
@@ -161,6 +131,6 @@ impl UI_Special for UISpec_list{
                     }
                 );
             }
-        })
+        });
     }
 }

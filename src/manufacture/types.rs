@@ -68,7 +68,6 @@ impl<T> IndexMut<Vector2> for CartesianGrid<T>{
 pub struct Node<T>{
     val: T,
     pub depth: u16,
-    pub maxDepth: u16, // Yeah, each node carries the tree's max depth to not do super long recall chain
     pub nodes: Vec<Node<T>>
 }
 impl<T> Deref for Node<T>{
@@ -84,21 +83,24 @@ impl<T> DerefMut for Node<T>{
     }
 }
 impl<T> Node<T>{
-    pub fn new(IN_val: T, IN_depth: u16, IN_maxDepth: u16) -> Self{
+    pub fn new(IN_val: T, IN_depth: u16) -> Self{
         Self{
             val: IN_val,
             depth: IN_depth,
-            maxDepth: IN_maxDepth,
             nodes: Vec::new()
         }
     }
 
-    pub fn addNode(&mut self, IN_val: T) -> Result<usize, ()>{
-        if self.depth >= self.maxDepth {
-            return Err(())
-        }
-        self.nodes.push(Self::new(IN_val, self.depth + 1, self.maxDepth));
-        Ok(self.nodes.len() - 1)
+    pub fn newRoot(IN_val: T) -> Self{
+        Self::new(IN_val, 0)
+    }
+
+    pub fn addNode(&mut self, IN_val: T) -> usize{
+        self.nodes.push(Self::new(IN_val, self.depth + 1));
+        self.nodes.len() - 1
+    }
+    pub fn addNodeRaw(&mut self, IN_node: Node<T>){
+        self.nodes.push(IN_node);
     }
     pub fn removeNode(&mut self, IN_id: usize) -> Node<T>{
         self.nodes.remove(IN_id)
@@ -130,5 +132,13 @@ impl<T> Node<T>{
     pub fn withNodes<F: Fn(&mut Node<T>)>(mut self, IN_function: F) -> Self{
         IN_function(&mut self);
         self
+    }
+    pub fn map<F: Fn(&mut Node<T>)>(&mut self, IN_function: F) -> &mut Self{
+        IN_function(self);
+        self
+    }
+
+    pub fn clearNodes(&mut self){
+        self.nodes.clear();
     }
 }
