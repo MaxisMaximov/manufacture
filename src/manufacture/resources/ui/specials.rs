@@ -11,11 +11,12 @@ impl Node<UI_element>{
             UI_element{
                 tag: UI_tag::text(IN_errorStr),
                 style: UI_style{
-                    position: UI_pos::Rel((0, 0)),
+                    position: UI_pos::Static,
                     size: UI_size::Abs((idkfa_len, 1)),
                     fg: Color::White,
                     bg: Color::Red,
-                    border: UI_border::fancy,
+                    border: UI_border::Fancy,
+                    display: UI_display::Float
                 },
             }
         );
@@ -46,11 +47,12 @@ impl UI_Special for UISpec_progressBar{
             UI_element{
                 tag: UI_tag::text(" ".repeat(self.length).replacen(" ", "█", w_filledIn)),
                 style: UI_style{
-                    position: UI_pos::Rel((0, 0)),
+                    position: UI_pos::Static,
                     size: UI_size::Abs((self.length, 1)),
                     fg: Color::White,
                     bg: Color::Black,
-                    border: UI_border::none,
+                    border: UI_border::None,
+                    display: UI_display::Float
                 }});
     }
 }
@@ -83,7 +85,8 @@ impl UI_Special for UISpec_percent{
                     size: UI_size::Abs((idkfa_len, 1)), // +1 X is the % symbol
                     fg: Color::White,
                     bg: Color::Black,
-                    border: UI_border::none,
+                    border: UI_border::None,
+                    display: UI_display::Float
                 }});
     }
 }
@@ -126,7 +129,8 @@ impl UI_Special for UISpec_list{
                             size: UI_size::Abs((self.maxItemSize, 1)),
                             fg: Color::White,
                             bg: Color::Black,
-                            border: UI_border::none,
+                            border: UI_border::None,
+                            display: UI_display::Float
                         },
                     }
                 );

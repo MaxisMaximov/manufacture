@@ -154,11 +154,10 @@ impl<'a> gmSystem<'a> for sys_Renderer{
     }
 }
 impl sys_Renderer{
-    pub fn renderUINode(&mut self, IN_node: &mut Node<UI_element>, IN_parentUiData: &UI_parentData, IN_resUIData: &res_UIData){
-        let w_NodeUIData = IN_parentUiData.concatStyle(&IN_node.style);
+    fn renderUINode(&mut self, IN_node: &mut Node<UI_element>, IN_parentUIData: &UI_parentData, IN_resUIData: &res_UIData){
+        let w_NodeUIData = IN_parentUIData.concatStyle(&IN_node.style);
 
         let idkfa_nodeTag = IN_node.tag.take();
-
         match &idkfa_nodeTag{
             UI_tag::none => {}
             UI_tag::text(TEXT) => {
@@ -183,16 +182,19 @@ impl sys_Renderer{
                 SPECIAL.parse(IN_node, IN_resUIData);
             },
         };
-
         IN_node.tag.giveBack(idkfa_nodeTag);
+
+        for NODE in IN_node.nodes.iter_mut(){
+            self.renderUINode(NODE, &w_NodeUIData, IN_resUIData);
+        }
 
         // Render border
         let w_borderStart: Vector2 = (w_NodeUIData.position.0 - 1, w_NodeUIData.position.1 + 1);
         let w_borderEnd: Vector2 = (w_NodeUIData.position.0 + w_NodeUIData.size.0 as isize, w_NodeUIData.position.1 - w_NodeUIData.size.1 as isize);
 
         match IN_node.style.border {
-            UI_border::none => {}
-            UI_border::singleChar(CHAR) => {
+            UI_border::None => {}
+            UI_border::SingleChar(CHAR) => {
                 // Top
                 self.drawLine((w_borderStart.0, w_borderStart.1), (w_borderEnd.0, w_borderStart.1), StyleSet{ ch: CHAR, fg: Color::White, bg: Color::Black });
                 // Bottom
@@ -202,7 +204,7 @@ impl sys_Renderer{
                 // Right
                 self.drawLine((w_borderEnd.0, w_borderStart.1), (w_borderEnd.0, w_borderEnd.1), StyleSet{ ch: CHAR, fg: Color::White, bg: Color::Black });
             }
-            UI_border::fancy =>{
+            UI_border::Fancy =>{
                 // Top
                 self.drawLine((w_borderStart.0, w_borderStart.1), (w_borderEnd.0, w_borderStart.1), StyleSet{ ch: '═', fg: Color::White, bg: Color::Black });
                 // Bottom
@@ -218,10 +220,6 @@ impl sys_Renderer{
                 self.frameBuffer[(w_borderStart.0, w_borderEnd.1)] = StyleSet{ ch: '╚', fg: Color::White, bg: Color::Black }; // BL
                 self.frameBuffer[(w_borderEnd.0, w_borderEnd.1)] = StyleSet{ ch: '╝', fg: Color::White, bg: Color::Black }; // BR
             }
-        }
-
-        for NODE in IN_node.nodes.iter_mut(){
-            self.renderUINode(NODE, &w_NodeUIData, IN_resUIData);
         }
     }
 

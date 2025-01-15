@@ -60,7 +60,8 @@ impl gmPrefab for idkfa_UI{
                         size: UI_size::Frac((50, 50)),
                         fg: Color::White,
                         bg: Color::Black,
-                        border: UI_border::fancy,
+                        border: UI_border::Fancy,
+                        display: UI_display::Float
                     },
                 }, 0),
         }).finish();

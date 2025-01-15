@@ -15,6 +15,7 @@ impl UI_parentData{
         Self{
             position: {
                 match IN_style.position {
+                    UI_pos::Static => self.position,
                     UI_pos::Abs(POS) => POS,
                     UI_pos::Rel(POS) => (self.position.0 + POS.0, self.position.1 + POS.1),
                 }
@@ -31,6 +32,8 @@ impl UI_parentData{
 
 pub enum UI_tag{
     none,
+    /// You *can* add subnodes to this one  
+    /// But it's recommended not to as it can break stuff
     text(String),
     /// # WARNING
     /// The node **MUST NOT HAVE** subnodes  
@@ -54,18 +57,22 @@ pub struct UI_style{
     pub fg: Color,
     pub bg: Color,
     pub border: UI_border,
+    pub display: UI_display
 }
 
 pub enum UI_pos{
+    Static,
     Abs(Vector2),
     Rel(Vector2)
 }
-pub enum UI_size<T = (usize, usize)>{ // A generic to not rewrite constantly lol
-    Abs(T),
-    Frac(T)
+pub enum UI_size{
+    Abs((usize, usize)),
+    Frac((usize, usize))
 }
 pub enum UI_border{
-    none,
-    singleChar(char),
-    fancy
+    None,
+    SingleChar(char),
+    Fancy
+}pub enum UI_display{
+    Float
 }
