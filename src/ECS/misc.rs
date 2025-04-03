@@ -5,20 +5,20 @@ use vars::*;
 #[derive(Clone, Copy)]
 pub struct gmGenIndex<T>{
     pub id: gmID,
-    pub gen: gmGen,
+    pub generation: gmGen,
     entry: Option<T>
 }
 impl<T> gmGenIndex<T>{
     pub fn new(IN_id: gmID, IN_entry: Option<T>) -> Self{
         Self{
             id: IN_id,
-            gen: 0,
+            generation: 0,
             entry: IN_entry,
         }
     }
     pub fn unset(&mut self){
         self.entry = None;
-        self.gen += 1;
+        self.generation += 1;
     }
 }
 impl<T> Deref for gmGenIndex<T>{
