@@ -1,4 +1,3 @@
-#![allow(nonstandard_style)]
 #![allow(unused_labels)]
 #![warn(unused_crate_dependencies)]
 

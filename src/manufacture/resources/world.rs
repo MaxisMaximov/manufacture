@@ -1,6 +1,6 @@
 use super::*;
 
-use vars::*;
+use constants::*;
 use utils::*;
 
 pub struct res_GridWorld{

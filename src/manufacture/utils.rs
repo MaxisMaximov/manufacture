@@ -1,5 +1,5 @@
 use types::Vector2;
-use vars::*;
+use constants::*;
 
 use super::*;
 

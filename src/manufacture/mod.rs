@@ -7,7 +7,7 @@ use std::time::*;
 pub mod components;
 pub mod resources;
 pub mod systems;
-pub mod vars;
+pub mod constants;
 pub mod types;
 pub mod prefabs;
 pub mod utils;

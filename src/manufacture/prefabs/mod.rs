@@ -2,7 +2,7 @@ use super::*;
 
 use components::*;
 use types::{Node, StyleSet, Vector2};
-use vars::*;
+use constants::*;
 
 use super::gmPrefab;
 

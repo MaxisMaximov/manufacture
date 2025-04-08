@@ -7,7 +7,7 @@ pub trait UI_Special{
 impl Node<UI_element>{
     pub fn UI_ERROR(&mut self, IN_errorStr: String){
         let idkfa_len = IN_errorStr.len();
-        self.addNode(
+        self.add_node(
             UI_element{
                 tag: UI_tag::text(IN_errorStr),
                 style: UI_style{
@@ -43,7 +43,7 @@ impl UI_Special for UISpec_progressBar{
 
         let w_filledIn = (self.length * ((w_val * 100) / self.maxVal)) / 100; // (LEN * PERCENT) / 100
 
-        IN_node.addNode(
+        IN_node.add_node(
             UI_element{
                 tag: UI_tag::text(" ".repeat(self.length).replacen(" ", "█", w_filledIn)),
                 style: UI_style{
@@ -77,7 +77,7 @@ impl UI_Special for UISpec_percent{
         let idkfa_str = format!("{}%", ((w_val * 100) / self.maxVal));
         let idkfa_len = idkfa_str.len();
 
-        IN_node.addNode(
+        IN_node.add_node(
             UI_element{
                 tag: UI_tag::text(idkfa_str),
                 style: UI_style{
@@ -121,7 +121,7 @@ impl UI_Special for UISpec_list{
                     w_pos = (((self.maxItemSize + 3) * INDEX) as isize, 0);
                     w_content = ITEM.clone() + " | ";
                 }
-                let _ = parent.addNode(
+                let _ = parent.add_node(
                     UI_element{
                         tag: UI_tag::text(w_content),
                         style: UI_style{

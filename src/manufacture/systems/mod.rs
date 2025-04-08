@@ -2,7 +2,7 @@ use super::*;
 
 use components::*;
 use resources::*;
-use vars::*;
+use constants::*;
 use types::*;
 
 mod renderer;
