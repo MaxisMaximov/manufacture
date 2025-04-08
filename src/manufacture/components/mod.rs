@@ -1,101 +1,101 @@
 use super::*;
-use resources::UI_element;
+use resources::UIElement;
 use types::{Vector2, StyleSet, Node};
 
-pub struct comp_HP{
+pub struct CompHp{
     pub val: u16
 }
-impl gmComp for comp_HP{
+impl gmComp for CompHp{
     type COMP_STORAGE = denseVecStorage<Self>;
 
     fn COMP_ID() -> &'static str {
-        "comp_HP"
+        "CompHp"
     }
 }
 
-pub struct comp_Pos{
+pub struct CompPos{
     pub x: isize,
     pub y: isize
 }
-impl gmComp for comp_Pos {
+impl gmComp for CompPos {
     type COMP_STORAGE = denseVecStorage<Self>;
 
     fn COMP_ID() -> &'static str {
-        "comp_Pos"
+        "CompPos"
     }
 }
 
-pub struct comp_Vel{
+pub struct CompVel{
     pub x: isize,
     pub y: isize,
     pub frozen: bool
 }
-impl gmComp for comp_Vel {
+impl gmComp for CompVel {
     type COMP_STORAGE = denseVecStorage<Self>;
 
     fn COMP_ID() -> &'static str {
-        "comp_Vel"
+        "CompVel"
     }
 }
 
-pub struct comp_Sprite{
-    pub sizeX: usize,
-    pub sizeY: usize,
+pub struct CompSprite{
+    pub size_x: usize,
+    pub size_y: usize,
     pub sprite: Vec<StyleSet>,
-    pub zDepth: u16 // Again, 65k possible values. 255 probably too little, 4mil far too much. If you get ANYWHERE near even 1k go see a doctor
+    pub z_depth: u16 // Again, 65k possible values. 255 probably too little, 4mil far too much. If you get ANYWHERE near even 1k go see a doctor
 }
-impl gmComp for comp_Sprite{
+impl gmComp for CompSprite{
     type COMP_STORAGE = denseVecStorage<Self>;
 
     fn COMP_ID() -> &'static str {
-        "comp_Sprite"
+        "CompSprite"
     }
 }
 
-pub struct comp_PController{
+pub struct CompPcontroller{
     pub active: bool
 }
-impl gmComp for comp_PController{
+impl gmComp for CompPcontroller{
     type COMP_STORAGE = denseVecStorage<Self>;
 
     fn COMP_ID() -> &'static str {
-        "comp_PController"
+        "CompPController"
     }
 }
 
-pub struct comp_TileTerrainChunk{
+pub struct CompTileTerrainChunk{
     pub chunk: Vector2,
     pub fresh: bool
 }
-impl gmComp for comp_TileTerrainChunk{
+impl gmComp for CompTileTerrainChunk{
     type COMP_STORAGE = denseVecStorage<Self>;
 
     fn COMP_ID() -> &'static str {
-        "comp_TileTerrainChunk"
+        "CompTileTerrainChunk"
     }
 }
 
-pub struct comp_ViewportCamera{
-    pub trackedEntity: gmID,
+pub struct CompViewportCamera{
+    pub tracked_entity: gmID,
     pub offset: Vector2,
     pub active: bool
 }
-impl gmComp for comp_ViewportCamera{
+impl gmComp for CompViewportCamera{
     type COMP_STORAGE = denseVecStorage<Self>;
 
     fn COMP_ID() -> &'static str {
-        "comp_ViewportCamera"
+        "CompViewportCamera"
     }
 }
 
-pub struct comp_UIBox{
+pub struct CompGUI{
     pub position: Vector2,
-    pub elements: Node<UI_element>
+    pub elements: Node<UIElement>
 }
-impl gmComp for comp_UIBox{
+impl gmComp for CompGUI{
     type COMP_STORAGE = denseVecStorage<Self>;
 
     fn COMP_ID() -> &'static str {
-        "comp_UIBox"
+        "CompGUI"
     }
 }

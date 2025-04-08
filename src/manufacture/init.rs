@@ -7,24 +7,24 @@ use components::*;
 
 pub fn init(IN_world: &mut gmWorld, IN_dispatch: &mut gmDispatcher){
     // Register Systems
-    IN_dispatch.addSys::<sys_Input>();
-    IN_dispatch.addSys::<sys_PMove>();
-    IN_dispatch.addSys::<sys_Move>();
-    IN_dispatch.addSys::<sys_PTileChange>();
-    IN_dispatch.addSys::<sys_TileChunkUpdate>();
-    IN_dispatch.addSys::<sys_TileChunkSpriteUpdate>();
-    IN_dispatch.addSys::<sys_PChunkUnLoad>();
-    IN_dispatch.addSys::<sys_Renderer>();
+    IN_dispatch.addSys::<SysInput>();
+    IN_dispatch.addSys::<SysPmove>();
+    IN_dispatch.addSys::<SysMove>();
+    IN_dispatch.addSys::<SysPtileChange>();
+    IN_dispatch.addSys::<SysTileChunkUpdate>();
+    IN_dispatch.addSys::<SysTileChunkSpriteUpdate>();
+    IN_dispatch.addSys::<SysPchunkUnLoad>();
+    IN_dispatch.addSys::<SysRenderer>();
 
     // Register Components
-    IN_world.registerComp::<comp_HP>();
-    IN_world.registerComp::<comp_PController>();
-    IN_world.registerComp::<comp_Pos>();
-    IN_world.registerComp::<comp_Vel>();
-    IN_world.registerComp::<comp_Sprite>();
-    IN_world.registerComp::<comp_TileTerrainChunk>();
-    IN_world.registerComp::<comp_UIBox>();
-    IN_world.registerComp::<comp_ViewportCamera>();
+    IN_world.registerComp::<CompHp>();
+    IN_world.registerComp::<CompPcontroller>();
+    IN_world.registerComp::<CompPos>();
+    IN_world.registerComp::<CompVel>();
+    IN_world.registerComp::<CompSprite>();
+    IN_world.registerComp::<CompTileTerrainChunk>();
+    IN_world.registerComp::<CompGUI>();
+    IN_world.registerComp::<CompViewportCamera>();
 
     // Register Resources
     IN_world.registerRes::<res_DeltaT>();
@@ -38,11 +38,11 @@ pub fn init(IN_world: &mut gmWorld, IN_dispatch: &mut gmDispatcher){
     IN_world.registerEvent::<event_TileChange>();
     IN_world.registerEvent::<event_BatchTileChange>();
 
-    prefab_Player::spawn(&prefab_Player{}, IN_world.createGmObj());
+    PrefabPlayer::spawn(&PrefabPlayer{}, IN_world.createGmObj());
 
     IN_world.fetchResMut::<res_PID>().insert(1, 0);
 
-    IN_world.createGmObj().addComp(comp_ViewportCamera{ trackedEntity: 0, offset: (0, 0), active: true }).finish();
+    IN_world.createGmObj().addComp(CompViewportCamera{ tracked_entity: 0, offset: (0, 0), active: true }).finish();
     
-    idkfa_UI::spawn(&idkfa_UI{}, IN_world.createGmObj());
+    IdkfaUi::spawn(&IdkfaUi{}, IN_world.createGmObj());
 }

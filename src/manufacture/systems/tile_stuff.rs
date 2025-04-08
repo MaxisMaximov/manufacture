@@ -1,11 +1,11 @@
-use prefabs::prefab_GridWorldChunk;
+use prefabs::PrefabGridWorldChunk;
 
 use super::*;
 
 
-pub struct sys_PTileChange{}
-impl<'a> gmSystem<'a> for sys_PTileChange{
-    type sysData = sysData_PTileChange<'a>;
+pub struct SysPtileChange{}
+impl<'a> gmSystem<'a> for SysPtileChange{
+    type sysData = SysDataPtileChange<'a>;
 
     const sysDepends: &'static [&'static str] = &[];
 
@@ -18,26 +18,26 @@ impl<'a> gmSystem<'a> for sys_PTileChange{
     }
 
     fn execute(&mut self, mut IN_data: Self::sysData) {
-        if let Some(PID) = IN_data.res_PID.get(&1){
+        if let Some(PID) = IN_data.res_pid.get(&1){
 
-            let w_PCoords = IN_data.comp_Pos.get(PID).expect(&format!("ERROR: Player {PID} has no Position component"));
-            let w_oldTile = IN_data.res_World.getTile((w_PCoords.x, w_PCoords.y)).expect(&format!("ERROR: Tile at {}, {} doesn't exist", w_PCoords.x, w_PCoords.y)).mat;
+            let w_PCoords = IN_data.comp_pos.get(PID).expect(&format!("ERROR: Player {PID} has no Position component"));
+            let w_oldTile = IN_data.res_world.getTile((w_PCoords.x, w_PCoords.y)).expect(&format!("ERROR: Tile at {}, {} doesn't exist", w_PCoords.x, w_PCoords.y)).mat;
 
-            match IN_data.res_PInput.code{
+            match IN_data.res_pinput.code{
                 KeyCode::Char('f') => {
-                    IN_data.event_TileChange.push(event_TileChange{
+                    IN_data.event_tile_change.push(event_TileChange{
                         coords: (w_PCoords.x, w_PCoords.y),
                         newTile: w_oldTile + 1,
                     });
                 }
                 KeyCode::Char('F') => {
-                    IN_data.event_TileChange.push(event_TileChange{
+                    IN_data.event_tile_change.push(event_TileChange{
                         coords: (w_PCoords.x, w_PCoords.y),
                         newTile: w_oldTile - 1,
                     });
                 }
                 KeyCode::Char('g') => {
-                    IN_data.event_TileChange.push(event_TileChange{
+                    IN_data.event_tile_change.push(event_TileChange{
                         coords: (w_PCoords.x, w_PCoords.y),
                         newTile: 0,
                     });
@@ -47,28 +47,28 @@ impl<'a> gmSystem<'a> for sys_PTileChange{
         }
     }
 }
-pub struct sysData_PTileChange<'a>{
-    res_World: Fetch<'a, res_GridWorld>,
-    res_PInput: Fetch<'a, res_PInput>,
-    res_PID: Fetch<'a, res_PID>,
-    event_TileChange: EventWriter<'a, event_TileChange>,
-    comp_Pos: ReadStorage<'a, comp_Pos>,
+pub struct SysDataPtileChange<'a>{
+    res_world: Fetch<'a, res_GridWorld>,
+    res_pinput: Fetch<'a, res_PInput>,
+    res_pid: Fetch<'a, res_PID>,
+    event_tile_change: EventWriter<'a, event_TileChange>,
+    comp_pos: ReadStorage<'a, CompPos>,
 }
-impl<'a> gmSystemData<'a> for sysData_PTileChange<'a>{
+impl<'a> gmSystemData<'a> for SysDataPtileChange<'a>{
     fn fetch(IN_world: &'a mut gmWorld) -> Self {
         Self{
-            res_World: IN_world.fetchRes(),
-            res_PInput: IN_world.fetchRes(),
-            res_PID: IN_world.fetchRes(),
-            event_TileChange: IN_world.fetchEventWriter(),
-            comp_Pos: IN_world.fetch()
+            res_world: IN_world.fetchRes(),
+            res_pinput: IN_world.fetchRes(),
+            res_pid: IN_world.fetchRes(),
+            event_tile_change: IN_world.fetchEventWriter(),
+            comp_pos: IN_world.fetch()
         }
     }
 }
 
-pub struct sys_TileChunkUpdate{}
-impl<'a> gmSystem<'a> for sys_TileChunkUpdate{
-    type sysData = sysData_TileChunkUpdate<'a>;
+pub struct SysTileChunkUpdate{}
+impl<'a> gmSystem<'a> for SysTileChunkUpdate{
+    type sysData = SysDataTileChunkUpdate<'a>;
 
     const sysDepends: &'static [&'static str] = &[];
 
@@ -82,21 +82,21 @@ impl<'a> gmSystem<'a> for sys_TileChunkUpdate{
 
     fn execute(&mut self, mut IN_data: Self::sysData) {
 
-        for EVENT in IN_data.event_TileChange.iter(){
-            if let Some(TILE) = IN_data.res_World.getTileMut(EVENT.coords){
+        for EVENT in IN_data.event_tile_change.iter(){
+            if let Some(TILE) = IN_data.res_world.getTileMut(EVENT.coords){
                 TILE.mat = EVENT.newTile
 
             }
-            if let Some(CHUNK) = IN_data.res_World.getChunkFromTileMut(EVENT.coords){
+            if let Some(CHUNK) = IN_data.res_world.getChunkFromTileMut(EVENT.coords){
                 CHUNK.needsResprite = true
             }
         }
 
-        for EVENT in IN_data.event_BatchTileChange.iter(){
+        for EVENT in IN_data.event_batch_tile_change.iter(){
 
-            for COORDS in IN_data.res_World.getChunkRange(EVENT.from, EVENT.to).iter(){
+            for COORDS in IN_data.res_world.getChunkRange(EVENT.from, EVENT.to).iter(){
 
-                if let Some(w_chunk) = IN_data.res_World.getChunkMut(*COORDS){
+                if let Some(w_chunk) = IN_data.res_world.getChunkMut(*COORDS){
                     use std::cmp::{max, min};
                     // This is a mess but I calculated EVERYTHING for 2 hours straight for it to work
                     // Basically constraints iterator to chunk's boundaries and local coordinates
@@ -121,24 +121,24 @@ impl<'a> gmSystem<'a> for sys_TileChunkUpdate{
         }
     }
 }
-pub struct sysData_TileChunkUpdate<'a>{
-    pub event_TileChange: EventReader<'a, event_TileChange>,
-    pub event_BatchTileChange: EventReader<'a, event_BatchTileChange>,
-    pub res_World: FetchMut<'a, res_GridWorld>
+pub struct SysDataTileChunkUpdate<'a>{
+    pub event_tile_change: EventReader<'a, event_TileChange>,
+    pub event_batch_tile_change: EventReader<'a, event_BatchTileChange>,
+    pub res_world: FetchMut<'a, res_GridWorld>
 }
-impl<'a> gmSystemData<'a> for sysData_TileChunkUpdate<'a>{
+impl<'a> gmSystemData<'a> for SysDataTileChunkUpdate<'a>{
     fn fetch(IN_world: &'a mut gmWorld) -> Self {
         Self{
-            event_TileChange: IN_world.fetchEventReader(),
-            event_BatchTileChange: IN_world.fetchEventReader(),
-            res_World: IN_world.fetchResMut(),
+            event_tile_change: IN_world.fetchEventReader(),
+            event_batch_tile_change: IN_world.fetchEventReader(),
+            res_world: IN_world.fetchResMut(),
         }
     }
 }
 
-pub struct sys_TileChunkSpriteUpdate{}
-impl<'a> gmSystem<'a> for sys_TileChunkSpriteUpdate{
-    type sysData = sysData_TileChunkSpriteUpdate<'a>;
+pub struct SysTileChunkSpriteUpdate{}
+impl<'a> gmSystem<'a> for SysTileChunkSpriteUpdate{
+    type sysData = SysDataTileChunkSpriteUpdate<'a>;
 
     const sysDepends: &'static [&'static str] = &[];
 
@@ -151,12 +151,12 @@ impl<'a> gmSystem<'a> for sys_TileChunkSpriteUpdate{
     }
 
     fn execute(&mut self, mut IN_data: Self::sysData) {
-        for denseVecEntry{id: GMOBJID, val: CHUNKCOMP} in IN_data.comp_TileTerrain.inner.iter(){
-            if let Some(CHUNK) = IN_data.res_World.getChunkMut(CHUNKCOMP.chunk){
+        for denseVecEntry{id: GMOBJID, val: CHUNKCOMP} in IN_data.comp_tile_terrain.inner.iter(){
+            if let Some(CHUNK) = IN_data.res_world.getChunkMut(CHUNKCOMP.chunk){
                 if !CHUNK.needsResprite && !CHUNKCOMP.fresh {continue} // Skip if it doesn't need a resprite or it's not a fresh chunk
 
-                let idkfa = IN_data.comp_Sprite.get_mut(GMOBJID).expect(&format!("ERROR: Chunk at {}, {} has no Sprite component", CHUNKCOMP.chunk.0, CHUNKCOMP.chunk.1));
-                let w_chunkSprite = idkfa.sprite.chunks_mut(idkfa.sizeX).rev();
+                let idkfa = IN_data.comp_sprite.get_mut(GMOBJID).expect(&format!("ERROR: Chunk at {}, {} has no Sprite component", CHUNKCOMP.chunk.0, CHUNKCOMP.chunk.1));
+                let w_chunkSprite = idkfa.sprite.chunks_mut(idkfa.size_x).rev();
                 let w_chunkTiles = CHUNK.cells.chunks(CHUNK_X as usize);
 
                 for (PIXROW, CHROW) in w_chunkSprite.zip(w_chunkTiles){
@@ -175,32 +175,32 @@ impl<'a> gmSystem<'a> for sys_TileChunkSpriteUpdate{
         }
     }
 }
-pub struct sysData_TileChunkSpriteUpdate<'a>{
-    pub comp_TileTerrain: ReadStorage<'a, comp_TileTerrainChunk>,
-    pub comp_Sprite: WriteStorage<'a, comp_Sprite>,
-    pub res_World: FetchMut<'a, res_GridWorld>
+pub struct SysDataTileChunkSpriteUpdate<'a>{
+    pub comp_tile_terrain: ReadStorage<'a, CompTileTerrainChunk>,
+    pub comp_sprite: WriteStorage<'a, CompSprite>,
+    pub res_world: FetchMut<'a, res_GridWorld>
 }
-impl<'a> gmSystemData<'a> for sysData_TileChunkSpriteUpdate<'a>{
+impl<'a> gmSystemData<'a> for SysDataTileChunkSpriteUpdate<'a>{
     fn fetch(IN_world: &'a mut gmWorld) -> Self {
         Self{
-            comp_TileTerrain: IN_world.fetch(),
-            comp_Sprite: IN_world.fetchMut(),
-            res_World: IN_world.fetchResMut(),
+            comp_tile_terrain: IN_world.fetch(),
+            comp_sprite: IN_world.fetchMut(),
+            res_world: IN_world.fetchResMut(),
         }
     }
 }
 
-pub struct sys_PChunkUnLoad{
-    oldChunk: Vector2
+pub struct SysPchunkUnLoad{
+    old_chunk: Vector2
 }
-impl<'a> gmSystem<'a> for sys_PChunkUnLoad{
-    type sysData = sysData_PChunkUnLoad<'a>;
+impl<'a> gmSystem<'a> for SysPchunkUnLoad{
+    type sysData = SysDataPchunkUnLoad<'a>;
 
     const sysDepends: &'static [&'static str] = &[];
 
     fn new() -> Self {
         Self{
-            oldChunk: (0, 0),
+            old_chunk: (0, 0),
         }
     }
 
@@ -210,25 +210,25 @@ impl<'a> gmSystem<'a> for sys_PChunkUnLoad{
     
     fn execute(&mut self, mut IN_data: Self::sysData) {
         // First update the chunk list
-        for CHUNK in IN_data.comp_TileTerrainChunk.inner.iter(){
-            IN_data.res_LoadedChunks.entry(CHUNK.val.chunk).or_insert(CHUNK.id);
+        for CHUNK in IN_data.comp_tile_terrain_chunk.inner.iter(){
+            IN_data.res_loaded_chunks.entry(CHUNK.val.chunk).or_insert(CHUNK.id);
         }
 
         // Get player position
-        let PID = IN_data.res_PID.get(&1).expect("ERROR: Player object not present");
-        let idkfa_PPos = IN_data.comp_Pos.get(PID).expect(&format!("ERROR: Player {PID} has no Position component"));
+        let PID = IN_data.res_pid.get(&1).expect("ERROR: Player object not present");
+        let idkfa_PPos = IN_data.comp_pos.get(PID).expect(&format!("ERROR: Player {PID} has no Position component"));
         let w_PChunk = utils::util_coordConvert((idkfa_PPos.x, idkfa_PPos.y)).0;
         
         // Don't bother if player hasn't moved from their chunk
-        if w_PChunk == self.oldChunk{
+        if w_PChunk == self.old_chunk{
             return
         }
-        self.oldChunk = w_PChunk;
+        self.old_chunk = w_PChunk;
 
         // Set Discarded Vec
         let mut w_discardedChunks: Vec<(Vector2, gmID)> = Vec::new();
 
-        for (CHUNK, GMID) in IN_data.res_LoadedChunks.iter_mut(){
+        for (CHUNK, GMID) in IN_data.res_loaded_chunks.iter_mut(){
 
             // If the chunk is too far away from player chunk, push it to discarded
             if CHUNK.0.abs_diff(w_PChunk.0) > CHUNK_UNLOAD_MARGIN || CHUNK.1.abs_diff(w_PChunk.1) > CHUNK_UNLOAD_MARGIN{
@@ -239,35 +239,35 @@ impl<'a> gmSystem<'a> for sys_PChunkUnLoad{
         // Send a command to remove the discarded chunks and remove them from the HashMap
         for (CHUNK, GMID) in w_discardedChunks.iter(){
             IN_data.cmdqueue.push(Box::new(cmd_DespawnGmObj{id: *GMID}));
-            IN_data.res_LoadedChunks.remove(CHUNK);
+            IN_data.res_loaded_chunks.remove(CHUNK);
         }
 
         // And send commands to spawn new visible chunks
         for XPOS in (w_PChunk.0 - CHUNK_UNLOAD_MARGIN as isize)..(w_PChunk.0 + CHUNK_UNLOAD_MARGIN as isize){
             for YPOS in (w_PChunk.1 - CHUNK_UNLOAD_MARGIN as isize)..(w_PChunk.1 + CHUNK_UNLOAD_MARGIN as isize){
-                if !IN_data.res_LoadedChunks.contains_key(&(XPOS, YPOS)){
+                if !IN_data.res_loaded_chunks.contains_key(&(XPOS, YPOS)){
                     // Unfortunately I can't update the LoadedChunks hashmap right away as I don't know what IDs the new chunks will get
-                    IN_data.cmdqueue.push(Box::new(cmd_spawnPrefab{prefab: prefab_GridWorldChunk::new((XPOS, YPOS))}));
+                    IN_data.cmdqueue.push(Box::new(cmd_spawnPrefab{prefab: PrefabGridWorldChunk::new((XPOS, YPOS))}));
                 }
             }
         }
         
     }
 }
-pub struct sysData_PChunkUnLoad<'a>{
-    pub comp_Pos: ReadStorage<'a, comp_Pos>,
-    pub comp_TileTerrainChunk: ReadStorage<'a, comp_TileTerrainChunk>,
-    pub res_PID: Fetch<'a, res_PID>,
-    pub res_LoadedChunks: FetchMut<'a, res_LoadedChunks>,
+pub struct SysDataPchunkUnLoad<'a>{
+    pub comp_pos: ReadStorage<'a, CompPos>,
+    pub comp_tile_terrain_chunk: ReadStorage<'a, CompTileTerrainChunk>,
+    pub res_pid: Fetch<'a, res_PID>,
+    pub res_loaded_chunks: FetchMut<'a, res_LoadedChunks>,
     pub cmdqueue: FetchMut<'a, gmWorld_CMDQUEUE>
 }
-impl<'a> gmSystemData<'a> for sysData_PChunkUnLoad<'a>{
+impl<'a> gmSystemData<'a> for SysDataPchunkUnLoad<'a>{
     fn fetch(IN_world: &'a mut gmWorld) -> Self {
         Self{
-            comp_Pos: IN_world.fetch(),
-            comp_TileTerrainChunk: IN_world.fetch(),
-            res_PID: IN_world.fetchRes(),
-            res_LoadedChunks: IN_world.fetchResMut(),
+            comp_pos: IN_world.fetch(),
+            comp_tile_terrain_chunk: IN_world.fetch(),
+            res_pid: IN_world.fetchRes(),
+            res_loaded_chunks: IN_world.fetchResMut(),
             cmdqueue: IN_world.fetchCommandWriter(),
         }
     }

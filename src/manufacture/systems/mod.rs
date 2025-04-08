@@ -8,12 +8,12 @@ use types::*;
 mod renderer;
 pub use renderer::*;
 
-mod tileStuff;
-pub use tileStuff::*;
+mod tile_stuff;
+pub use tile_stuff::*;
 
-pub struct sys_Move{}
-impl<'a> gmSystem<'a> for sys_Move{
-    type sysData = sysData_Move<'a>;
+pub struct SysMove{}
+impl<'a> gmSystem<'a> for SysMove{
+    type sysData = SysDataMove<'a>;
 
     const sysDepends: &'static [&'static str] = &[];
 
@@ -27,9 +27,9 @@ impl<'a> gmSystem<'a> for sys_Move{
 
     fn execute(&mut self, IN_data: Self::sysData) {
         // Quick destructure
-        let sysData_Move{
-            comp_Vel: mut VELCOMPS,
-            comp_Pos: mut POSCOMPS} = IN_data;
+        let SysDataMove{
+            comp_vel: mut VELCOMPS,
+            comp_pos: mut POSCOMPS} = IN_data;
         
         for VELCOMP in VELCOMPS.inner.iter_mut(){
 
@@ -52,22 +52,22 @@ impl<'a> gmSystem<'a> for sys_Move{
         }
     }
 }
-pub struct sysData_Move<'a>{
-    comp_Vel: WriteStorage<'a, comp_Vel>,
-    comp_Pos: WriteStorage<'a, comp_Pos>
+pub struct SysDataMove<'a>{
+    comp_vel: WriteStorage<'a, CompVel>,
+    comp_pos: WriteStorage<'a, CompPos>
 }
-impl<'a> gmSystemData<'a> for sysData_Move<'a>{
+impl<'a> gmSystemData<'a> for SysDataMove<'a>{
     fn fetch(IN_world: &'a mut gmWorld) -> Self {
         Self{
-            comp_Vel: IN_world.fetchMut::<comp_Vel>(),
-            comp_Pos: IN_world.fetchMut::<comp_Pos>(),
+            comp_vel: IN_world.fetchMut::<CompVel>(),
+            comp_pos: IN_world.fetchMut::<CompPos>(),
         }
     }
 }
 
-pub struct sys_Input{}
-impl<'a> gmSystem<'a> for sys_Input{
-    type sysData = sysData_Input<'a>;
+pub struct SysInput{}
+impl<'a> gmSystem<'a> for SysInput{
+    type sysData = SysDataInput<'a>;
 
     const sysDepends: &'static [&'static str] = &[];
 
@@ -82,29 +82,29 @@ impl<'a> gmSystem<'a> for sys_Input{
     fn execute(&mut self, mut IN_data: Self::sysData) {
         if !poll(Duration::from_secs(0)).unwrap(){
             //I Impld Deref for both of the inner thingies and I still need a double deref here lol
-            (**IN_data.res_Input) = KeyEvent::new(KeyCode::Null, KeyModifiers::NONE);
+            (**IN_data.res_input) = KeyEvent::new(KeyCode::Null, KeyModifiers::NONE);
             return;
         }
 
         if let Event::Key(KEY) = read().unwrap(){
-            (**IN_data.res_Input) = KEY
+            (**IN_data.res_input) = KEY
         }
     }
 }
-pub struct sysData_Input<'a>{
-    res_Input: FetchMut<'a, res_PInput>
+pub struct SysDataInput<'a>{
+    res_input: FetchMut<'a, res_PInput>
 }
-impl<'a> gmSystemData<'a> for sysData_Input<'a>{
+impl<'a> gmSystemData<'a> for SysDataInput<'a>{
     fn fetch(IN_world: &'a mut gmWorld) -> Self {
         Self{
-            res_Input: IN_world.fetchResMut::<res_PInput>()
+            res_input: IN_world.fetchResMut::<res_PInput>()
         }
     }
 }
 
-pub struct sys_PMove{}
-impl<'a> gmSystem<'a> for sys_PMove{
-    type sysData = sysData_PMove<'a>;
+pub struct SysPmove{}
+impl<'a> gmSystem<'a> for SysPmove{
+    type sysData = SysDataPmove<'a>;
 
     const sysDepends: &'static [&'static str] = &[];
 
@@ -117,19 +117,19 @@ impl<'a> gmSystem<'a> for sys_PMove{
     }
 
     fn execute(&mut self, mut IN_data: Self::sysData) {
-        for (PID, GMOBJID) in IN_data.res_PID.iter(){
+        for (PID, GMOBJID) in IN_data.res_pid.iter(){
 
-            let w_PController = IN_data.comp_PController.get(GMOBJID).expect(&format!("ERROR: PID of player {PID} points to an object without a Player Controller"));
+            let w_PController = IN_data.comp_pcontroller.get(GMOBJID).expect(&format!("ERROR: PID of player {PID} points to an object without a Player Controller"));
             if !w_PController.active{continue}
 
-            let w_stepSize: isize = match IN_data.res_PInput.modifiers{
+            let w_stepSize: isize = match IN_data.res_pinput.modifiers{
                 KeyModifiers::SHIFT => {4}
                 KeyModifiers::NONE => {1}
                 _ => {0}
             };
 
-            if let Some(w_velComp) = IN_data.comp_Vel.get_mut(GMOBJID){
-                match IN_data.res_PInput.code{
+            if let Some(w_velComp) = IN_data.comp_vel.get_mut(GMOBJID){
+                match IN_data.res_pinput.code{
                     KeyCode::Up => {w_velComp.x = 0; w_velComp.y = w_stepSize}
                     KeyCode::Down => {w_velComp.x = 0; w_velComp.y = -w_stepSize}
                     KeyCode::Left => {w_velComp.x = -w_stepSize; w_velComp.y = 0}
@@ -140,19 +140,19 @@ impl<'a> gmSystem<'a> for sys_PMove{
         }
     }
 }
-pub struct sysData_PMove<'a>{
-    res_PInput: Fetch<'a, res_PInput>,
-    res_PID: Fetch<'a, res_PID>,
-    comp_PController: ReadStorage<'a, comp_PController>,
-    comp_Vel: WriteStorage<'a, comp_Vel>
+pub struct SysDataPmove<'a>{
+    res_pinput: Fetch<'a, res_PInput>,
+    res_pid: Fetch<'a, res_PID>,
+    comp_pcontroller: ReadStorage<'a, CompPcontroller>,
+    comp_vel: WriteStorage<'a, CompVel>
 }
-impl<'a> gmSystemData<'a> for sysData_PMove<'a>{
+impl<'a> gmSystemData<'a> for SysDataPmove<'a>{
     fn fetch(IN_world: &'a mut gmWorld) -> Self {
         Self{
-            res_PInput: IN_world.fetchRes(),
-            res_PID: IN_world.fetchRes(),
-            comp_PController: IN_world.fetch(),
-            comp_Vel: IN_world.fetchMut()
+            res_pinput: IN_world.fetchRes(),
+            res_pid: IN_world.fetchRes(),
+            comp_pcontroller: IN_world.fetch(),
+            comp_vel: IN_world.fetchMut()
         }
     }
 }

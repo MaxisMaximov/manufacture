@@ -2,47 +2,47 @@ use super::*;
 
 pub mod specials;
 
-pub struct UI_element{
-    pub tag: UI_tag,
-    pub style: UI_style
+pub struct UIElement{
+    pub tag: UITag,
+    pub style: UIStyle
 }
-pub struct UI_parentData{
+pub struct UIParentData{
     pub position: Vector2,
     pub size: (usize, usize)
 }
-impl UI_parentData{
-    pub fn concatStyle(&self, IN_style: &UI_style) -> UI_parentData{
+impl UIParentData{
+    pub fn concatStyle(&self, IN_style: &UIStyle) -> UIParentData{
         Self{
             position: {
                 match IN_style.position {
-                    UI_pos::Static => self.position,
-                    UI_pos::Abs(POS) => POS,
-                    UI_pos::Rel(POS) => (self.position.0 + POS.0, self.position.1 + POS.1),
+                    UIPos::Static => self.position,
+                    UIPos::Abs(POS) => POS,
+                    UIPos::Rel(POS) => (self.position.0 + POS.0, self.position.1 + POS.1),
                 }
             },
             size: {
                 match IN_style.size{
-                    UI_size::Abs(SIZE) => SIZE,
-                    UI_size::Frac(FRAC) => ((self.size.0 * FRAC.0) / 100, (self.size.1 * FRAC.1) / 100),
+                    UISize::Abs(SIZE) => SIZE,
+                    UISize::Frac(FRAC) => ((self.size.0 * FRAC.0) / 100, (self.size.1 * FRAC.1) / 100),
                 }
             }
         }
     }
 }
 
-pub enum UI_tag{
-    none,
+pub enum UITag{
+    None,
     /// You *can* add subnodes to this one  
     /// But it's recommended not to as it can break stuff
-    text(String),
+    Text(String),
     /// # WARNING
     /// The node **MUST NOT HAVE** subnodes  
     /// Specials fully reconstruct their nodes
-    special(Box<dyn specials::UI_Special>)
+    Special(Box<dyn specials::UISpecial>)
 }
-impl UI_tag{
-    pub fn take(&mut self) -> UI_tag{
-        std::mem::replace(self, UI_tag::none)
+impl UITag{
+    pub fn take(&mut self) -> UITag{
+        std::mem::replace(self, UITag::None)
     }
     /// Yes, this is stupid  
     /// But I like it lol
@@ -51,28 +51,28 @@ impl UI_tag{
     }
 }
 
-pub struct UI_style{
-    pub position: UI_pos,
-    pub size: UI_size,
+pub struct UIStyle{
+    pub position: UIPos,
+    pub size: UISize,
     pub fg: Color,
     pub bg: Color,
-    pub border: UI_border,
-    pub display: UI_display
+    pub border: UIBorder,
+    pub display: UIDisplay
 }
 
-pub enum UI_pos{
+pub enum UIPos{
     Static,
     Abs(Vector2),
     Rel(Vector2)
 }
-pub enum UI_size{
+pub enum UISize{
     Abs((usize, usize)),
     Frac((usize, usize))
 }
-pub enum UI_border{
+pub enum UIBorder{
     None,
     SingleChar(char),
     Fancy
-}pub enum UI_display{
+}pub enum UIDisplay{
     Float
 }
