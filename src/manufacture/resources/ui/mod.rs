@@ -6,28 +6,10 @@ pub struct UIElement{
     pub tag: UITag,
     pub style: UIStyle
 }
-pub struct UIParentData{
-    pub position: Vector2,
-    pub size: (usize, usize)
-}
-impl UIParentData{
-    pub fn concatStyle(&self, IN_style: &UIStyle) -> UIParentData{
-        Self{
-            position: {
-                match IN_style.position {
-                    UIPos::Static => self.position,
-                    UIPos::Abs(POS) => POS,
-                    UIPos::Rel(POS) => (self.position.0 + POS.0, self.position.1 + POS.1),
-                }
-            },
-            size: {
-                match IN_style.size{
-                    UISize::Abs(SIZE) => SIZE,
-                    UISize::Frac(FRAC) => ((self.size.0 * FRAC.0) / 100, (self.size.1 * FRAC.1) / 100),
-                }
-            }
-        }
-    }
+
+pub struct UICalculated{
+    pub offset: (usize, usize),
+    pub box_bounding: (usize, usize)
 }
 
 pub enum UITag{
