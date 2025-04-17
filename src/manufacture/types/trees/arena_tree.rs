@@ -1,4 +1,4 @@
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::{BTreeMap, BTreeSet, VecDeque};
 
 /// Arena-allocated tree
 /// 
@@ -367,14 +367,24 @@ impl<T> ArenaTree<T>{
         }
     }
     /// Traverse the Tree using Iterator with Depth-First Traversal, starting from the Tree's Root
-    pub fn traverse(&self) -> Traverse<'_, T>{
-        Traverse::new(self)
+    pub fn depth_first_traverse(&self) -> DepthFirstTraverse<'_, T>{
+        DepthFirstTraverse::new(self)
     }
     /// Traverse the Tree using Iterator with Depth-First Traversal, starting from a specific Node
     /// 
     /// If the Node doesn't exist, the Iterator is empty and doesn't do anything
-    pub fn traverse_from(&self, StartNode: &usize) -> Traverse<'_, T>{
-        Traverse::new_from_node(self, StartNode)
+    pub fn depth_first_traverse_from(&self, StartNode: &usize) -> DepthFirstTraverse<'_, T>{
+        DepthFirstTraverse::new_from_node(self, StartNode)
+    }
+    /// Traverse the Tree using Iterator with Breadth-First Traversal, starting from the Tree's Root
+    pub fn breadth_first_traverse(&self) -> BreadthFirstTraverse<'_, T>{
+        BreadthFirstTraverse::new(self)
+    }
+    /// Traverse the Tree using Iterator with Breadth-First Traversal, starting from a specific Node
+    /// 
+    /// If the Node doesn't exist, the Iterator is empty and doesn't do anything
+    pub fn breadth_first_traverse_from(&self, StartNode: &usize) -> BreadthFirstTraverse<'_, T>{
+        BreadthFirstTraverse::new_from_node(self, StartNode)
     }
     /// Traverse the Tree using a controllable Cursor
     pub fn cursor(&mut self) -> ArenaCursor<'_, T>{
@@ -531,11 +541,11 @@ impl ArenaToken{
 
 
 pub struct ArenaNode<T>{
-    val: T,
-    id: usize,
-    hash: u32, // I know it's technically not a 'hash' but it sounds cool so peck it
-    parent: Option<usize>,
-    children: Vec<usize>
+    pub val: T,
+    pub id: usize,
+    pub hash: u32, // I know it's technically not a 'hash' but it sounds cool so peck it
+    pub parent: Option<usize>,
+    pub children: Vec<usize>
 }
 impl<T> ArenaNode<T>{
     fn new(Val: T, Id: usize, Parent: Option<usize>) -> Self{
@@ -623,12 +633,12 @@ impl<T> ArenaNode<T>{
 /// Traverses the Tree Depth-First and revisits the nodes on it's way up
 /// 
 /// Every iteration returns a tuple `(Traverse Level, Node Reference)`
-pub struct Traverse<'a, T>{
+pub struct DepthFirstTraverse<'a, T>{
     tree_ref: &'a ArenaTree<T>,
     stack: Vec<(usize, bool)>, // (nodeID, visited)
     next_down: bool
 }
-impl<'a, T> Traverse<'a, T>{
+impl<'a, T> DepthFirstTraverse<'a, T>{
     fn new(TreeRef: &'a ArenaTree<T>) -> Self{
         Self{
             tree_ref: TreeRef,
@@ -650,7 +660,7 @@ impl<'a, T> Traverse<'a, T>{
         }
     }
 }
-impl<'a, T> Iterator for Traverse<'a, T>{
+impl<'a, T> Iterator for DepthFirstTraverse<'a, T>{
     type Item = (TraverseLevel, &'a ArenaNode<T>);
 
     fn next(&mut self) -> Option<Self::Item>{
@@ -690,6 +700,60 @@ impl<'a, T> Iterator for Traverse<'a, T>{
             Some(Out)
         // .pop() returned nothing, the stack is empty, we can leave
         }else{None}
+    }
+}
+
+/// # Breadth-first Traversal
+/// 
+/// Traverses the tree layer by layer, siblings-first rather than children-first
+pub struct BreadthFirstTraverse<'a, T>{
+    tree_ref: &'a ArenaTree<T>,
+    queue: VecDeque<(usize, usize)> // (Layer, Node ID)
+}
+impl <'a, T> BreadthFirstTraverse<'a, T>{
+    fn new(TreeRef: &'a ArenaTree<T>) -> Self{
+
+        Self{
+            tree_ref: TreeRef,
+            queue: {
+                let mut idkfa = VecDeque::new();
+                for index in TreeRef.root.children.iter(){
+                    idkfa.push_back((0, *index));
+                };
+                idkfa
+            },
+        }
+    }
+    fn new_from_node(TreeRef: &'a ArenaTree<T>, Node: &usize) -> Self{
+        Self{
+            tree_ref: TreeRef,
+            queue: {
+                let mut idkfa = VecDeque::new();
+                let node = TreeRef.get_node(Node).unwrap();
+                for index in node.children.iter(){
+                    idkfa.push_back((0, *index));
+                };
+                idkfa
+            },
+        }
+    }
+}
+impl<'a, T> Iterator for BreadthFirstTraverse<'a, T>{
+    type Item = (usize, &'a ArenaNode<T>);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        // Compare to depth-first, jesus this is short
+        if let Some((layer, index)) = self.queue.pop_front(){
+            let node = self.tree_ref.get_node(&index).unwrap();
+
+            for child_index in node.children.iter(){
+                self.queue.push_back((layer + 1, *child_index));
+            }
+
+            Some((layer, node))
+        }else{
+            None
+        }
     }
 }
 
