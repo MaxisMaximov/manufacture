@@ -630,7 +630,7 @@ impl<T> ArenaNode<T>{
 
 
 /// # Depth-First Traversal Iterator
-/// Traverses the Tree Depth-First and revisits the nodes on it's way up
+/// Traverses the Tree, children first in pre-order and revisits the nodes on it's way up
 /// 
 /// Every iteration returns a tuple `(Traverse Level, Node Reference)`
 pub struct DepthFirstTraverse<'a, T>{
@@ -705,14 +705,13 @@ impl<'a, T> Iterator for DepthFirstTraverse<'a, T>{
 
 /// # Breadth-first Traversal
 /// 
-/// Traverses the tree layer by layer, siblings-first rather than children-first
+/// Traverses the tree layer by layer, siblings-first rather
 pub struct BreadthFirstTraverse<'a, T>{
     tree_ref: &'a ArenaTree<T>,
     queue: VecDeque<(usize, usize)> // (Layer, Node ID)
 }
 impl <'a, T> BreadthFirstTraverse<'a, T>{
     fn new(TreeRef: &'a ArenaTree<T>) -> Self{
-
         Self{
             tree_ref: TreeRef,
             queue: {
@@ -751,6 +750,66 @@ impl<'a, T> Iterator for BreadthFirstTraverse<'a, T>{
             }
 
             Some((layer, node))
+        }else{
+            None
+        }
+    }
+}
+
+/// # Reverse breadth-first Traversal
+/// 
+/// Traverses the tree layer by layer backwards, 
+/// siblings-first, 
+/// starting from the lowest descendants
+pub struct RevBreadthFirstTraverse<'a, T>{
+    tree_ref: &'a ArenaTree<T>,
+    stack: Vec<VecDeque<usize>> // A stack of layer queues, we don't need to specify layers
+}
+impl<'a, T> RevBreadthFirstTraverse<'a, T>{
+    fn new(TreeRef: &'a ArenaTree<T>) -> Self{
+        Self{
+            tree_ref: TreeRef,
+            stack: {
+                let mut idkfa: Vec<VecDeque<usize>> = Vec::from([TreeRef.root.children.clone().into()]);
+                let mut next_queue: VecDeque<usize> = VecDeque::new();
+                // For everything in the last queue in the stack, we push all the children
+                // If the next queue is empty, we reached the bottom
+                loop{
+                    for index in idkfa.last().unwrap().iter(){
+                        let node = TreeRef.get_node(index).unwrap();
+                        for child in node.children.iter(){
+                            next_queue.push_back(*child);
+                        }
+                    }
+                    if next_queue.is_empty(){
+                        break;
+                    }
+                    // Drain and collect into a new queue to put on the stack
+                    idkfa.push(next_queue.drain(..).collect());
+                }
+
+                idkfa
+            },
+        }
+    }
+}
+impl<'a, T> Iterator for RevBreadthFirstTraverse<'a, T>{
+    type Item = (usize, &'a ArenaNode<T>);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.stack.is_empty(){
+            return None
+        }
+        // Quick check to pop last frame in case it's empty
+        // We can't do it on previous iteration due to borrowing
+        if self.stack.last().unwrap().is_empty(){
+            self.stack.pop();
+        }
+        if let Some(queue) = self.stack.last_mut(){
+            // We can safely unwrap as we have a check for empty queue earlier
+            let index = queue.pop_front().unwrap();
+            let node = self.tree_ref.get_node(&index).unwrap();
+            Some((self.stack.len() - 1, node))
         }else{
             None
         }
