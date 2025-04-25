@@ -386,6 +386,16 @@ impl<T> ArenaTree<T>{
     pub fn breadth_first_traverse_from(&self, StartNode: &usize) -> BreadthFirstTraverse<'_, T>{
         BreadthFirstTraverse::new_from_node(self, StartNode)
     }
+    /// Traverse the Tree using Iterator with Reverse Breadth-First Traversal, starting from the Tree's Root
+    pub fn rev_breadth_first_traverse(&self) -> RevBreadthFirstTraverse<'_, T>{
+        RevBreadthFirstTraverse::new(self)
+    }
+    /// Traverse the Tree using Iterator with Reverse Breadth-First Traversal, starting from a specific Node
+    /// 
+    /// If the Node doesn't exist, the Iterator is empty and doesn't do anything
+    pub fn rev_breadth_first_traverse_from(&self, StartNode: &usize) -> RevBreadthFirstTraverse<'_, T>{
+        RevBreadthFirstTraverse::new_from_node(self, StartNode)
+    }
     /// Traverse the Tree using a controllable Cursor
     pub fn cursor(&mut self) -> ArenaCursor<'_, T>{
         ArenaCursor::new(self)
@@ -789,6 +799,36 @@ impl<'a, T> RevBreadthFirstTraverse<'a, T>{
                 }
 
                 idkfa
+            },
+        }
+    }
+    fn new_from_node(TreeRef: &'a ArenaTree<T>, Node: &usize) -> Self{
+        Self{
+            tree_ref: TreeRef,
+            stack: {
+                if let Some(start_node) = TreeRef.get_node(Node){
+                    let mut idkfa: Vec<VecDeque<usize>> = Vec::from([start_node.children.clone().into()]);
+                    let mut next_queue: VecDeque<usize> = VecDeque::new();
+                    // For everything in the last queue in the stack, we push all the children
+                    // If the next queue is empty, we reached the bottom
+                    loop{
+                        for index in idkfa.last().unwrap().iter(){
+                            let node = TreeRef.get_node(index).unwrap();
+                            for child in node.children.iter(){
+                                next_queue.push_back(*child);
+                            }
+                        }
+                        if next_queue.is_empty(){
+                            break;
+                        }
+                        // Drain and collect into a new queue to put on the stack
+                        idkfa.push(next_queue.drain(..).collect());
+                    }
+    
+                    idkfa
+                }else{
+                    Vec::new()
+                }
             },
         }
     }
