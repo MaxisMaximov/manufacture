@@ -368,33 +368,45 @@ impl<T> ArenaTree<T>{
     }
     /// Traverse the Tree using Iterator with Depth-First Traversal, starting from the Tree's Root
     pub fn depth_first_traverse(&self) -> DepthFirstTraverse<'_, T>{
-        DepthFirstTraverse::new(self)
+        DepthFirstTraverse::new(self, &self.root.children)
     }
     /// Traverse the Tree using Iterator with Depth-First Traversal, starting from a specific Node
     /// 
     /// If the Node doesn't exist, the Iterator is empty and doesn't do anything
     pub fn depth_first_traverse_from(&self, StartNode: &usize) -> DepthFirstTraverse<'_, T>{
-        DepthFirstTraverse::new_from_node(self, StartNode)
+        if !self.nodes.contains_key(StartNode){
+            DepthFirstTraverse::new(self, &[])
+        }else{
+            DepthFirstTraverse::new(self, &[*StartNode])
+        }
     }
     /// Traverse the Tree using Iterator with Breadth-First Traversal, starting from the Tree's Root
     pub fn breadth_first_traverse(&self) -> BreadthFirstTraverse<'_, T>{
-        BreadthFirstTraverse::new(self)
+        BreadthFirstTraverse::new(self, &self.root.children)
     }
     /// Traverse the Tree using Iterator with Breadth-First Traversal, starting from a specific Node
     /// 
     /// If the Node doesn't exist, the Iterator is empty and doesn't do anything
     pub fn breadth_first_traverse_from(&self, StartNode: &usize) -> BreadthFirstTraverse<'_, T>{
-        BreadthFirstTraverse::new_from_node(self, StartNode)
+        if !self.nodes.contains_key(StartNode){
+            BreadthFirstTraverse::new(self, &[])
+        }else{
+            BreadthFirstTraverse::new(self, &[*StartNode])
+        }
     }
-    /// Traverse the Tree using Iterator with Reverse Breadth-First Traversal, starting from the Tree's Root
+    /// Traverse the Tree using Iterator with Reverse Breadth-First Traversal, coming upwards to the root
     pub fn rev_breadth_first_traverse(&self) -> RevBreadthFirstTraverse<'_, T>{
-        RevBreadthFirstTraverse::new(self)
+        RevBreadthFirstTraverse::new(self, &self.root.children)
     }
-    /// Traverse the Tree using Iterator with Reverse Breadth-First Traversal, starting from a specific Node
+    /// Traverse the Tree using Iterator with Reverse Breadth-First Traversal, from the bottom of the tree up to a specific Node
     /// 
     /// If the Node doesn't exist, the Iterator is empty and doesn't do anything
-    pub fn rev_breadth_first_traverse_from(&self, StartNode: &usize) -> RevBreadthFirstTraverse<'_, T>{
-        RevBreadthFirstTraverse::new_from_node(self, StartNode)
+    pub fn rev_breadth_first_traverse_to(&self, EndNode: &usize) -> RevBreadthFirstTraverse<'_, T>{
+        if !self.nodes.contains_key(EndNode){
+            RevBreadthFirstTraverse::new(self, &[])
+        }else{
+            RevBreadthFirstTraverse::new(self, &[*EndNode])
+        }
     }
     /// Traverse the Tree using a controllable Cursor
     pub fn cursor(&mut self) -> ArenaCursor<'_, T>{
@@ -649,23 +661,16 @@ pub struct DepthFirstTraverse<'a, T>{
     next_down: bool
 }
 impl<'a, T> DepthFirstTraverse<'a, T>{
-    fn new(TreeRef: &'a ArenaTree<T>) -> Self{
+    fn new(TreeRef: &'a ArenaTree<T>, StartNodes: &[usize]) -> Self{
         Self{
             tree_ref: TreeRef,
             stack: {
                 let mut idkfa = Vec::new();
-                for index in TreeRef.root.children.iter(){
+                for index in StartNodes.iter(){
                     idkfa.push((*index, false));
                 }
                 idkfa
             },
-            next_down: false,
-        }
-    }
-    fn new_from_node(TreeRef: &'a ArenaTree<T>, Node: &usize) -> Self{
-        Self{
-            tree_ref: TreeRef,
-            stack: Vec::from([(*Node, false)]),
             next_down: false,
         }
     }
@@ -721,25 +726,12 @@ pub struct BreadthFirstTraverse<'a, T>{
     queue: VecDeque<(usize, usize)> // (Layer, Node ID)
 }
 impl <'a, T> BreadthFirstTraverse<'a, T>{
-    fn new(TreeRef: &'a ArenaTree<T>) -> Self{
+    fn new(TreeRef: &'a ArenaTree<T>, StartNodes: &[usize]) -> Self{
         Self{
             tree_ref: TreeRef,
             queue: {
                 let mut idkfa = VecDeque::new();
-                for index in TreeRef.root.children.iter(){
-                    idkfa.push_back((0, *index));
-                };
-                idkfa
-            },
-        }
-    }
-    fn new_from_node(TreeRef: &'a ArenaTree<T>, Node: &usize) -> Self{
-        Self{
-            tree_ref: TreeRef,
-            queue: {
-                let mut idkfa = VecDeque::new();
-                let node = TreeRef.get_node(Node).unwrap();
-                for index in node.children.iter(){
+                for index in StartNodes.iter(){
                     idkfa.push_back((0, *index));
                 };
                 idkfa
@@ -776,11 +768,14 @@ pub struct RevBreadthFirstTraverse<'a, T>{
     stack: Vec<VecDeque<usize>> // A stack of layer queues, we don't need to specify layers
 }
 impl<'a, T> RevBreadthFirstTraverse<'a, T>{
-    fn new(TreeRef: &'a ArenaTree<T>) -> Self{
+    fn new(TreeRef: &'a ArenaTree<T>, StartNodes: &[usize]) -> Self{
         Self{
             tree_ref: TreeRef,
             stack: {
-                let mut idkfa: Vec<VecDeque<usize>> = Vec::from([TreeRef.root.children.clone().into()]);
+                let mut idkfa: Vec<VecDeque<usize>> = Vec::from([VecDeque::new()]);
+                for node in StartNodes.iter(){
+                    idkfa.last_mut().unwrap().push_back(*node);
+                }
                 let mut next_queue: VecDeque<usize> = VecDeque::new();
                 // For everything in the last queue in the stack, we push all the children
                 // If the next queue is empty, we reached the bottom
@@ -799,36 +794,6 @@ impl<'a, T> RevBreadthFirstTraverse<'a, T>{
                 }
 
                 idkfa
-            },
-        }
-    }
-    fn new_from_node(TreeRef: &'a ArenaTree<T>, Node: &usize) -> Self{
-        Self{
-            tree_ref: TreeRef,
-            stack: {
-                if let Some(start_node) = TreeRef.get_node(Node){
-                    let mut idkfa: Vec<VecDeque<usize>> = Vec::from([start_node.children.clone().into()]);
-                    let mut next_queue: VecDeque<usize> = VecDeque::new();
-                    // For everything in the last queue in the stack, we push all the children
-                    // If the next queue is empty, we reached the bottom
-                    loop{
-                        for index in idkfa.last().unwrap().iter(){
-                            let node = TreeRef.get_node(index).unwrap();
-                            for child in node.children.iter(){
-                                next_queue.push_back(*child);
-                            }
-                        }
-                        if next_queue.is_empty(){
-                            break;
-                        }
-                        // Drain and collect into a new queue to put on the stack
-                        idkfa.push(next_queue.drain(..).collect());
-                    }
-    
-                    idkfa
-                }else{
-                    Vec::new()
-                }
             },
         }
     }
