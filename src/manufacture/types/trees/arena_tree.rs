@@ -19,7 +19,7 @@ pub struct ArenaTree<T>{
     next_free: BTreeSet<usize>
 }
 impl<T> ArenaTree<T>{
-    /// Creates a new empty, tree
+    /// Creates a new, empty tree
     pub fn new() -> Self{
         Self{
             nodes: BTreeMap::new(),
@@ -42,6 +42,7 @@ impl<T> ArenaTree<T>{
         self.next_free.insert(*Index);
         self.nodes.remove(Index).unwrap()
     }
+
 
     /// Insert a Node into the tree and assign it to a parent
     /// 
@@ -105,6 +106,8 @@ impl<T> ArenaTree<T>{
 
         ArenaHandle::new(self, next_index)
     }
+
+
     /// Removes the Node and all of the node's Subnodes
     pub fn remove(&mut self, Index: &usize) -> Option<ArenaNode<T>>{
         if let Some(node) = self.free_index(Index){
@@ -177,6 +180,8 @@ impl<T> ArenaTree<T>{
             Some(node)
         }else{None}
     }
+
+
     /// Get a reference to the value stored in a Node
     pub fn get(&self, Index: &usize) -> Option<&T>{
         Some(&self.nodes.get(Index)?.val)
@@ -240,6 +245,7 @@ impl<T> ArenaTree<T>{
         self.nodes.get_mut(&index)
     }
 
+
     /// Get a Handle from a Token for in-place manipulation
     /// 
     /// Typically used to manipulate only the nodes that the program is keeping track of
@@ -277,6 +283,8 @@ impl<T> ArenaTree<T>{
             None
         }
     }
+
+
     /// Detach a Node from it's parent
     /// 
     /// Typically used to sepparate Nodes into Root Subtrees for organization purposes
@@ -366,11 +374,17 @@ impl<T> ArenaTree<T>{
             self.nodes.insert(index, node);
         }
     }
+
+
     /// Traverse the Tree using Iterator with Depth-First Traversal, starting from the Tree's Root
+    /// 
+    /// Returns `(TraverseLevel, &ArenaNode)` tuple on every iteration
     pub fn depth_first_traverse(&self) -> DepthFirstTraverse<'_, T>{
         DepthFirstTraverse::new(self, &self.root.children)
     }
     /// Traverse the Tree using Iterator with Depth-First Traversal, starting from a specific Node
+    /// 
+    /// Returns `(TraverseLevel, &ArenaNode)` tuple on every iteration
     /// 
     /// If the Node doesn't exist, the Iterator is empty and doesn't do anything
     pub fn depth_first_traverse_from(&self, StartNode: &usize) -> DepthFirstTraverse<'_, T>{
@@ -381,10 +395,14 @@ impl<T> ArenaTree<T>{
         }
     }
     /// Traverse the Tree using Iterator with Breadth-First Traversal, starting from the Tree's Root
+    /// 
+    /// Layers increment going downwards, with Layer 0 being the Root Layer
     pub fn breadth_first_traverse(&self) -> BreadthFirstTraverse<'_, T>{
         BreadthFirstTraverse::new(self, &self.root.children)
     }
     /// Traverse the Tree using Iterator with Breadth-First Traversal, starting from a specific Node
+    /// 
+    /// Layers increment going downwards, with Layer 0 being the starting Node's Layer, topmost Layer
     /// 
     /// If the Node doesn't exist, the Iterator is empty and doesn't do anything
     pub fn breadth_first_traverse_from(&self, StartNode: &usize) -> BreadthFirstTraverse<'_, T>{
@@ -394,11 +412,15 @@ impl<T> ArenaTree<T>{
             BreadthFirstTraverse::new(self, &[*StartNode])
         }
     }
-    /// Traverse the Tree using Iterator with Reverse Breadth-First Traversal, coming upwards to the root
+    /// Traverse the Tree using Iterator with Reverse Breadth-First Traversal, coming upwards to the Root
+    /// 
+    /// Layers decrement going upwards, with Layer 0 being the Root Layer
     pub fn rev_breadth_first_traverse(&self) -> RevBreadthFirstTraverse<'_, T>{
         RevBreadthFirstTraverse::new(self, &self.root.children)
     }
     /// Traverse the Tree using Iterator with Reverse Breadth-First Traversal, from the bottom of the tree up to a specific Node
+    /// 
+    /// Layers decrement going upwards, with Layer 0 being the start Node's Layer, topmost layer
     /// 
     /// If the Node doesn't exist, the Iterator is empty and doesn't do anything
     pub fn rev_breadth_first_traverse_to(&self, EndNode: &usize) -> RevBreadthFirstTraverse<'_, T>{
@@ -408,16 +430,19 @@ impl<T> ArenaTree<T>{
             RevBreadthFirstTraverse::new(self, &[*EndNode])
         }
     }
+
     /// Traverse the Tree using a controllable Cursor
     pub fn cursor(&mut self) -> ArenaCursor<'_, T>{
         ArenaCursor::new(self)
     }
-    /// Traverse the Tree using a controllable Cursor
+    /// Traverse the Tree using a controllable Cursor, starting from a specific node
     /// 
     /// If the Node doesn't exist, the Cursor defaults to the Root level
     pub fn cursor_from(&mut self, StartNode: &usize) -> ArenaCursor<'_, T>{
         ArenaCursor::new_from_node(self, *StartNode)
     }
+
+
     /// Perform operations on the Tree immediately after creating it
     /// 
     /// This method is typically used to initialize Nodes right away
