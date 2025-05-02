@@ -683,7 +683,7 @@ impl<T> ArenaNode<T>{
 pub struct DepthFirstTraverse<'a, T>{
     tree_ref: &'a ArenaTree<T>,
     stack: Vec<(usize, bool)>, // (nodeID, visited)
-    next_down: bool
+    depth: usize
 }
 impl<'a, T> DepthFirstTraverse<'a, T>{
     fn new(TreeRef: &'a ArenaTree<T>, StartNodes: &[usize]) -> Self{
@@ -696,12 +696,12 @@ impl<'a, T> DepthFirstTraverse<'a, T>{
                 }
                 idkfa
             },
-            next_down: false,
+            depth: 0
         }
     }
 }
 impl<'a, T> Iterator for DepthFirstTraverse<'a, T>{
-    type Item = (TraverseLevel, &'a ArenaNode<T>);
+    type Item = (usize, &'a ArenaNode<T>);
 
     fn next(&mut self) -> Option<Self::Item>{
         if let Some(mut frame) = self.stack.pop(){
@@ -710,18 +710,9 @@ impl<'a, T> Iterator for DepthFirstTraverse<'a, T>{
 
             // If we got to a visited node, we went up a level
             if frame.1{
-                self.next_down = false;
-                return Some((TraverseLevel::Up, node))
+                self.depth -= 1;
+                return Some((self.depth, node))
             }
-
-            // Bandaid fix to make sure we know we traversed down
-            let Out = 
-                if self.next_down{
-                    self.next_down = false;
-                    (TraverseLevel::Down, node)
-                }else{
-                    (TraverseLevel::Same, node)
-                };
 
             // Check if node has subnodes
             if !node.children.is_empty(){
@@ -729,15 +720,15 @@ impl<'a, T> Iterator for DepthFirstTraverse<'a, T>{
                 frame.1 = true;
                 self.stack.push(frame);
 
-                // Reverse to make first child at the top of the stack
+                // Reverse to put first child at the top of the stack
                 for index in node.children.iter().rev(){
                     self.stack.push((*index, false));
                 }
                 // At this point the next node we enter will be down a level
-                self.next_down = true;
+                self.depth += 1;
             };
             
-            Some(Out)
+            Some((self.depth, node))
         // .pop() returned nothing, the stack is empty, we can leave
         }else{None}
     }
@@ -983,9 +974,4 @@ impl<'a, T> ArenaCursor<'a, T>{
             Err(self)
         }
     }
-}
-pub enum TraverseLevel{
-    Up,
-    Same,
-    Down
 }
