@@ -182,25 +182,24 @@ impl<T> ArenaTree<T>{
     }
 
 
-    /// Get a reference to the value stored in a Node
+    /// Get a reference to the data stored in a Node
     pub fn get(&self, Index: &usize) -> Option<&T>{
         Some(&self.nodes.get(Index)?.val)
     }
-    /// Get a mutable reference to the value stored in a Node
+    /// Get a mutable reference to the data stored in a Node
     pub fn get_mut(&mut self, Index: &usize) -> Option<&mut T>{
         Some(&mut self.nodes.get_mut(Index)?.val)
     }
     /// Get a reference to a Node
     /// 
-    /// This is typically used to get just the node's data without needing a Handle
-    fn get_node(&self, Index: &usize) -> Option<&ArenaNode<T>>{
+    /// This is typically used to get just the Node and read it's data without needing a Handle
+    pub fn get_node(&self, Index: &usize) -> Option<&ArenaNode<T>>{
         self.nodes.get(Index)
     }
-    /// Get a mutable reference to a Node
+    /// Get a 'mutable' reference to a Node
     /// 
-    /// ## WARNING
-    /// Do not modify any field apart from Value
-    fn get_node_mut(&mut self, Index: &usize) -> Option<&mut ArenaNode<T>>{
+    /// This is typically used to get just the Node and modify it's Data without needing a Handle
+    pub fn get_node_mut(&mut self, Index: &usize) -> Option<&mut ArenaNode<T>>{
         self.nodes.get_mut(Index)
     }
 
@@ -209,11 +208,8 @@ impl<T> ArenaTree<T>{
         let parent_index = self.nodes.get(Index)?.parent?;
         self.nodes.get(&parent_index)
     }
-    /// Get a mutable reference to a Node's parent
-    /// 
-    /// ## WARNING
-    /// Do not modify any field apart from Value
-    fn get_parent_mut(&mut self, Index: &usize) -> Option<&mut ArenaNode<T>>{
+    /// Get a 'mutable' reference to a Node's parent
+    pub fn get_parent_mut(&mut self, Index: &usize) -> Option<&mut ArenaNode<T>>{
         let parent_index = self.nodes.get(Index)?.parent?;
         self.nodes.get_mut(&parent_index)
     }
@@ -223,11 +219,8 @@ impl<T> ArenaTree<T>{
         let index = self.get_parent(Index)?.child_before(Index)?;
         self.nodes.get(&index)
     }
-    /// Get a mutable reference to a Node's Left Sibling
-    /// 
-    /// ## WARNING
-    /// Do not modify any field apart from Value
-    fn get_left_sibling_mut(&mut self, Index: &usize) -> Option<&mut ArenaNode<T>>{
+    /// Get a 'mutable' reference to a Node's Left Sibling, also called Previous Sibling
+    pub fn get_left_sibling_mut(&mut self, Index: &usize) -> Option<&mut ArenaNode<T>>{
         let index = self.get_parent(Index)?.child_before(Index)?;
         self.nodes.get_mut(&index)
     }
@@ -236,11 +229,8 @@ impl<T> ArenaTree<T>{
         let index = self.get_parent(Index)?.child_after(Index)?;
         self.nodes.get(&index)
     }
-    /// Get a mutable reference to a Node's Right Sibling
-    /// 
-    /// ## WARNING
-    /// Do not modify any field apart from Value
-    fn get_right_sibling_mut(&mut self, Index: &usize) -> Option<&mut ArenaNode<T>>{
+    /// Get a 'mutable' reference to a Node's Right Sibling, also called Next Sibling
+    pub fn get_right_sibling_mut(&mut self, Index: &usize) -> Option<&mut ArenaNode<T>>{
         let index = self.get_parent(Index)?.child_after(Index)?;
         self.nodes.get_mut(&index)
     }
@@ -248,7 +238,7 @@ impl<T> ArenaTree<T>{
 
     /// Get a Handle from a Token for in-place manipulation
     /// 
-    /// Typically used to manipulate only the nodes that the program is keeping track of
+    /// Typically used for in-place manipulation only of the Node that the program keeps track of, similar to `Entry` API in `HashMap` and `BTreeMap`
     pub fn get_handle_from_token(&mut self, Token: &mut ArenaToken) -> Option<ArenaHandle<'_, T>>{
         // Early return if token is laready marked as invalid
         if !Token.valid{
@@ -263,9 +253,19 @@ impl<T> ArenaTree<T>{
             _ => {Token.valid = false; None},
         }
     }
-    /// Get a Handle for a current Node
+    /// Get a Handle for a Node
     /// 
-    /// Typically used for in-place manipulation of the node, similar to `Entry` API in `HashMap` and `BTreeMap`
+    /// Typically used for in-place manipulation of the Node, 
+    /// similar to `Entry` API in `HashMap` and `BTreeMap`
+    /// 
+    /// Retunrs `None` if the Node doesn't exist
+    /// 
+    /// ## WARNING:  
+    /// It is generally discouraged to get Handles through Node IDs, as it can result in Handles
+    ///  referencing unintended Nodes
+    /// 
+    /// Instead, use `get_handle_from_token` to get a Handle from a Token, making sure 
+    /// You get a handle to the Node you want
     pub fn get_handle(&mut self, Index: &usize) -> Option<ArenaHandle<'_, T>>{
         if self.nodes.contains_key(Index){
             Some(ArenaHandle::new(self, *Index))
@@ -273,9 +273,11 @@ impl<T> ArenaTree<T>{
             None
         }
     }
-    /// Get a Token 'referencing' a current Node
+    /// Get a Token 'referencing' a Node
     /// 
-    /// Typically used to get a Handle to the referenced Node through `get_handle_from_token`
+    /// Typically used to keep track of a Node between Arena Tree manipulations
+    /// 
+    /// Get a Handle to the referenced Node through `get_handle_from_token`
     pub fn get_token(&self, Index: &usize) -> Option<ArenaToken>{
         if let Some(node) = self.nodes.get(Index){
             Some(ArenaToken::new_from_node(node))
@@ -331,7 +333,7 @@ impl<T> ArenaTree<T>{
                 if let Some(new_parent) = self.nodes.get_mut(&NewParent){
                     self.root.remove_child(&index);
                     node.parent = Some(NewParent);
-                    new_parent.push_child(index);
+                    new_parent.insert_child(index, Position);
                 }
             }
 
@@ -340,7 +342,7 @@ impl<T> ArenaTree<T>{
     }
     /// Change a Node's Parent
     /// 
-    /// Typically used to move a Subtree into a different Tree for organization purposes
+    /// Typically used to move a Subtree into a different Subtree for organization purposes
     pub fn change_parent(&mut self, Index: &usize, NewParent: usize){
         if let Some((index, mut node)) = self.nodes.remove_entry(Index){
             
@@ -513,6 +515,7 @@ impl<'a, T> ArenaHandle<'a, T>{
             self.tree_ref.get_node_mut(&self.node).unwrap().change_child_order(Child, NewPosition);
         }
     }
+
     /// Remove the current Node
     pub fn remove_self(self){
         self.tree_ref.remove(&self.node);
@@ -525,6 +528,7 @@ impl<'a, T> ArenaHandle<'a, T>{
     pub fn dissolve_self(self){
         self.tree_ref.dissolve(&self.node);
     }
+
     /// Change order of current Node within it's Parent
     pub fn reorder_self(&mut self, NewPosition: usize){
         self.tree_ref.change_order_position(&self.node, NewPosition);
@@ -546,6 +550,8 @@ impl<'a, T> ArenaHandle<'a, T>{
         self.tree_ref.get_node(&self.node).unwrap().hash
     }
     /// Get current Node's Parent index
+    /// 
+    /// Returns None if the Node is a Root Node
     pub fn parent(&self) -> &Option<usize>{
         &self.tree_ref.get_node(&self.node).unwrap().parent
     }
@@ -584,9 +590,28 @@ impl ArenaToken{
             valid: true,
         }
     }
+
+    // Getters
+    /// Read tracked Node's ID
+    pub fn node_id(&self) -> usize {
+        self.node
+    }
+    /// Read tracked node's Hash
+    pub fn hash(&self) -> u32 {
+        self.hash
+    }
+    /// Check if the Token is valid
+    pub fn valid(&self) -> bool {
+        self.valid
+    }
 }
 
-
+/// # An Arena Tree Node
+/// 
+/// A single Node within the tree, holds data of type `T`, it's own Hash, ID,
+/// and relations with other Nodes
+/// 
+/// To get the data it holds use a Dereference
 pub struct ArenaNode<T>{
     pub val: T,
     pub id: usize,
@@ -594,6 +619,20 @@ pub struct ArenaNode<T>{
     pub parent: Option<usize>,
     pub children: Vec<usize>
 }
+
+impl<T> std::ops::Deref for ArenaNode<T> {
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target {
+        &self.val
+    }
+}
+impl<T> std::ops::DerefMut for ArenaNode<T>{
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.val
+    }
+}
+
 impl<T> ArenaNode<T>{
     fn new(Val: T, Id: usize, Parent: Option<usize>) -> Self{
         Self{
@@ -604,6 +643,7 @@ impl<T> ArenaNode<T>{
             children: Vec::new(),
         }
     }
+
     /// Append a Child Node at the end of the Node
     fn push_child(&mut self, Child: usize){
         self.children.push(Child);
@@ -672,6 +712,27 @@ impl<T> ArenaNode<T>{
     /// Get the index of the last Child of the Node
     fn last_child(&self) -> Option<usize>{
         self.children.last().cloned()
+    }
+
+    // Getters
+    // Mainly for fields other than `val`
+    /// Read Node's ID
+    pub fn id(&self) -> usize {
+        self.id
+    }
+    /// Read Node's Hash
+    pub fn hash(&self) -> u32 {
+        self.hash
+    }
+    /// Read Node's Parent ID
+    /// 
+    /// Returns None if the Node is a Root Node
+    pub fn parent(&self) -> Option<usize> {
+        self.parent
+    }
+    /// Read Node's Children IDs
+    pub fn children(&self) -> &[usize] {
+        &self.children
     }
 }
 
