@@ -384,6 +384,18 @@ impl<T> ArenaTree<T>{
     pub fn depth_first_traverse(&self) -> DepthFirstTraverse<'_, T>{
         DepthFirstTraverse::new(self, &self.root.children)
     }
+    /// # EXPERIMENTAL
+    /// 
+    /// Traverse the Tree using Iterator with Depth-First Traversal, starting from the Tree's Root
+    /// 
+    /// Visits the nodes in 2 steps:
+    /// 1. `Entering`, when going down a level or to a Sibling Node
+    /// 2. `Leaving`, after processing Children, triggers even if the Node has no Children
+    /// 
+    /// Returns `TraverseState` enum with Node Ref on every iteration
+    pub fn depth_first_traverse_enterleave(&self) -> DepthFirstTraverseEnterLeave<'_, T>{
+        DepthFirstTraverseEnterLeave::new(self, self.root.children())
+    }
     /// Traverse the Tree using Iterator with Depth-First Traversal, starting from a specific Node
     /// 
     /// Returns `(TraverseLevel, &ArenaNode)` tuple on every iteration
@@ -750,13 +762,7 @@ impl<'a, T> DepthFirstTraverse<'a, T>{
     fn new(TreeRef: &'a ArenaTree<T>, StartNodes: &[usize]) -> Self{
         Self{
             tree_ref: TreeRef,
-            stack: {
-                let mut idkfa = Vec::new();
-                for index in StartNodes.iter(){
-                    idkfa.push((*index, false));
-                }
-                idkfa
-            },
+            stack: StartNodes.iter().map(|x| (*x, false)).collect(),
             depth: 0
         }
     }
@@ -792,6 +798,49 @@ impl<'a, T> Iterator for DepthFirstTraverse<'a, T>{
         
         Some((self.depth, node))
     }
+}
+
+pub struct DepthFirstTraverseEnterLeave<'a, T>{
+    tree_ref: &'a ArenaTree<T>,
+    stack: Vec<(usize, bool)>
+}
+impl<'a, T> DepthFirstTraverseEnterLeave<'a, T> {
+    pub fn new(TreeRef: &'a ArenaTree<T>, Nodes: &[usize]) -> Self {
+        Self {
+            tree_ref: TreeRef,
+            stack: Nodes.iter().map(|x| (*x, false)).collect()
+        }
+    }
+}
+impl<'a, T> Iterator for DepthFirstTraverseEnterLeave<'a, T> {
+    type Item = TraverseState<'a, T>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        // If the stack is empty it autoreturns None
+        let mut frame = self.stack.pop()?;
+
+        let node = self.tree_ref.get_node(&frame.0).unwrap();
+
+        // If we got to a visited node, we went up a level
+        if frame.1{
+            return Some(TraverseState::Leaving(node))
+        }
+
+        // Put the frame back into the stack as visited
+        frame.1 = true;
+        self.stack.push(frame);
+
+        // Reverse to put first child at the top of the stack
+        for index in node.children.iter().rev(){
+            self.stack.push((*index, false));
+        }
+        
+        Some(TraverseState::Entering(node))
+    }
+}
+pub enum TraverseState<'a, T>{
+    Entering(&'a ArenaNode<T>),
+    Leaving(&'a ArenaNode<T>)
 }
 
 /// # Breadth-first Traversal
@@ -906,7 +955,7 @@ impl<'a, T> Iterator for RevBreadthFirstTraverse<'a, T>{
 /// For manipulation of the Nodes, use `into_handle` to get a Handle
 pub struct ArenaCursor<'a, T>{
     tree_ref: &'a mut ArenaTree<T>,
-    node: Option<usize>,
+    node: Option<usize>, // Option because the Root is a None
 }
 impl<'a, T> ArenaCursor<'a, T>{
     fn new(TreeRef: &'a mut ArenaTree<T>) -> Self{
