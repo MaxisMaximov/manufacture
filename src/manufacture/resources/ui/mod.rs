@@ -1,7 +1,6 @@
 use super::*;
-
-mod specials;
-pub use specials::Special;
+// Re-exports for convenience sake
+pub use arena_tree::{ArenaTree, Handle, Node, Token};
 
 pub struct UINode{
     pub tag: Tag,
@@ -9,12 +8,11 @@ pub struct UINode{
 }
 
 pub struct Calculated{
-    pub position: (usize, usize),
-    pub box_bounding: (usize, usize)
+    pub pos: Option<Vector2>,
+    pub size: Option<(usize, usize)>
 }
 
 pub enum Tag{
     None,
-    Text(String),
-    Special(Box<dyn specials::Special>)
+    Text(String)
 }
