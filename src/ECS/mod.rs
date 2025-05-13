@@ -15,7 +15,7 @@ pub mod world;
 pub mod resource;
 pub mod builders;
 pub mod dispatcher;
-pub mod misc;
+pub mod entity;
 pub mod events;
 pub mod commands;
 pub mod prefab;

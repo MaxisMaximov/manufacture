@@ -9,6 +9,7 @@ use comp::*;
 use builders::gmObjBuilder;
 use storage::*;
 use fetch::*;
+use entity::*;
 
 pub struct gmWorld{
     gmObjs: gmObjStorage,
@@ -136,7 +137,7 @@ impl gmWorld{
 }
 
 pub struct gmObjStorage{
-    pub gmObjMap: HashMap<gmID, gmObj>,
+    pub gmObjMap: HashMap<gmID, Entity>,
     pub nextFree: BTreeMap<gmID, ()>,
 }
 impl gmObjStorage{
@@ -148,9 +149,7 @@ impl gmObjStorage{
     }
 
     pub fn insert(&mut self, IN_id: gmID){
-        self.gmObjMap.entry(IN_id)
-            .and_modify(|ENTRY| **ENTRY = Some(()))
-            .or_insert(gmObj::new(IN_id, Some(())));
+        self.gmObjMap.insert(IN_id, Entity::new(IN_id));
     }
 
     pub fn insertNextFree(&mut self) -> gmID{
@@ -162,8 +161,7 @@ impl gmObjStorage{
     }
 
     pub fn remove(&mut self, IN_id: gmID) -> Result<(), ()>{
-        if let Some(ENTRY) = self.gmObjMap.get_mut(&IN_id){
-            ENTRY.unset();
+        if self.gmObjMap.remove(&IN_id).is_some(){
             self.nextFree.insert(IN_id, ());
             return Ok(());
         }

@@ -10,7 +10,7 @@ pub use super::{
     resource::*,
     builders::*,
     dispatcher::*,
-    misc::*,
+    entity::*,
     events::*,
     fetch::*,
     prefab::*,
