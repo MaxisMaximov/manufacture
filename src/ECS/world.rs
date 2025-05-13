@@ -1,4 +1,4 @@
-use std::cell::{Ref, RefMut};
+use std::{cell::{Ref, RefMut}, collections::BTreeSet};
 
 use super::*;
 
@@ -12,7 +12,8 @@ use fetch::*;
 use entity::*;
 
 pub struct gmWorld{
-    gmObjs: gmObjStorage,
+    gmObjs: BTreeMap<usize, Entity>,
+    next_free: BTreeSet<usize>,
     components: gmWorld_COMPMAP,
     resources: gmWorld_RESMAP,
     events: gmWorld_EVENTMAP,
@@ -22,7 +23,8 @@ impl gmWorld{
 
     pub fn new() -> Self{
         Self{
-            gmObjs: gmObjStorage::new(),
+            gmObjs: BTreeMap::new(),
+            next_free: BTreeSet::new(),
             components: gmWorld_COMPMAP::new(),
             resources: gmWorld_RESMAP::new(),
             events: gmWorld_EVENTMAP::new(),
@@ -98,19 +100,23 @@ impl gmWorld{
 
     pub fn createGmObj(&mut self) -> gmObjBuilder{
         gmObjBuilder::new(
-             self.gmObjs.insertNextFree(),
+             {
+                let next_id = self.next_free.pop_first().unwrap_or(self.gmObjs.len());
+                self.gmObjs.insert(next_id, Entity::new(next_id));
+                next_id
+            },
             self,
         )
     }
     pub fn deleteGmObj(&mut self, IN_id: usize) -> Result<(), ()>{
-        match self.gmObjs.remove(IN_id){
-            Ok(_) => {
+        match self.gmObjs.remove(&IN_id){
+            Some(_) => {
                 for COMP in self.components.values_mut(){
                     COMP.as_ref().borrow_mut().drop(&IN_id);
                 }
                 return Ok(())
             }
-            Err(_) => {Err(())}
+            None => {Err(())}
         }
     }
     
@@ -133,38 +139,5 @@ impl gmWorld{
     pub fn endTick(&mut self){
         self.commandsExec();
         self.events.switchNClear();
-    }
-}
-
-pub struct gmObjStorage{
-    pub gmObjMap: HashMap<usize, Entity>,
-    pub nextFree: BTreeMap<usize, ()>,
-}
-impl gmObjStorage{
-    pub fn new() -> Self{
-        Self{
-            gmObjMap: HashMap::new(),
-            nextFree: BTreeMap::new()
-        }
-    }
-
-    pub fn insert(&mut self, IN_id: usize){
-        self.gmObjMap.insert(IN_id, Entity::new(IN_id));
-    }
-
-    pub fn insertNextFree(&mut self) -> usize{
-        let w_nextIndex: usize = self.nextFree.pop_first().unwrap_or((self.gmObjMap.len() as usize, ())).0;
-
-        self.insert(w_nextIndex);
-
-        return w_nextIndex
-    }
-
-    pub fn remove(&mut self, IN_id: usize) -> Result<(), ()>{
-        if self.gmObjMap.remove(&IN_id).is_some(){
-            self.nextFree.insert(IN_id, ());
-            return Ok(());
-        }
-        Err(())
     }
 }
