@@ -7,11 +7,11 @@ use world::*;
 
 #[must_use]
 pub struct gmObjBuilder<'a>{
-    gmObjID: gmID,
+    gmObjID: usize,
     worldRef: &'a mut gmWorld
 }
 impl<'a> gmObjBuilder<'a>{
-    pub fn new(IN_id: gmID, IN_world: &'a mut gmWorld) -> Self{
+    pub fn new(IN_id: usize, IN_world: &'a mut gmWorld) -> Self{
         Self{
             gmObjID: IN_id,
             worldRef: IN_world,

@@ -76,7 +76,7 @@ impl gmComp for CompTileTerrainChunk{
 }
 
 pub struct CompViewportCamera{
-    pub tracked_entity: gmID,
+    pub tracked_entity: usize,
     pub offset: Vector2,
     pub active: bool
 }

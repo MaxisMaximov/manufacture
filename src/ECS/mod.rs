@@ -59,7 +59,7 @@ pub mod tests{
     }
 
     pub struct gmComp_Health{
-        pub val: gmID
+        pub val: usize
     }
     impl gmComp for gmComp_Health{
         type COMP_STORAGE = denseVecStorage<Self>;

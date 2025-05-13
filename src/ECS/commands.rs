@@ -4,7 +4,6 @@ use super::*;
 use comp::gmComp;
 use prefab::gmPrefab;
 use storage::gmStorage;
-use vars::gmID;
 use world::gmWorld;
 
 pub trait gmCommand: Any{
@@ -24,7 +23,7 @@ impl gmCommand for cmd_SpawnGmObj{
 }
 
 pub struct cmd_DespawnGmObj{
-    pub id: gmID
+    pub id: usize
 }
 impl gmCommand for cmd_DespawnGmObj{
     fn CMD_ID(&self) -> &'static str {
@@ -37,7 +36,7 @@ impl gmCommand for cmd_DespawnGmObj{
 }
 
 pub struct cmd_addComp<T: gmComp>{
-    pub gmObj: gmID,
+    pub gmObj: usize,
     pub comp: T
 }
 impl<T: gmComp + Clone> gmCommand for cmd_addComp<T>{
@@ -51,7 +50,7 @@ impl<T: gmComp + Clone> gmCommand for cmd_addComp<T>{
 }
 
 pub struct cmd_removeComp<T: gmComp>{
-    pub gmObj: gmID,
+    pub gmObj: usize,
     pub _phantom: PhantomData<T>
 }
 impl<T: gmComp> gmCommand for cmd_removeComp<T>{

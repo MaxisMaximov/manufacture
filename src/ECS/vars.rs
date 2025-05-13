@@ -10,8 +10,6 @@ use storage::gmStorageDrop;
 pub type gmWorld_COMPMAP = HashMap<&'static str, Rc<RefCell<dyn gmStorageDrop>>>;
 pub type gmWorld_RESMAP = HashMap<&'static str, Rc<RefCell<dyn Any>>>;
 pub type gmWorld_CMDQUEUE = Vec<Box<dyn gmCommand>>;
-pub type gmID = u16;
-pub type gmGen = u16; // There is no way you can even remotely get to 32kth generation -- Consider it a gift
 
 pub struct gmWorld_EVENTMAP{
     activeBuffer: bool,

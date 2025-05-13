@@ -5,15 +5,15 @@ use vars::*;
 
 pub trait gmStorage<T: gmComp>: Any{
     fn new() -> Self;
-    fn get(&self, IN_id: &gmID) -> Option<&T>;
-    fn get_mut(&mut self, IN_id: &gmID) -> Option<&mut T>;
-    fn insert(&mut self, IN_id: gmID, IN_item: T);
-    fn remove(&mut self, IN_id: &gmID) -> Option<T>;
+    fn get(&self, IN_id: &usize) -> Option<&T>;
+    fn get_mut(&mut self, IN_id: &usize) -> Option<&mut T>;
+    fn insert(&mut self, IN_id: usize, IN_item: T);
+    fn remove(&mut self, IN_id: &usize) -> Option<T>;
     fn iter(&self) -> impl Iterator;
     fn iter_mut(&mut self) -> impl Iterator;
 }
 pub trait gmStorageDrop: Any{
-    fn drop(&mut self, IN_id: &gmID);
+    fn drop(&mut self, IN_id: &usize);
 }
 
 impl dyn gmStorageDrop{
@@ -30,14 +30,14 @@ pub struct gmStorageContainer<T:gmComp>{
     pub inner: T::COMP_STORAGE
 }
 impl<T: gmComp + 'static> gmStorageDrop for gmStorageContainer<T>{
-    fn drop(&mut self, IN_id: &gmID) {
+    fn drop(&mut self, IN_id: &usize) {
         self.inner.remove(IN_id);
     }
 }
 
 
 pub struct denseVecStorage<T>{
-    pub proxyMap: HashMap<gmID, usize>,
+    pub proxyMap: HashMap<usize, usize>,
     pub inner: Vec<denseVecEntry<T>>
 }
 impl<T: gmComp + 'static> gmStorage<T> for denseVecStorage<T>{
@@ -49,7 +49,7 @@ impl<T: gmComp + 'static> gmStorage<T> for denseVecStorage<T>{
         }
     }
 
-    fn get(&self, IN_id: &gmID) -> Option<&T> {
+    fn get(&self, IN_id: &usize) -> Option<&T> {
         match self.proxyMap.get(&IN_id){
             Some(ID) => {
                 Some(&self.inner.get(*ID).unwrap().val)
@@ -58,7 +58,7 @@ impl<T: gmComp + 'static> gmStorage<T> for denseVecStorage<T>{
         }
     }
 
-    fn get_mut(&mut self, IN_id: &gmID) -> Option<&mut T> {
+    fn get_mut(&mut self, IN_id: &usize) -> Option<&mut T> {
         match self.proxyMap.get(&IN_id){
             Some(ID) => {
                 Some(&mut self.inner.get_mut(*ID).unwrap().val)
@@ -67,7 +67,7 @@ impl<T: gmComp + 'static> gmStorage<T> for denseVecStorage<T>{
         }
     }
 
-    fn insert(&mut self, IN_id: gmID, IN_item: T) {
+    fn insert(&mut self, IN_id: usize, IN_item: T) {
         if self.proxyMap.contains_key(&IN_id){return}
 
         self.proxyMap.insert(IN_id, self.inner.len()); // Vec length is always the next free index
@@ -79,7 +79,7 @@ impl<T: gmComp + 'static> gmStorage<T> for denseVecStorage<T>{
         );
     }
 
-    fn remove(&mut self, IN_id: &gmID) -> Option<T> {
+    fn remove(&mut self, IN_id: &usize) -> Option<T> {
         
         if let Some(INDEX) = self.proxyMap.remove(&IN_id){
 
@@ -104,6 +104,6 @@ impl<T: gmComp + 'static> gmStorage<T> for denseVecStorage<T>{
     }
 }
 pub struct denseVecEntry<T>{
-    pub id: gmID,
+    pub id: usize,
     pub val: T
 }

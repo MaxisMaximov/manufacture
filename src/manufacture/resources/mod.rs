@@ -67,7 +67,7 @@ impl DerefMut for res_DeltaT{
 }
 
 pub struct res_PID{
-    res: HashMap<gmID, gmID> // PID, gmObjID
+    res: HashMap<usize, usize> // PID, gmObjID
 }
 impl gmRes for res_PID{
     fn new() -> Self {
@@ -81,7 +81,7 @@ impl gmRes for res_PID{
     }
 }
 impl Deref for res_PID{
-    type Target = HashMap<gmID, gmID>;
+    type Target = HashMap<usize, usize>;
 
     fn deref(&self) -> &Self::Target {
         &self.res
@@ -121,7 +121,7 @@ impl DerefMut for res_UIData{
 }
 
 pub struct res_LoadedChunks{
-    res: HashMap<Vector2, gmID>
+    res: HashMap<Vector2, usize>
 }
 impl gmRes for res_LoadedChunks{
     fn new() -> Self {
@@ -135,7 +135,7 @@ impl gmRes for res_LoadedChunks{
     }
 }
 impl Deref for res_LoadedChunks{
-    type Target = HashMap<Vector2, gmID>;
+    type Target = HashMap<Vector2, usize>;
 
     fn deref(&self) -> &Self::Target {
         &self.res

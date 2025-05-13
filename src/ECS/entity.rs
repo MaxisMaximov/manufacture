@@ -1,11 +1,9 @@
-use super::vars::gmID;
-
 pub struct Entity{
-    id: gmID,
+    id: usize,
     hash: u32    
 }
 impl Entity{
-    pub fn new(Id: gmID) -> Self{
+    pub fn new(Id: usize) -> Self{
         Self{
             id: Id,
             hash: rand::random(),
@@ -14,7 +12,7 @@ impl Entity{
 }
 
 pub struct Token{
-    id: gmID,
+    id: usize,
     hash: u32,
     valid: bool
 }

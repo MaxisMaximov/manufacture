@@ -226,7 +226,7 @@ impl<'a> gmSystem<'a> for SysPchunkUnLoad{
         self.old_chunk = w_PChunk;
 
         // Set Discarded Vec
-        let mut w_discardedChunks: Vec<(Vector2, gmID)> = Vec::new();
+        let mut w_discardedChunks: Vec<(Vector2, usize)> = Vec::new();
 
         for (CHUNK, GMID) in IN_data.res_loaded_chunks.iter_mut(){
 

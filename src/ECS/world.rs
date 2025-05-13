@@ -102,7 +102,7 @@ impl gmWorld{
             self,
         )
     }
-    pub fn deleteGmObj(&mut self, IN_id: gmID) -> Result<(), ()>{
+    pub fn deleteGmObj(&mut self, IN_id: usize) -> Result<(), ()>{
         match self.gmObjs.remove(IN_id){
             Ok(_) => {
                 for COMP in self.components.values_mut(){
@@ -137,8 +137,8 @@ impl gmWorld{
 }
 
 pub struct gmObjStorage{
-    pub gmObjMap: HashMap<gmID, Entity>,
-    pub nextFree: BTreeMap<gmID, ()>,
+    pub gmObjMap: HashMap<usize, Entity>,
+    pub nextFree: BTreeMap<usize, ()>,
 }
 impl gmObjStorage{
     pub fn new() -> Self{
@@ -148,19 +148,19 @@ impl gmObjStorage{
         }
     }
 
-    pub fn insert(&mut self, IN_id: gmID){
+    pub fn insert(&mut self, IN_id: usize){
         self.gmObjMap.insert(IN_id, Entity::new(IN_id));
     }
 
-    pub fn insertNextFree(&mut self) -> gmID{
-        let w_nextIndex: gmID = self.nextFree.pop_first().unwrap_or((self.gmObjMap.len() as gmID, ())).0;
+    pub fn insertNextFree(&mut self) -> usize{
+        let w_nextIndex: usize = self.nextFree.pop_first().unwrap_or((self.gmObjMap.len() as usize, ())).0;
 
         self.insert(w_nextIndex);
 
         return w_nextIndex
     }
 
-    pub fn remove(&mut self, IN_id: gmID) -> Result<(), ()>{
+    pub fn remove(&mut self, IN_id: usize) -> Result<(), ()>{
         if self.gmObjMap.remove(&IN_id).is_some(){
             self.nextFree.insert(IN_id, ());
             return Ok(());
