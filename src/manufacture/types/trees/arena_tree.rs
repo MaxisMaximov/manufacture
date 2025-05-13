@@ -1,4 +1,4 @@
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::{BTreeMap, BTreeSet, VecDeque};
 
 /// Arena-allocated tree
 /// 
@@ -12,24 +12,24 @@ use std::collections::{BTreeMap, BTreeSet};
 /// 
 /// Cursor allows for controlled traversal of the tree
 pub struct ArenaTree<T>{
-    nodes: BTreeMap<usize, ArenaNode<T>>,
+    nodes: BTreeMap<usize, Node<T>>,
     // A Hack to not paste a super long chunk of code each time
     // And technically the root _is_ a node, you just can't access it
-    root: ArenaNode<()>,
+    root: Node<()>,
     next_free: BTreeSet<usize>
 }
 impl<T> ArenaTree<T>{
-    /// Creates a new empty, tree
+    /// Creates a new, empty tree
     pub fn new() -> Self{
         Self{
             nodes: BTreeMap::new(),
-            root: ArenaNode::new((), 0, None),
+            root: Node::new((), 0, None),
             next_free: BTreeSet::new(),
         }
     }
 
 
-    fn free_index(&mut self, Index: &usize) -> Option<ArenaNode<T>>{
+    fn free_index(&mut self, Index: &usize) -> Option<Node<T>>{
         match self.nodes.remove(Index){
             Some(node) => {
                 self.next_free.insert(*Index);
@@ -38,10 +38,11 @@ impl<T> ArenaTree<T>{
             None => None,
         }
     }
-    fn free_index_unchecked(&mut self, Index: &usize) -> ArenaNode<T>{
+    fn free_index_unchecked(&mut self, Index: &usize) -> Node<T>{
         self.next_free.insert(*Index);
         self.nodes.remove(Index).unwrap()
     }
+
 
     /// Insert a Node into the tree and assign it to a parent
     /// 
@@ -52,7 +53,7 @@ impl<T> ArenaTree<T>{
     /// 
     /// Returns a Handle to the node for immediate in-place 
     /// manipulation, like with `.with` method
-    pub fn insert(&mut self, Val: T, Parent: Option<usize>) -> ArenaHandle<'_, T>{
+    pub fn insert(&mut self, Val: T, Parent: Option<usize>) -> Handle<'_, T>{
         // Find next available index
         // Length of the Node Map is always the next available index if the `next_free` is empty
         let next_index = self.next_free.pop_first().unwrap_or(self.nodes.len());
@@ -71,10 +72,10 @@ impl<T> ArenaTree<T>{
 
         self.nodes.insert(
             next_index,
-            ArenaNode::new(Val, next_index, final_parent)
+            Node::new(Val, next_index, final_parent)
         );
 
-        ArenaHandle::new(self, next_index)
+        Handle::new(self, next_index)
     }
     /// Insert a Node into the tree as *n*-th child of an existing Node
     /// 
@@ -85,7 +86,7 @@ impl<T> ArenaTree<T>{
     /// 
     /// Returns a Handle to the node for immediate in-place 
     /// manipulation, like with `.with` method
-    pub fn insert_nth(&mut self, Val: T, Parent: Option<usize>, Position: usize) -> ArenaHandle<'_, T>{
+    pub fn insert_nth(&mut self, Val: T, Parent: Option<usize>, Position: usize) -> Handle<'_, T>{
         let next_index = self.next_free.pop_first().unwrap_or(self.nodes.len());
 
         let mut final_parent = None;
@@ -100,13 +101,15 @@ impl<T> ArenaTree<T>{
 
         self.nodes.insert(
             next_index,
-            ArenaNode::new(Val, next_index, final_parent)
+            Node::new(Val, next_index, final_parent)
         );
 
-        ArenaHandle::new(self, next_index)
+        Handle::new(self, next_index)
     }
+
+
     /// Removes the Node and all of the node's Subnodes
-    pub fn remove(&mut self, Index: &usize) -> Option<ArenaNode<T>>{
+    pub fn remove(&mut self, Index: &usize) -> Option<Node<T>>{
         if let Some(node) = self.free_index(Index){
 
             // Update parent if exists
@@ -134,7 +137,7 @@ impl<T> ArenaTree<T>{
         }else{None}
     }
     /// Removes the Node and makes all the Node's Subnodes new Root Nodes
-    pub fn soft_remove(&mut self, Index: &usize) -> Option<ArenaNode<T>>{
+    pub fn soft_remove(&mut self, Index: &usize) -> Option<Node<T>>{
         if let Some(node) = self.free_index(Index){
 
             // Update parent
@@ -153,7 +156,7 @@ impl<T> ArenaTree<T>{
         }else{None}
     }
     /// Removes the Node and reassigns all of the Node's Subnodes to the Node's parent
-    pub fn dissolve(&mut self, Index: &usize) -> Option<ArenaNode<T>>{
+    pub fn dissolve(&mut self, Index: &usize) -> Option<Node<T>>{
         if let Some(node) = self.free_index(Index){
 
             // Update parent with new subnodes if exists
@@ -177,73 +180,66 @@ impl<T> ArenaTree<T>{
             Some(node)
         }else{None}
     }
-    /// Get a reference to the value stored in a Node
+
+
+    /// Get a reference to the data stored in a Node
     pub fn get(&self, Index: &usize) -> Option<&T>{
         Some(&self.nodes.get(Index)?.val)
     }
-    /// Get a mutable reference to the value stored in a Node
+    /// Get a mutable reference to the data stored in a Node
     pub fn get_mut(&mut self, Index: &usize) -> Option<&mut T>{
         Some(&mut self.nodes.get_mut(Index)?.val)
     }
     /// Get a reference to a Node
     /// 
-    /// This is typically used to get just the node's data without needing a Handle
-    fn get_node(&self, Index: &usize) -> Option<&ArenaNode<T>>{
+    /// This is typically used to get just the Node and read it's data without needing a Handle
+    pub fn get_node(&self, Index: &usize) -> Option<&Node<T>>{
         self.nodes.get(Index)
     }
-    /// Get a mutable reference to a Node
+    /// Get a 'mutable' reference to a Node
     /// 
-    /// ## WARNING
-    /// Do not modify any field apart from Value
-    fn get_node_mut(&mut self, Index: &usize) -> Option<&mut ArenaNode<T>>{
+    /// This is typically used to get just the Node and modify it's Data without needing a Handle
+    pub fn get_node_mut(&mut self, Index: &usize) -> Option<&mut Node<T>>{
         self.nodes.get_mut(Index)
     }
 
     /// Get a reference to the Node's parent
-    pub fn get_parent(&self, Index: &usize) -> Option<&ArenaNode<T>>{
+    pub fn get_parent(&self, Index: &usize) -> Option<&Node<T>>{
         let parent_index = self.nodes.get(Index)?.parent?;
         self.nodes.get(&parent_index)
     }
-    /// Get a mutable reference to a Node's parent
-    /// 
-    /// ## WARNING
-    /// Do not modify any field apart from Value
-    fn get_parent_mut(&mut self, Index: &usize) -> Option<&mut ArenaNode<T>>{
+    /// Get a 'mutable' reference to a Node's parent
+    pub fn get_parent_mut(&mut self, Index: &usize) -> Option<&mut Node<T>>{
         let parent_index = self.nodes.get(Index)?.parent?;
         self.nodes.get_mut(&parent_index)
     }
 
     /// Get a reference to the Node's Left Sibling, also called Previous Sibling
-    pub fn get_left_sibling(&self, Index: &usize) -> Option<&ArenaNode<T>>{
+    pub fn get_left_sibling(&self, Index: &usize) -> Option<&Node<T>>{
         let index = self.get_parent(Index)?.child_before(Index)?;
         self.nodes.get(&index)
     }
-    /// Get a mutable reference to a Node's Left Sibling
-    /// 
-    /// ## WARNING
-    /// Do not modify any field apart from Value
-    fn get_left_sibling_mut(&mut self, Index: &usize) -> Option<&mut ArenaNode<T>>{
+    /// Get a 'mutable' reference to a Node's Left Sibling, also called Previous Sibling
+    pub fn get_left_sibling_mut(&mut self, Index: &usize) -> Option<&mut Node<T>>{
         let index = self.get_parent(Index)?.child_before(Index)?;
         self.nodes.get_mut(&index)
     }
     /// Get a reference to the Node's LefRight Sibling, also called Next Sibling
-    pub fn get_right_sibling(&self, Index: &usize) -> Option<&ArenaNode<T>>{
+    pub fn get_right_sibling(&self, Index: &usize) -> Option<&Node<T>>{
         let index = self.get_parent(Index)?.child_after(Index)?;
         self.nodes.get(&index)
     }
-    /// Get a mutable reference to a Node's Right Sibling
-    /// 
-    /// ## WARNING
-    /// Do not modify any field apart from Value
-    fn get_right_sibling_mut(&mut self, Index: &usize) -> Option<&mut ArenaNode<T>>{
+    /// Get a 'mutable' reference to a Node's Right Sibling, also called Next Sibling
+    pub fn get_right_sibling_mut(&mut self, Index: &usize) -> Option<&mut Node<T>>{
         let index = self.get_parent(Index)?.child_after(Index)?;
         self.nodes.get_mut(&index)
     }
 
+
     /// Get a Handle from a Token for in-place manipulation
     /// 
-    /// Typically used to manipulate only the nodes that the program is keeping track of
-    pub fn get_handle_from_token(&mut self, Token: &mut ArenaToken) -> Option<ArenaHandle<'_, T>>{
+    /// Typically used for in-place manipulation only of the Node that the program keeps track of, similar to `Entry` API in `HashMap` and `BTreeMap`
+    pub fn get_handle_from_token(&mut self, Token: &mut Token) -> Option<Handle<'_, T>>{
         // Early return if token is laready marked as invalid
         if !Token.valid{
             return None
@@ -251,32 +247,46 @@ impl<T> ArenaTree<T>{
         match self.nodes.get(&Token.node) {
             // If Hashes ain't same it's an invalid Token
             Some(node) if node.hash == Token.hash => {
-                Some(ArenaHandle::new(self, Token.node))
+                Some(Handle::new(self, Token.node))
             }
             // Either the node doesn't exist or the Hashes ain't same
             _ => {Token.valid = false; None},
         }
     }
-    /// Get a Handle for a current Node
+    /// Get a Handle for a Node
     /// 
-    /// Typically used for in-place manipulation of the node, similar to `Entry` API in `HashMap` and `BTreeMap`
-    pub fn get_handle(&mut self, Index: &usize) -> Option<ArenaHandle<'_, T>>{
+    /// Typically used for in-place manipulation of the Node, 
+    /// similar to `Entry` API in `HashMap` and `BTreeMap`
+    /// 
+    /// Retunrs `None` if the Node doesn't exist
+    /// 
+    /// ## WARNING:  
+    /// It is generally discouraged to get Handles through Node IDs, as it can result in Handles
+    ///  referencing unintended Nodes
+    /// 
+    /// Instead, use `get_handle_from_token` to get a Handle from a Token, making sure 
+    /// You get a handle to the Node you want
+    pub fn get_handle(&mut self, Index: &usize) -> Option<Handle<'_, T>>{
         if self.nodes.contains_key(Index){
-            Some(ArenaHandle::new(self, *Index))
+            Some(Handle::new(self, *Index))
         }else{
             None
         }
     }
-    /// Get a Token 'referencing' a current Node
+    /// Get a Token 'referencing' a Node
     /// 
-    /// Typically used to get a Handle to the referenced Node through `get_handle_from_token`
-    pub fn get_token(&self, Index: &usize) -> Option<ArenaToken>{
+    /// Typically used to keep track of a Node between Arena Tree manipulations
+    /// 
+    /// Get a Handle to the referenced Node through `get_handle_from_token`
+    pub fn get_token(&self, Index: &usize) -> Option<Token>{
         if let Some(node) = self.nodes.get(Index){
-            Some(ArenaToken::new_from_node(node))
+            Some(Token::new_from_node(node))
         }else{
             None
         }
     }
+
+
     /// Detach a Node from it's parent
     /// 
     /// Typically used to sepparate Nodes into Root Subtrees for organization purposes
@@ -323,7 +333,7 @@ impl<T> ArenaTree<T>{
                 if let Some(new_parent) = self.nodes.get_mut(&NewParent){
                     self.root.remove_child(&index);
                     node.parent = Some(NewParent);
-                    new_parent.push_child(index);
+                    new_parent.insert_child(index, Position);
                 }
             }
 
@@ -332,7 +342,7 @@ impl<T> ArenaTree<T>{
     }
     /// Change a Node's Parent
     /// 
-    /// Typically used to move a Subtree into a different Tree for organization purposes
+    /// Typically used to move a Subtree into a different Subtree for organization purposes
     pub fn change_parent(&mut self, Index: &usize, NewParent: usize){
         if let Some((index, mut node)) = self.nodes.remove_entry(Index){
             
@@ -366,30 +376,91 @@ impl<T> ArenaTree<T>{
             self.nodes.insert(index, node);
         }
     }
+
+
     /// Traverse the Tree using Iterator with Depth-First Traversal, starting from the Tree's Root
-    pub fn traverse(&self) -> Traverse<'_, T>{
-        Traverse::new(self)
+    /// 
+    /// Returns `(TraverseLevel, &ArenaNode)` tuple on every iteration
+    pub fn traverse_df(&self) -> DFTraverse<'_, T>{
+        DFTraverse::new(self, &self.root.children)
+    }
+    /// # EXPERIMENTAL
+    /// 
+    /// Traverse the Tree using Iterator with Depth-First Traversal, starting from the Tree's Root
+    /// 
+    /// Visits the nodes in 2 steps:
+    /// 1. `Entering`, when going down a level or to a Sibling Node
+    /// 2. `Leaving`, after processing Children, triggers even if the Node has no Children
+    /// 
+    /// Returns `TraverseState` enum with Node Ref on every iteration
+    pub fn traverse_df_enterleave(&self) -> DFTraverseEnterLeave<'_, T>{
+        DFTraverseEnterLeave::new(self, self.root.children())
     }
     /// Traverse the Tree using Iterator with Depth-First Traversal, starting from a specific Node
     /// 
+    /// Returns `(TraverseLevel, &ArenaNode)` tuple on every iteration
+    /// 
     /// If the Node doesn't exist, the Iterator is empty and doesn't do anything
-    pub fn traverse_from(&self, StartNode: &usize) -> Traverse<'_, T>{
-        Traverse::new_from_node(self, StartNode)
+    pub fn traverse_df_from(&self, StartNode: &usize) -> DFTraverse<'_, T>{
+        if !self.nodes.contains_key(StartNode){
+            DFTraverse::new(self, &[])
+        }else{
+            DFTraverse::new(self, &[*StartNode])
+        }
     }
-    /// Traverse the Tree using a controllable Cursor
-    pub fn cursor(&mut self) -> ArenaCursor<'_, T>{
-        ArenaCursor::new(self)
+    /// Traverse the Tree using Iterator with Breadth-First Traversal, starting from the Tree's Root
+    /// 
+    /// Layers increment going downwards, with Layer 0 being the Root Layer
+    pub fn traverse_bf(&self) -> BFTraverse<'_, T>{
+        BFTraverse::new(self, &self.root.children)
     }
+    /// Traverse the Tree using Iterator with Breadth-First Traversal, starting from a specific Node
+    /// 
+    /// Layers increment going downwards, with Layer 0 being the starting Node's Layer, topmost Layer
+    /// 
+    /// If the Node doesn't exist, the Iterator is empty and doesn't do anything
+    pub fn traverse_bf_from(&self, StartNode: &usize) -> BFTraverse<'_, T>{
+        if !self.nodes.contains_key(StartNode){
+            BFTraverse::new(self, &[])
+        }else{
+            BFTraverse::new(self, &[*StartNode])
+        }
+    }
+    /// Traverse the Tree using Iterator with Reverse Breadth-First Traversal, coming upwards to the Root
+    /// 
+    /// Layers decrement going upwards, with Layer 0 being the Root Layer
+    pub fn traverse_rev_bf(&self) -> RevBFTraverse<'_, T>{
+        RevBFTraverse::new(self, &self.root.children)
+    }
+    /// Traverse the Tree using Iterator with Reverse Breadth-First Traversal, from the bottom of the tree up to a specific Node
+    /// 
+    /// Layers decrement going upwards, with Layer 0 being the start Node's Layer, topmost layer
+    /// 
+    /// If the Node doesn't exist, the Iterator is empty and doesn't do anything
+    pub fn traverse_rev_bf_to(&self, EndNode: &usize) -> RevBFTraverse<'_, T>{
+        if !self.nodes.contains_key(EndNode){
+            RevBFTraverse::new(self, &[])
+        }else{
+            RevBFTraverse::new(self, &[*EndNode])
+        }
+    }
+
     /// Traverse the Tree using a controllable Cursor
+    pub fn cursor(&mut self) -> Cursor<'_, T>{
+        Cursor::new(self)
+    }
+    /// Traverse the Tree using a controllable Cursor, starting from a specific node
     /// 
     /// If the Node doesn't exist, the Cursor defaults to the Root level
-    pub fn cursor_from(&mut self, StartNode: &usize) -> ArenaCursor<'_, T>{
-        ArenaCursor::new_from_node(self, *StartNode)
+    pub fn cursor_from(&mut self, StartNode: &usize) -> Cursor<'_, T>{
+        Cursor::new_from_node(self, *StartNode)
     }
+
+
     /// Perform operations on the Tree immediately after creating it
     /// 
     /// This method is typically used to initialize Nodes right away
-    pub fn with_map<F: FnOnce(&mut ArenaTree<T>)>(mut self, f: F) -> Self{
+    pub fn map<F: FnOnce(&mut ArenaTree<T>)>(mut self, f: F) -> Self{
         f(&mut self);
         self
     }
@@ -397,11 +468,11 @@ impl<T> ArenaTree<T>{
 
 /// # Safe Interface to the node
 /// Allows for in-place manipulation of a Node, including moving it in the Tree, adding Subnodes and operations on Self
-pub struct ArenaHandle<'a, T>{
+pub struct Handle<'a, T>{
     tree_ref: &'a mut ArenaTree<T>,
     node: usize,
 }
-impl<'a, T> ArenaHandle<'a, T>{
+impl<'a, T> Handle<'a, T>{
     fn new(TreeRef: &'a mut ArenaTree<T>, Node: usize) -> Self{
         Self{
             tree_ref: TreeRef,
@@ -409,15 +480,15 @@ impl<'a, T> ArenaHandle<'a, T>{
         }
     }
     /// Get a token for the current Node
-    pub fn get_token(&self) -> ArenaToken{
-        ArenaToken::new(self.node, self.tree_ref.get_node(&self.node).unwrap().hash)
+    pub fn get_token(&self) -> Token{
+        Token::new(self.node, self.tree_ref.get_node(&self.node).unwrap().hash)
     }
     /// Add a Subnode to the current Node
-    pub fn add_child(&mut self, Val: T) -> ArenaHandle<'_, T>{
+    pub fn add_child(&mut self, Val: T) -> Handle<'_, T>{
         self.tree_ref.insert(Val, Some(self.node))
     }
     /// Add a Subnode to the current Node at n-th position
-    pub fn add_child_nth(&mut self, Val: T, Position: usize) -> ArenaHandle<'_, T>{
+    pub fn add_child_nth(&mut self, Val: T, Position: usize) -> Handle<'_, T>{
         self.tree_ref.insert_nth(Val, Some(self.node), Position)
     }
     /// Remove a Subnode from the current Node
@@ -456,6 +527,7 @@ impl<'a, T> ArenaHandle<'a, T>{
             self.tree_ref.get_node_mut(&self.node).unwrap().change_child_order(Child, NewPosition);
         }
     }
+
     /// Remove the current Node
     pub fn remove_self(self){
         self.tree_ref.remove(&self.node);
@@ -468,6 +540,7 @@ impl<'a, T> ArenaHandle<'a, T>{
     pub fn dissolve_self(self){
         self.tree_ref.dissolve(&self.node);
     }
+
     /// Change order of current Node within it's Parent
     pub fn reorder_self(&mut self, NewPosition: usize){
         self.tree_ref.change_order_position(&self.node, NewPosition);
@@ -475,7 +548,7 @@ impl<'a, T> ArenaHandle<'a, T>{
     /// Perform operations using the current Node
     /// 
     /// This is typically used to daisy-chain Node Creation for easier Tree initialization
-    pub fn map<F: FnOnce(&mut ArenaHandle<'_, T>)>(&mut self, f: F){
+    pub fn map<F: FnOnce(&mut Handle<'_, T>)>(&mut self, f: F){
         f(self)
     }
     /// Get current Node's Value
@@ -489,6 +562,8 @@ impl<'a, T> ArenaHandle<'a, T>{
         self.tree_ref.get_node(&self.node).unwrap().hash
     }
     /// Get current Node's Parent index
+    /// 
+    /// Returns None if the Node is a Root Node
     pub fn parent(&self) -> &Option<usize>{
         &self.tree_ref.get_node(&self.node).unwrap().parent
     }
@@ -497,8 +572,8 @@ impl<'a, T> ArenaHandle<'a, T>{
         &self.tree_ref.get_node(&self.node).unwrap().children
     }
     /// Convert the Handle into a Cursor for controlled Traversal
-    pub fn into_cursor(self) -> ArenaCursor<'a, T>{
-        ArenaCursor::new_from_node(self.tree_ref, self.node)
+    pub fn into_cursor(self) -> Cursor<'a, T>{
+        Cursor::new_from_node(self.tree_ref, self.node)
     }
 }
 
@@ -507,12 +582,12 @@ impl<'a, T> ArenaHandle<'a, T>{
 /// 
 /// Tokens whose Nodes no longer exist are invalid  
 /// This is checked through the Hash value
-pub struct ArenaToken{
+pub struct Token{
     node: usize,
     hash: u32,
     valid: bool
 }
-impl ArenaToken{
+impl Token{
     fn new(Index: usize, Hash: u32) -> Self{
         Self{
             node: Index,
@@ -520,24 +595,57 @@ impl ArenaToken{
             valid: true
         }
     }
-    fn new_from_node<T>(Node: &ArenaNode<T>) -> Self{
+    fn new_from_node<T>(Node: &Node<T>) -> Self{
         Self{
             node: Node.id,
             hash: Node.hash,
             valid: true,
         }
     }
+
+    // Getters
+    /// Read tracked Node's ID
+    pub fn node_id(&self) -> usize {
+        self.node
+    }
+    /// Read tracked node's Hash
+    pub fn hash(&self) -> u32 {
+        self.hash
+    }
+    /// Check if the Token is valid
+    pub fn valid(&self) -> bool {
+        self.valid
+    }
 }
 
-
-pub struct ArenaNode<T>{
-    val: T,
-    id: usize,
-    hash: u32, // I know it's technically not a 'hash' but it sounds cool so peck it
-    parent: Option<usize>,
-    children: Vec<usize>
+/// # An Arena Tree Node
+/// 
+/// A single Node within the tree, holds data of type `T`, it's own Hash, ID,
+/// and relations with other Nodes
+/// 
+/// To get the data it holds use a Dereference
+pub struct Node<T>{
+    pub val: T,
+    pub id: usize,
+    pub hash: u32, // I know it's technically not a 'hash' but it sounds cool so peck it
+    pub parent: Option<usize>,
+    pub children: Vec<usize>
 }
-impl<T> ArenaNode<T>{
+
+impl<T> std::ops::Deref for Node<T> {
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target {
+        &self.val
+    }
+}
+impl<T> std::ops::DerefMut for Node<T>{
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.val
+    }
+}
+
+impl<T> Node<T>{
     fn new(Val: T, Id: usize, Parent: Option<usize>) -> Self{
         Self{
             val: Val,
@@ -547,6 +655,7 @@ impl<T> ArenaNode<T>{
             children: Vec::new(),
         }
     }
+
     /// Append a Child Node at the end of the Node
     fn push_child(&mut self, Child: usize){
         self.children.push(Child);
@@ -616,80 +725,226 @@ impl<T> ArenaNode<T>{
     fn last_child(&self) -> Option<usize>{
         self.children.last().cloned()
     }
+
+    // Getters
+    // Mainly for fields other than `val`
+    /// Read Node's ID
+    pub fn id(&self) -> usize {
+        self.id
+    }
+    /// Read Node's Hash
+    pub fn hash(&self) -> u32 {
+        self.hash
+    }
+    /// Read Node's Parent ID
+    /// 
+    /// Returns None if the Node is a Root Node
+    pub fn parent(&self) -> Option<usize> {
+        self.parent
+    }
+    /// Read Node's Children IDs
+    pub fn children(&self) -> &[usize] {
+        &self.children
+    }
 }
 
 
 /// # Depth-First Traversal Iterator
-/// Traverses the Tree Depth-First and revisits the nodes on it's way up
+/// Traverses the Tree, children first in pre-order and revisits the nodes on it's way up
 /// 
-/// Every iteration returns a tuple `(Traverse Level, Node Reference)`
-pub struct Traverse<'a, T>{
+/// Every iteration returns a tuple `(Layer, Node Reference)`
+pub struct DFTraverse<'a, T>{
     tree_ref: &'a ArenaTree<T>,
     stack: Vec<(usize, bool)>, // (nodeID, visited)
-    next_down: bool
+    depth: usize
 }
-impl<'a, T> Traverse<'a, T>{
-    fn new(TreeRef: &'a ArenaTree<T>) -> Self{
+impl<'a, T> DFTraverse<'a, T>{
+    fn new(TreeRef: &'a ArenaTree<T>, StartNodes: &[usize]) -> Self{
+        Self{
+            tree_ref: TreeRef,
+            stack: StartNodes.iter().map(|x| (*x, false)).collect(),
+            depth: 0
+        }
+    }
+}
+impl<'a, T> Iterator for DFTraverse<'a, T>{
+    type Item = (usize, &'a Node<T>);
+
+    fn next(&mut self) -> Option<Self::Item>{
+        // If the stack is empty it autoreturns None
+        let mut frame = self.stack.pop()?;
+
+        let node = self.tree_ref.get_node(&frame.0).unwrap();
+
+        // If we got to a visited node, we went up a level
+        if frame.1{
+            self.depth -= 1;
+            return Some((self.depth, node))
+        }
+
+        // Check if node has subnodes
+        if !node.children.is_empty(){
+            // Put the frame back into the stack as visited
+            frame.1 = true;
+            self.stack.push(frame);
+
+            // Reverse to put first child at the top of the stack
+            for index in node.children.iter().rev(){
+                self.stack.push((*index, false));
+            }
+            // At this point the next node we enter will be down a level
+            self.depth += 1;
+        };
+        
+        Some((self.depth, node))
+    }
+}
+
+pub struct DFTraverseEnterLeave<'a, T>{
+    tree_ref: &'a ArenaTree<T>,
+    stack: Vec<(usize, bool)>
+}
+impl<'a, T> DFTraverseEnterLeave<'a, T> {
+    pub fn new(TreeRef: &'a ArenaTree<T>, Nodes: &[usize]) -> Self {
+        Self {
+            tree_ref: TreeRef,
+            stack: Nodes.iter().map(|x| (*x, false)).collect()
+        }
+    }
+}
+impl<'a, T> Iterator for DFTraverseEnterLeave<'a, T> {
+    type Item = TraverseState<'a, T>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        // If the stack is empty it autoreturns None
+        let mut frame = self.stack.pop()?;
+
+        let node = self.tree_ref.get_node(&frame.0).unwrap();
+
+        // If we got to a visited node, we went up a level
+        if frame.1{
+            return Some(TraverseState::Leaving(node))
+        }
+
+        // Put the frame back into the stack as visited
+        frame.1 = true;
+        self.stack.push(frame);
+
+        // Reverse to put first child at the top of the stack
+        for index in node.children.iter().rev(){
+            self.stack.push((*index, false));
+        }
+        
+        Some(TraverseState::Entering(node))
+    }
+}
+pub enum TraverseState<'a, T>{
+    Entering(&'a Node<T>),
+    Leaving(&'a Node<T>)
+}
+
+/// # Breadth-first Traversal
+/// 
+/// Traverses the tree layer by layer, siblings-first rather
+pub struct BFTraverse<'a, T>{
+    tree_ref: &'a ArenaTree<T>,
+    queue: VecDeque<(usize, usize)> // (Layer, Node ID)
+}
+impl <'a, T> BFTraverse<'a, T>{
+    fn new(TreeRef: &'a ArenaTree<T>, StartNodes: &[usize]) -> Self{
+        Self{
+            tree_ref: TreeRef,
+            queue: {
+                let mut idkfa = VecDeque::new();
+                for index in StartNodes.iter(){
+                    idkfa.push_back((0, *index));
+                };
+                idkfa
+            },
+        }
+    }
+}
+impl<'a, T> Iterator for BFTraverse<'a, T>{
+    type Item = (usize, &'a Node<T>);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        // Compare to depth-first, jesus this is short
+        let (layer, index) = self.queue.pop_front()?;
+
+        let node = self.tree_ref.get_node(&index).unwrap();
+
+        for child_index in node.children.iter(){
+            self.queue.push_back((layer + 1, *child_index));
+        }
+
+        Some((layer, node))
+    }
+}
+
+/// # Reverse breadth-first Traversal
+/// 
+/// Traverses the tree layer by layer backwards, 
+/// siblings-first, 
+/// starting from the lowest descendants
+pub struct RevBFTraverse<'a, T>{
+    tree_ref: &'a ArenaTree<T>,
+    stack: Vec<VecDeque<usize>> // A stack of layer queues, we don't need to specify layers
+}
+impl<'a, T> RevBFTraverse<'a, T>{
+    fn new(TreeRef: &'a ArenaTree<T>, StartNodes: &[usize]) -> Self{
         Self{
             tree_ref: TreeRef,
             stack: {
-                let mut idkfa = Vec::new();
-                for index in TreeRef.root.children.iter(){
-                    idkfa.push((*index, false));
+                let mut idkfa: Vec<VecDeque<usize>> = Vec::from([VecDeque::new()]);
+                for node in StartNodes.iter(){
+                    idkfa.last_mut().unwrap().push_back(*node);
                 }
+
+                let mut next_queue: VecDeque<usize> = VecDeque::new();
+                // For everything in the last queue in the stack, we push all the children
+                loop{
+                    // This is a mess
+                    for index in idkfa.last().unwrap().iter(){
+                        let node = TreeRef.get_node(index).unwrap();
+                        for child in node.children.iter(){
+                            next_queue.push_back(*child);
+                        }
+                    }
+                    // If the next queue is empty, we reached the bottom
+                    if next_queue.is_empty(){
+                        break;
+                    }
+
+                    idkfa.push(next_queue);
+                    // Didn't know you could re-initialize a variable that was taken away
+                    // Quite nice
+                    // But it feels wrong
+                    next_queue = VecDeque::new()
+                }
+
                 idkfa
             },
-            next_down: false,
-        }
-    }
-    fn new_from_node(TreeRef: &'a ArenaTree<T>, Node: &usize) -> Self{
-        Self{
-            tree_ref: TreeRef,
-            stack: Vec::from([(*Node, false)]),
-            next_down: false,
         }
     }
 }
-impl<'a, T> Iterator for Traverse<'a, T>{
-    type Item = (TraverseLevel, &'a ArenaNode<T>);
+impl<'a, T> Iterator for RevBFTraverse<'a, T>{
+    type Item = (usize, &'a Node<T>);
 
-    fn next(&mut self) -> Option<Self::Item>{
-        if let Some(mut frame) = self.stack.pop(){
+    fn next(&mut self) -> Option<Self::Item> {
+        // If there's no last, the stack is empty and it autoreturns None
+        let queue = self.stack.last_mut()?;
 
-            let node = self.tree_ref.get_node(&frame.0).unwrap();
+        // We can safely unwrap as we pop the previous queue if it's empty on previous iter
+        let index = queue.pop_front().unwrap();
+        let node = self.tree_ref.get_node(&index).unwrap();
+        if queue.is_empty(){
+            // Didn't know this is a thing
+            // Neato
+            let _ = queue;
+            self.stack.pop();
+        }
 
-            // If we got to a visited node, we went up a level
-            if frame.1{
-                self.next_down = false;
-                return Some((TraverseLevel::Up, node))
-            }
-
-            // Bandaid fix to make sure we know we traversed down
-            let Out = 
-                if self.next_down{
-                    self.next_down = false;
-                    (TraverseLevel::Down, node)
-                }else{
-                    (TraverseLevel::Same, node)
-                };
-
-            // Check if node has subnodes
-            if !node.children.is_empty(){
-                // Put the frame back into the stack as visited
-                frame.1 = true;
-                self.stack.push(frame);
-
-                // Reverse to make first child at the top of the stack
-                for index in node.children.iter().rev(){
-                    self.stack.push((*index, false));
-                }
-                // At this point the next node we enter will be down a level
-                self.next_down = true;
-            };
-            
-            Some(Out)
-        // .pop() returned nothing, the stack is empty, we can leave
-        }else{None}
+        Some((self.stack.len() - 1, node))
     }
 }
 
@@ -698,11 +953,11 @@ impl<'a, T> Iterator for Traverse<'a, T>{
 /// Allows for free movement within the tree for reading values
 /// 
 /// For manipulation of the Nodes, use `into_handle` to get a Handle
-pub struct ArenaCursor<'a, T>{
+pub struct Cursor<'a, T>{
     tree_ref: &'a mut ArenaTree<T>,
-    node: Option<usize>,
+    node: Option<usize>, // Option because the Root is a None
 }
-impl<'a, T> ArenaCursor<'a, T>{
+impl<'a, T> Cursor<'a, T>{
     fn new(TreeRef: &'a mut ArenaTree<T>) -> Self{
         Self{
             tree_ref: TreeRef,
@@ -782,10 +1037,10 @@ impl<'a, T> ArenaCursor<'a, T>{
         self
     }
     /// Get a token for the current Node
-    pub fn get_token(&mut self) -> Option<ArenaToken>{
+    pub fn get_token(&mut self) -> Option<Token>{
         if let Some(index) = self.node{
             let node = self.tree_ref.get_node(&index).unwrap();
-            Some(ArenaToken::new(index, node.hash))
+            Some(Token::new(index, node.hash))
         }else{
             None
         }
@@ -823,16 +1078,11 @@ impl<'a, T> ArenaCursor<'a, T>{
         }
     }
     /// Convert the Cursor into a Handle for in-place manipulation
-    pub fn into_handle(self) -> Result<ArenaHandle<'a, T>, Self>{
+    pub fn into_handle(self) -> Result<Handle<'a, T>, Self>{
         if let Some(index) = self.node{
-            Ok(ArenaHandle::new(self.tree_ref, index))
+            Ok(Handle::new(self.tree_ref, index))
         }else{
             Err(self)
         }
     }
-}
-pub enum TraverseLevel{
-    Up,
-    Same,
-    Down
 }
