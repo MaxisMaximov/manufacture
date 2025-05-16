@@ -2,14 +2,8 @@ use std::cell::{Ref, RefMut};
 
 use super::*;
 
-use commands::gmCommand;
 use events::gmEvent;
 use fetch::*;
-use storage::gmStorageDrop;
-
-pub type gmWorld_COMPMAP = HashMap<&'static str, Rc<RefCell<dyn gmStorageDrop>>>;
-pub type gmWorld_RESMAP = HashMap<&'static str, Rc<RefCell<dyn Any>>>;
-pub type gmWorld_CMDQUEUE = Vec<Box<dyn gmCommand>>;
 
 pub struct gmWorld_EVENTMAP{
     activeBuffer: bool,

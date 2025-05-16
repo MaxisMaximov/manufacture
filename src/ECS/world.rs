@@ -10,14 +10,15 @@ use builders::gmObjBuilder;
 use storage::*;
 use fetch::*;
 use entity::*;
+use commands::gmCommand;
 
 pub struct gmWorld{
     gmObjs: BTreeMap<usize, Entity>,
     next_free: BTreeSet<usize>,
-    components: gmWorld_COMPMAP,
-    resources: gmWorld_RESMAP,
+    components: HashMap<&'static str, Rc<RefCell<dyn gmStorageDrop>>>,
+    resources: HashMap<&'static str, Rc<RefCell<dyn Any>>>,
     events: gmWorld_EVENTMAP,
-    commands: Rc<RefCell<gmWorld_CMDQUEUE>>
+    commands: Rc<RefCell<Vec<Box<dyn gmCommand>>>>
 }
 impl gmWorld{
 
@@ -25,10 +26,10 @@ impl gmWorld{
         Self{
             gmObjs: BTreeMap::new(),
             next_free: BTreeSet::new(),
-            components: gmWorld_COMPMAP::new(),
-            resources: gmWorld_RESMAP::new(),
+            components: HashMap::new(),
+            resources: HashMap::new(),
             events: gmWorld_EVENTMAP::new(),
-            commands: Rc::new(RefCell::new(gmWorld_CMDQUEUE::new()))
+            commands: Rc::new(RefCell::new(Vec::new()))
         }
     }
 
@@ -120,7 +121,7 @@ impl gmWorld{
         }
     }
     
-    pub fn fetchCommandWriter<'a>(&'a self) -> FetchMut<'a, gmWorld_CMDQUEUE>{
+    pub fn fetchCommandWriter<'a>(&'a self) -> FetchMut<'a, Vec<Box<dyn gmCommand>>>{
         FetchMut::new(
             RefMut::map(self.commands.as_ref().borrow_mut(), |idkfa| idkfa),
         )
