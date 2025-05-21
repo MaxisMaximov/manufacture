@@ -89,3 +89,44 @@ impl dyn eventQueue{
         unsafe {&mut *(self as *mut dyn eventQueue as *mut Vec<T>)}
     }
 }
+
+
+pub struct EventMap{
+    active_buffer: HashMap<&'static str, Rc<RefCell<dyn Any>>>,
+    alt_buffer: HashMap<&'static str, Rc<RefCell<dyn Any>>>,
+}
+impl EventMap{
+    pub fn new() -> Self{
+        Self{
+            active_buffer: HashMap::new(),
+            alt_buffer: HashMap::new(),
+        }
+    }
+
+    pub fn swap_buffers(&mut self){
+        // Clear active buffer to (kinda) free up memory
+        self.active_buffer.clear();
+        std::mem::swap(&mut self.active_buffer, &mut self.alt_buffer);
+    }
+
+    pub fn get_reader<'a, T: gmEvent + 'static>(&'a self) -> EventReader<'a, T>{
+        let queue = self.alt_buffer.get(T::EVENT_ID())
+            .expect(&format!("ERROR: Attempted to fetch invalid Event: {}", T::EVENT_ID()));
+
+        EventReader::new(
+            Ref::map(
+                queue.as_ref().borrow(), 
+                |x| x.downcast_ref::<Vec<T>>().unwrap())
+        )
+    }
+    pub fn get_writer<'a, T: gmEvent + 'static>(&'a mut self) -> EventWriter<'a, T>{
+        let queue = self.active_buffer.get(T::EVENT_ID())
+            .expect(&format!("ERROR: Attempted to fetch invalid Event: {}", T::EVENT_ID()));
+
+        EventWriter::new(
+            RefMut::map(
+                queue.as_ref().borrow_mut(),
+                |x| x.downcast_mut::<Vec<T>>().unwrap())
+        )
+    }
+}
