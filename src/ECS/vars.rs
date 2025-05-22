@@ -1,4 +1,4 @@
-use std::{cell::{Ref, RefMut}, collections::HashSet};
+use std::{cell::{Ref, RefMut}, collections::{HashSet, VecDeque}};
 
 use super::*;
 
@@ -148,16 +148,16 @@ impl EventMap{
         // This is a hacky workaround to return a "valid" `EventReader`
         // even if the queue for that event is empty
         if !self.alt_buffer.contains_key(T::EVENT_ID()){
-            self.alt_buffer.insert(T::EVENT_ID(), RefCell::new(Box::new(Vec::<T>::new())));
+            self.alt_buffer.insert(T::EVENT_ID(), RefCell::new(Box::new(VecDeque::<T>::new())));
         }
 
-        // We have checks for valid ID and a backup Vec, so we can safely unwrap
+        // We have checks for valid ID and a backup Queue, so we can safely unwrap
         let queue = self.alt_buffer.get(T::EVENT_ID()).unwrap();
 
         EventReader::new(
             Ref::map(
                 queue.borrow(), 
-                |x| x.downcast_ref::<Vec<T>>().unwrap())
+                |x| x.downcast_ref::<VecDeque<T>>().unwrap())
         )
     }
     /// Get a Writer for an Event
@@ -171,16 +171,16 @@ impl EventMap{
 
         // If there's a valid event but no queue, set up a new one
         if !self.active_buffer.contains_key(T::EVENT_ID()){
-            self.active_buffer.insert(T::EVENT_ID(), RefCell::new(Box::new(Vec::<T>::new())));
+            self.active_buffer.insert(T::EVENT_ID(), RefCell::new(Box::new(VecDeque::<T>::new())));
         }
 
-        // We have checks for valid ID and a backup Vec, so we can safely unwrap
+        // We have checks for valid ID and a backup Queue, so we can safely unwrap
         let queue = self.active_buffer.get(T::EVENT_ID()).unwrap();
 
         EventWriter::new(
             RefMut::map(
                 queue.borrow_mut(),
-                |x| x.downcast_mut::<Vec<T>>().unwrap())
+                |x| x.downcast_mut::<VecDeque<T>>().unwrap())
         )
     }
 }

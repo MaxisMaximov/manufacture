@@ -1,4 +1,5 @@
 use std::cell::{RefMut, Ref};
+use std::collections::VecDeque;
 use std::marker::PhantomData;
 use std::ops::{Deref, DerefMut};
 
@@ -78,9 +79,9 @@ impl<'a, T: gmComp, D> DerefMut for StorageRef<'a, T, D>{
 }
 
 #[allow(type_alias_bounds)]
-pub type EventReader<'a, T: gmEvent> = Fetch<'a, Vec<T>>;
+pub type EventReader<'a, T: gmEvent> = Fetch<'a, VecDeque<T>>;
 #[allow(type_alias_bounds)]
-pub type EventWriter<'a, T: gmEvent> = FetchMut<'a, Vec<T>>;
+pub type EventWriter<'a, T: gmEvent> = FetchMut<'a, VecDeque<T>>;
 
 #[allow(type_alias_bounds)]
 pub type ReadStorage<'a, T: gmComp> = StorageRef<'a, T, Fetch<'a, T::COMP_STORAGE>>;
