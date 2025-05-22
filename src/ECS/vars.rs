@@ -93,8 +93,8 @@ impl dyn eventQueue{
 
 pub struct EventMap{
     registry: HashSet<&'static str>,
-    active_buffer: HashMap<&'static str, Rc<RefCell<dyn Any>>>,
-    alt_buffer: HashMap<&'static str, Rc<RefCell<dyn Any>>>,
+    active_buffer: HashMap<&'static str, RefCell<Box<dyn Any>>>,
+    alt_buffer: HashMap<&'static str, RefCell<Box<dyn Any>>>,
 }
 impl EventMap{
     pub fn new() -> Self{
@@ -108,7 +108,7 @@ impl EventMap{
     pub fn register<T: gmEvent>(&mut self){
         if self.registry.contains(T::EVENT_ID()){
             // Events CANNOT share IDs because systems expect a specific type
-            // This ain't OOP, we can't do that
+            // This ain't OOP, we can't replace one struct with another and expect it to go the same
             panic!("ERROR: Conflicting Event IDs: {}", T::EVENT_ID())
         }
         self.registry.insert(T::EVENT_ID());
@@ -127,33 +127,44 @@ impl EventMap{
     }
 
     pub fn get_reader<'a, T: gmEvent + 'static>(&'a mut self) -> EventReader<'a, T>{
-        // Check if the entry is valid
+        // Check if the Event is valid
         if !self.registry.contains(T::EVENT_ID()){
             panic!("ERROR: Attempted to fetch unregistered event: {}", T::EVENT_ID())
         }
 
-        self.alt_buffer.entry(T::EVENT_ID()).or_insert(Rc::new(RefCell::new(Vec::<T>::new())));
+        // If we don't have this key in buffer yet, initialize it
+        // This is a hacky workaround to return a "valid" `EventReader`
+        // even if the queue for that event is empty
+        if !self.alt_buffer.contains_key(T::EVENT_ID()){
+            self.alt_buffer.insert(T::EVENT_ID(), RefCell::new(Box::new(Vec::<T>::new())));
+        }
 
+        // We have checks for valid ID and a backup Vec, so we can safely unwrap
         let queue = self.alt_buffer.get(T::EVENT_ID()).unwrap();
 
         EventReader::new(
             Ref::map(
-                queue.as_ref().borrow(), 
+                queue.borrow(), 
                 |x| x.downcast_ref::<Vec<T>>().unwrap())
         )
     }
     pub fn get_writer<'a, T: gmEvent + 'static>(&'a mut self) -> EventWriter<'a, T>{
+        // CHeck if the Event is valid
         if !self.registry.contains(T::EVENT_ID()){
             panic!("ERROR: Attempted to fetch unregistered event: {}", T::EVENT_ID())
         }
 
-        self.alt_buffer.entry(T::EVENT_ID()).or_insert(Rc::new(RefCell::new(Vec::<T>::new())));
+        // If there's a valid event but no queue, set up a new one
+        if !self.active_buffer.contains_key(T::EVENT_ID()){
+            self.active_buffer.insert(T::EVENT_ID(), RefCell::new(Box::new(Vec::<T>::new())));
+        }
 
+        // We have checks for valid ID and a backup Vec, so we can safely unwrap
         let queue = self.active_buffer.get(T::EVENT_ID()).unwrap();
 
         EventWriter::new(
             RefMut::map(
-                queue.as_ref().borrow_mut(),
+                queue.borrow_mut(),
                 |x| x.downcast_mut::<Vec<T>>().unwrap())
         )
     }
