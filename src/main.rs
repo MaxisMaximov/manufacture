@@ -1,7 +1,7 @@
 #![allow(unused_labels)]
 #![warn(unused_crate_dependencies)]
+use manufacture_core::prelude::*;
 
-pub mod ECS;
 pub mod manufacture;
 
 // START HERE
