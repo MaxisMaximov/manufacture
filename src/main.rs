@@ -1,23 +1,17 @@
-#![allow(unused_labels)]
-#![warn(unused_crate_dependencies)]
 use manufacture_core::prelude::*;
+use manufacture_engine::prelude::*;
 
-pub mod manufacture;
+use manufacture::init_plugin;
 
 // START HERE
 fn main() {
+    let mut world = World::new();
+    let mut disp_build = Dispatcher::new();
 
-    // Switch to Raw Mode
-    crossterm::terminal::enable_raw_mode().unwrap();
+    manufacture_core::init(&mut world, &mut disp_build);
+    init_plugin(&mut world, &mut disp_build);
 
-    let mut WORLD = ECS::world::gmWorld::new();
-    let mut DISPATCHER = ECS::dispatcher::gmDispatcher::new();
+    let mut dispatcher = disp_build.build();
 
-    manufacture::init::init(&mut WORLD, &mut DISPATCHER);
-
-    loop {
-        DISPATCHER.dispatch(&mut WORLD);
-    }
-    
-    return;
+    dispatcher.dispatch(&mut world);
 }

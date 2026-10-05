@@ -1,5 +1,7 @@
 use super::*;
 
+use std::collections::HashMap;
+
 use constants::*;
 use utils::*;
 

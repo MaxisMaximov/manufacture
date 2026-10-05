@@ -1,6 +1,6 @@
-use super::Vector2;
-
 use std::ops::{Index, IndexMut};
+
+pub type CartesianVec2 = (isize, isize);
 
 pub struct CartesianGrid<T>{ // It's Cartesian and it's a grid -- Just to not confuse with *proper* 2D arrays
     pub inner: Vec<T>,
@@ -16,10 +16,10 @@ impl<T: Default + Copy> CartesianGrid<T>{
         }
     }
 }
-impl<T> Index<Vector2> for CartesianGrid<T>{
+impl<T> Index<CartesianVec2> for CartesianGrid<T>{
     type Output = T;
 
-    fn index(&self, index: Vector2) -> &Self::Output {
+    fn index(&self, index: CartesianVec2) -> &Self::Output {
 
         let xpos = (index.0 as usize).wrapping_add(self.size.0/2);
         let ypos = (index.1 as usize).wrapping_add(self.size.1/2);
@@ -34,8 +34,8 @@ impl<T> Index<Vector2> for CartesianGrid<T>{
         &self.dummy
     }
 }
-impl<T> IndexMut<Vector2> for CartesianGrid<T>{
-    fn index_mut(&mut self, index: Vector2) -> &mut Self::Output {
+impl<T> IndexMut<CartesianVec2> for CartesianGrid<T>{
+    fn index_mut(&mut self, index: CartesianVec2) -> &mut Self::Output {
         
         let xpos = (index.0 as usize).wrapping_add(self.size.0/2);
         let ypos = (index.1 as usize).wrapping_add(self.size.1/2);
