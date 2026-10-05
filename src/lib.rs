@@ -11,6 +11,7 @@ pub mod types;
 pub mod events;
 pub mod constants;
 pub mod utils;
+pub mod sprites;
 
 /// Initialize the plugin
 /// 
@@ -20,10 +21,15 @@ pub mod utils;
 /// You can add and remove things to initialize, but **do not** change the function's signature
 pub fn init_plugin(world: &mut World, disp_build: &mut DispatcherBuilder){
     // -- Components --
+    world.register_comp::<comp::Velocity2>();
 
     // -- Resources --
 
     // -- Events --
 
     // -- Systems --
+    disp_build.add::<systems::Move2D>();
+
+    // -- Sprites --
+    sprites::init(world);
 }
