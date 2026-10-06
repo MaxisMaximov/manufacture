@@ -58,8 +58,6 @@ impl System for DrawScheduler{
     }
 }
 
-const P_MOVE_SPEED: f32 = 1.0;
-
 pub struct PlayerMove;
 impl System for PlayerMove{
     type Data<'a> = (Query<(&'a PlayerController, &'a mut Transform2D), ()>, &'a CMDData);
@@ -81,12 +79,39 @@ impl System for PlayerMove{
         for (p_controller, transform) in query.iter_mut(){
             if p_controller.pid == 1 && p_controller.active{
                 match cmd_data.get_key().code{
-                    KeyCode::Up => transform.loc.y += P_MOVE_SPEED,
-                    KeyCode::Down => transform.loc.y -= P_MOVE_SPEED,
-                    KeyCode::Left => transform.loc.x -= P_MOVE_SPEED,
-                    KeyCode::Right => transform.loc.x += P_MOVE_SPEED,
+                    KeyCode::Up => transform.loc.y += constants::P_MOVE_SPEED,
+                    KeyCode::Down => transform.loc.y -= constants::P_MOVE_SPEED,
+                    KeyCode::Left => transform.loc.x -= constants::P_MOVE_SPEED,
+                    KeyCode::Right => transform.loc.x += constants::P_MOVE_SPEED,
                     _ => {}
                 }
+            }
+        }
+    }
+}
+
+pub struct CameraManager;
+impl System for CameraManager{
+    type Data<'a> = (Query<(&'a PlayerController, &'a Transform2D), ()>, &'a mut CMDCamera);
+
+    const ID: &'static str = "CameraManager";
+    const DEPENDS: &'static [&'static str] = &[CMDRenderer::ID];
+    const TYPE: SystemType = SystemType::Postprocessor;
+    const RUNORD: &'static [RunOrder] = &[RunOrder::Before(CMDRenderer::ID)];
+
+    fn new() -> Self {
+        Self
+    }
+
+    fn execute(&mut self, data: Request<'_, Self::Data<'_>>) {
+        let (
+            query,
+            mut cmd_camera
+        ) = data.into_raw();
+
+        for (p_controller, transform) in query.iter(){
+            if p_controller.pid == 1 && p_controller.active{
+                cmd_camera.pos = transform.loc
             }
         }
     }
