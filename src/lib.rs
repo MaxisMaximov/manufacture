@@ -31,6 +31,7 @@ pub fn init_plugin(world: &mut World, disp_build: &mut DispatcherBuilder){
     // -- Systems --
     disp_build.add::<systems::Move2D>();
     disp_build.add::<systems::DrawScheduler>();
+    disp_build.add::<systems::PlayerMove>();
 
     // -- Sprites --
     sprites::init(world);
@@ -38,7 +39,7 @@ pub fn init_plugin(world: &mut World, disp_build: &mut DispatcherBuilder){
 
     // -- Entities --
     let mut cmd_writer = world.get_command_writer();
-    cmd_writer.send(SpawnPrefab(prefabs::Player{loc: Vector2 { x: 0.0, y: 0.0 }}));
+    cmd_writer.send(SpawnPrefab(prefabs::Player{loc: Vector2 { x: 6.0, y: 6.0 }}));
     cmd_writer.send(SpawnPrefab(prefabs::Crafter{ loc: Vector2 { x: 0.0, y: 0.0 } }));
-    cmd_writer.send(SpawnPrefab(prefabs::Storage{ loc: Vector2 { x: 3.0, y: 1.0 } }));
+    cmd_writer.send(SpawnPrefab(prefabs::Storage{ loc: Vector2 { x: 5.0, y: 2.0 } }));
 }

@@ -57,3 +57,37 @@ impl System for DrawScheduler{
         }
     }
 }
+
+const P_MOVE_SPEED: f32 = 1.0;
+
+pub struct PlayerMove;
+impl System for PlayerMove{
+    type Data<'a> = (Query<(&'a PlayerController, &'a mut Transform2D), ()>, &'a CMDData);
+
+    const ID: &'static str = "PlayerMove";
+    const RUNORD: &'static [RunOrder] = &[RunOrder::After(CMDDataGetter::ID)];
+    const TYPE: SystemType = SystemType::Preprocessor; // TODO: Make this Logic instead of Preprocessor
+
+    fn new() -> Self {
+        Self
+    }
+
+    fn execute(&mut self, data: Request<'_, Self::Data<'_>>) {
+        let (
+            mut query,
+            cmd_data
+        ) = data.into_raw();
+
+        for (p_controller, transform) in query.iter_mut(){
+            if p_controller.pid == 1 && p_controller.active{
+                match cmd_data.get_key().code{
+                    KeyCode::Up => transform.loc.y += P_MOVE_SPEED,
+                    KeyCode::Down => transform.loc.y -= P_MOVE_SPEED,
+                    KeyCode::Left => transform.loc.x -= P_MOVE_SPEED,
+                    KeyCode::Right => transform.loc.x += P_MOVE_SPEED,
+                    _ => {}
+                }
+            }
+        }
+    }
+}
