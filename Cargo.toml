@@ -1,6 +1,6 @@
 [package]
 name = "manufacture"
-version = "0.3.0"
+version = "0.3.1"
 authors = ["Maxis Maximov Jr."]
 edition = "2024"
 

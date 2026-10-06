@@ -29,18 +29,18 @@ impl<T> ArenaTree<T>{
     }
 
 
-    fn free_index(&mut self, Index: &usize) -> Option<Node<T>>{
-        match self.nodes.remove(Index){
+    fn free_index(&mut self, index: &usize) -> Option<Node<T>>{
+        match self.nodes.remove(index){
             Some(node) => {
-                self.next_free.insert(*Index);
+                self.next_free.insert(*index);
                 Some(node)
             },
             None => None,
         }
     }
-    fn free_index_unchecked(&mut self, Index: &usize) -> Node<T>{
-        self.next_free.insert(*Index);
-        self.nodes.remove(Index).unwrap()
+    fn free_index_unchecked(&mut self, index: &usize) -> Node<T>{
+        self.next_free.insert(*index);
+        self.nodes.remove(index).unwrap()
     }
 
 
@@ -53,7 +53,7 @@ impl<T> ArenaTree<T>{
     /// 
     /// Returns a Handle to the node for immediate in-place 
     /// manipulation, like with `.with` method
-    pub fn insert(&mut self, Val: T, Parent: Option<usize>) -> Handle<'_, T>{
+    pub fn insert(&mut self, val: T, parent: Option<usize>) -> Handle<'_, T>{
         // Find next available index
         // Length of the Node Map is always the next available index if the `next_free` is empty
         let next_index = self.next_free.pop_first().unwrap_or(self.nodes.len());
@@ -61,10 +61,10 @@ impl<T> ArenaTree<T>{
         let mut final_parent = None;
         // Check if parent exists
         // None is auto failsafe
-        if let Some(index) = Parent{
+        if let Some(index) = parent{
             if let Some(parent_node) = self.nodes.get_mut(&index){
                 parent_node.push_child(next_index);
-                final_parent = Parent;
+                final_parent = parent;
             }
         }else{
             self.root.push_child(next_index);
@@ -72,7 +72,7 @@ impl<T> ArenaTree<T>{
 
         self.nodes.insert(
             next_index,
-            Node::new(Val, next_index, final_parent)
+            Node::new(val, next_index, final_parent)
         );
 
         Handle::new(self, next_index)
@@ -86,22 +86,22 @@ impl<T> ArenaTree<T>{
     /// 
     /// Returns a Handle to the node for immediate in-place 
     /// manipulation, like with `.with` method
-    pub fn insert_nth(&mut self, Val: T, Parent: Option<usize>, Position: usize) -> Handle<'_, T>{
+    pub fn insert_nth(&mut self, val: T, parent: Option<usize>, position: usize) -> Handle<'_, T>{
         let next_index = self.next_free.pop_first().unwrap_or(self.nodes.len());
 
         let mut final_parent = None;
-        if let Some(index) = Parent{
+        if let Some(index) = parent{
             if let Some(parent_node) = self.nodes.get_mut(&index){
-                parent_node.insert_child(next_index, Position);
-                final_parent = Parent;
+                parent_node.insert_child(next_index, position);
+                final_parent = parent;
             }
         }else{
-            self.root.insert_child(next_index, Position);
+            self.root.insert_child(next_index, position);
         }
 
         self.nodes.insert(
             next_index,
-            Node::new(Val, next_index, final_parent)
+            Node::new(val, next_index, final_parent)
         );
 
         Handle::new(self, next_index)
@@ -109,24 +109,24 @@ impl<T> ArenaTree<T>{
 
 
     /// Removes the Node and all of the node's Subnodes
-    pub fn remove(&mut self, Index: &usize) -> Option<Node<T>>{
-        if let Some(node) = self.free_index(Index){
+    pub fn remove(&mut self, index: &usize) -> Option<Node<T>>{
+        if let Some(node) = self.free_index(index){
 
             // Update parent if exists
-            if let Some(index) = node.parent{
+            if let Some(p_index) = node.parent{
                 // Unwrap: The Parent is always valid
-                let parent_node = self.nodes.get_mut(&index).unwrap();
+                let parent_node = self.nodes.get_mut(&p_index).unwrap();
 
-                parent_node.remove_child(Index);
+                parent_node.remove_child(index);
             }else{
-                self.root.remove_child(Index);
+                self.root.remove_child(index);
             }
 
             // Remove subnodes
             // Cloning the Vec to return the node unscathed
             let mut to_remove = node.children.clone();
-            while let Some(index) = to_remove.pop(){
-                let subnode = self.free_index_unchecked(&index);
+            while let Some(c_index) = to_remove.pop(){
+                let subnode = self.free_index_unchecked(&c_index);
 
                 // Extend to keep iterating
                 // It's the reason I use While loop instead of For loop
@@ -137,43 +137,43 @@ impl<T> ArenaTree<T>{
         }else{None}
     }
     /// Removes the Node and makes all the Node's Subnodes new Root Nodes
-    pub fn soft_remove(&mut self, Index: &usize) -> Option<Node<T>>{
-        if let Some(node) = self.free_index(Index){
+    pub fn soft_remove(&mut self, index: &usize) -> Option<Node<T>>{
+        if let Some(node) = self.free_index(index){
 
             // Update parent
-            if let Some(index) = node.parent{
+            if let Some(p_index) = node.parent{
                 // Unwrap: The Parent is always valid
-                self.nodes.get_mut(&index).unwrap().remove_child(Index);
+                self.nodes.get_mut(&p_index).unwrap().remove_child(index);
             }
 
             // Reassign subnodes
-            for index in node.children.iter(){
-                self.nodes.get_mut(index).unwrap().parent = None;
-                self.root.push_child(*index);
+            for c_index in node.children.iter(){
+                self.nodes.get_mut(c_index).unwrap().parent = None;
+                self.root.push_child(*c_index);
             }
 
             Some(node)
         }else{None}
     }
     /// Removes the Node and reassigns all of the Node's Subnodes to the Node's parent
-    pub fn dissolve(&mut self, Index: &usize) -> Option<Node<T>>{
-        if let Some(node) = self.free_index(Index){
+    pub fn dissolve(&mut self, index: &usize) -> Option<Node<T>>{
+        if let Some(node) = self.free_index(index){
 
             // Update parent with new subnodes if exists
-            if let Some(index) = node.parent{
+            if let Some(p_index) = node.parent{
                 // Unwrap: The Parent is always valid
-                let parent_node = self.nodes.get_mut(&index).unwrap();
+                let parent_node = self.nodes.get_mut(&p_index).unwrap();
 
-                parent_node.remove_child(Index);
+                parent_node.remove_child(index);
 
-                for index in node.children.iter(){ 
-                    parent_node.push_child(*index);
+                for c_index in node.children.iter(){ 
+                    parent_node.push_child(*c_index);
                 }
             }
 
             // Reassign subnodes
-            for index in node.children.iter(){
-                let subnode = self.nodes.get_mut(&index).unwrap();
+            for c_index in node.children.iter(){
+                let subnode = self.nodes.get_mut(&c_index).unwrap();
                 subnode.parent = node.parent
             }
 
@@ -183,74 +183,74 @@ impl<T> ArenaTree<T>{
 
 
     /// Get a reference to the data stored in a Node
-    pub fn get(&self, Index: &usize) -> Option<&T>{
-        Some(&self.nodes.get(Index)?.val)
+    pub fn get(&self, index: &usize) -> Option<&T>{
+        Some(&self.nodes.get(index)?.val)
     }
     /// Get a mutable reference to the data stored in a Node
-    pub fn get_mut(&mut self, Index: &usize) -> Option<&mut T>{
-        Some(&mut self.nodes.get_mut(Index)?.val)
+    pub fn get_mut(&mut self, index: &usize) -> Option<&mut T>{
+        Some(&mut self.nodes.get_mut(index)?.val)
     }
     /// Get a reference to a Node
     /// 
     /// This is typically used to get just the Node and read it's data without needing a Handle
-    pub fn get_node(&self, Index: &usize) -> Option<&Node<T>>{
-        self.nodes.get(Index)
+    pub fn get_node(&self, index: &usize) -> Option<&Node<T>>{
+        self.nodes.get(index)
     }
     /// Get a 'mutable' reference to a Node
     /// 
     /// This is typically used to get just the Node and modify it's Data without needing a Handle
-    pub fn get_node_mut(&mut self, Index: &usize) -> Option<&mut Node<T>>{
-        self.nodes.get_mut(Index)
+    pub fn get_node_mut(&mut self, index: &usize) -> Option<&mut Node<T>>{
+        self.nodes.get_mut(index)
     }
 
     /// Get a reference to the Node's parent
-    pub fn get_parent(&self, Index: &usize) -> Option<&Node<T>>{
-        let parent_index = self.nodes.get(Index)?.parent?;
+    pub fn get_parent(&self, index: &usize) -> Option<&Node<T>>{
+        let parent_index = self.nodes.get(index)?.parent?;
         self.nodes.get(&parent_index)
     }
     /// Get a 'mutable' reference to a Node's parent
-    pub fn get_parent_mut(&mut self, Index: &usize) -> Option<&mut Node<T>>{
-        let parent_index = self.nodes.get(Index)?.parent?;
+    pub fn get_parent_mut(&mut self, index: &usize) -> Option<&mut Node<T>>{
+        let parent_index = self.nodes.get(index)?.parent?;
         self.nodes.get_mut(&parent_index)
     }
 
     /// Get a reference to the Node's Left Sibling, also called Previous Sibling
-    pub fn get_left_sibling(&self, Index: &usize) -> Option<&Node<T>>{
-        let index = self.get_parent(Index)?.child_before(Index)?;
+    pub fn get_left_sibling(&self, index: &usize) -> Option<&Node<T>>{
+        let index = self.get_parent(index)?.child_before(index)?;
         self.nodes.get(&index)
     }
     /// Get a 'mutable' reference to a Node's Left Sibling, also called Previous Sibling
-    pub fn get_left_sibling_mut(&mut self, Index: &usize) -> Option<&mut Node<T>>{
-        let index = self.get_parent(Index)?.child_before(Index)?;
-        self.nodes.get_mut(&index)
+    pub fn get_left_sibling_mut(&mut self, index: &usize) -> Option<&mut Node<T>>{
+        let s_index = self.get_parent(index)?.child_before(index)?;
+        self.nodes.get_mut(&s_index)
     }
     /// Get a reference to the Node's LefRight Sibling, also called Next Sibling
-    pub fn get_right_sibling(&self, Index: &usize) -> Option<&Node<T>>{
-        let index = self.get_parent(Index)?.child_after(Index)?;
-        self.nodes.get(&index)
+    pub fn get_right_sibling(&self, index: &usize) -> Option<&Node<T>>{
+        let s_index = self.get_parent(index)?.child_after(index)?;
+        self.nodes.get(&s_index)
     }
     /// Get a 'mutable' reference to a Node's Right Sibling, also called Next Sibling
-    pub fn get_right_sibling_mut(&mut self, Index: &usize) -> Option<&mut Node<T>>{
-        let index = self.get_parent(Index)?.child_after(Index)?;
-        self.nodes.get_mut(&index)
+    pub fn get_right_sibling_mut(&mut self, index: &usize) -> Option<&mut Node<T>>{
+        let s_index = self.get_parent(index)?.child_after(index)?;
+        self.nodes.get_mut(&s_index)
     }
 
 
     /// Get a Handle from a Token for in-place manipulation
     /// 
     /// Typically used for in-place manipulation only of the Node that the program keeps track of, similar to `Entry` API in `HashMap` and `BTreeMap`
-    pub fn get_handle_from_token(&mut self, Token: &mut Token) -> Option<Handle<'_, T>>{
+    pub fn get_handle_from_token(&mut self, token: &mut Token) -> Option<Handle<'_, T>>{
         // Early return if token is laready marked as invalid
-        if !Token.valid{
+        if !token.valid{
             return None
         }
-        match self.nodes.get(&Token.node) {
+        match self.nodes.get(&token.node) {
             // If Hashes ain't same it's an invalid Token
-            Some(node) if node.hash == Token.hash => {
-                Some(Handle::new(self, Token.node))
+            Some(node) if node.hash == token.hash => {
+                Some(Handle::new(self, token.node))
             }
             // Either the node doesn't exist or the Hashes ain't same
-            _ => {Token.valid = false; None},
+            _ => {token.valid = false; None},
         }
     }
     /// Get a Handle for a Node
@@ -266,9 +266,9 @@ impl<T> ArenaTree<T>{
     /// 
     /// Instead, use `get_handle_from_token` to get a Handle from a Token, making sure 
     /// You get a handle to the Node you want
-    pub fn get_handle(&mut self, Index: &usize) -> Option<Handle<'_, T>>{
-        if self.nodes.contains_key(Index){
-            Some(Handle::new(self, *Index))
+    pub fn get_handle(&mut self, index: &usize) -> Option<Handle<'_, T>>{
+        if self.nodes.contains_key(index){
+            Some(Handle::new(self, *index))
         }else{
             None
         }
@@ -278,8 +278,8 @@ impl<T> ArenaTree<T>{
     /// Typically used to keep track of a Node between Arena Tree manipulations
     /// 
     /// Get a Handle to the referenced Node through `get_handle_from_token`
-    pub fn get_token(&self, Index: &usize) -> Option<Token>{
-        if let Some(node) = self.nodes.get(Index){
+    pub fn get_token(&self, index: &usize) -> Option<Token>{
+        if let Some(node) = self.nodes.get(index){
             Some(Token::new_from_node(node))
         }else{
             None
@@ -290,34 +290,34 @@ impl<T> ArenaTree<T>{
     /// Detach a Node from it's parent
     /// 
     /// Typically used to sepparate Nodes into Root Subtrees for organization purposes
-    pub fn clear_parent(&mut self, Index: &usize){
-        if let Some((index, mut node)) = self.nodes.remove_entry(Index){ // Quick yoink
+    pub fn clear_parent(&mut self, index: &usize){
+        if let Some((n_index, mut node)) = self.nodes.remove_entry(index){ // Quick yoink
 
-            if let Some(parent_index) = node.parent.take(){ // Take autosets the old parent to None, so that's pretty handy
+            if let Some(p_index) = node.parent.take(){ // Take autosets the old parent to None, so that's pretty handy
                 // Unwrap: Parent is always valid
-                self.root.push_child(index);
-                self.nodes.get_mut(&parent_index).unwrap().remove_child(&index);
+                self.root.push_child(n_index);
+                self.nodes.get_mut(&p_index).unwrap().remove_child(&n_index);
             }
 
-            self.nodes.insert(index, node);
+            self.nodes.insert(n_index, node);
         }
     }
     /// Attach a Node to another Node
     /// 
     /// Typically used to join Root Subtrees for organization purposes
-    pub fn assign_parent(&mut self, Index: &usize, NewParent: usize){
-        if let Some((index, mut node)) = self.nodes.remove_entry(Index){
+    pub fn assign_parent(&mut self, index: &usize, new_parent: usize){
+        if let Some((n_index, mut node)) = self.nodes.remove_entry(index){
 
             // Only do so if the node has no parent
             if node.parent.is_none(){
-                if let Some(new_parent) = self.nodes.get_mut(&NewParent){
-                    self.root.remove_child(&index);
-                    node.parent = Some(NewParent);
-                    new_parent.push_child(index);
+                if let Some(p_node) = self.nodes.get_mut(&new_parent){
+                    self.root.remove_child(&n_index);
+                    node.parent = Some(new_parent);
+                    p_node.push_child(n_index);
                 }
             }
 
-            self.nodes.insert(index, node);
+            self.nodes.insert(n_index, node);
         }
     }
     /// Attach a Node to another Node as n-th Child
@@ -325,55 +325,55 @@ impl<T> ArenaTree<T>{
     /// Typically used to insert Root Subtrees into other Trees at speciic position for organization purposes
     /// 
     /// If the Position is outside of the Parent Node's Children list, it gets attached as last
-    pub fn assign_parent_as_nth(&mut self, Index: &usize, NewParent: usize, Position: usize){
-        if let Some((index, mut node)) = self.nodes.remove_entry(Index){
+    pub fn assign_parent_as_nth(&mut self, index: &usize, new_parent: usize, position: usize){
+        if let Some((n_index, mut node)) = self.nodes.remove_entry(index){
 
             // Only do so if the node has no parent
             if node.parent.is_none(){
-                if let Some(new_parent) = self.nodes.get_mut(&NewParent){
-                    self.root.remove_child(&index);
-                    node.parent = Some(NewParent);
-                    new_parent.insert_child(index, Position);
+                if let Some(p_node) = self.nodes.get_mut(&new_parent){
+                    self.root.remove_child(&n_index);
+                    node.parent = Some(new_parent);
+                    p_node.insert_child(n_index, position);
                 }
             }
 
-            self.nodes.insert(index, node);
+            self.nodes.insert(n_index, node);
         }
     }
     /// Change a Node's Parent
     /// 
     /// Typically used to move a Subtree into a different Subtree for organization purposes
-    pub fn change_parent(&mut self, Index: &usize, NewParent: usize){
-        if let Some((index, mut node)) = self.nodes.remove_entry(Index){
+    pub fn change_parent(&mut self, index: &usize, new_parent: usize){
+        if let Some((n_index, mut node)) = self.nodes.remove_entry(index){
             
             // Tear the edge between the node and old parent
-            if let Some(parent_index) = node.parent.take(){
-                self.nodes.get_mut(&parent_index).unwrap().remove_child(&index);
+            if let Some(p_index) = node.parent.take(){
+                self.nodes.get_mut(&p_index).unwrap().remove_child(&n_index);
             }
             
             // Create a new edge between the node and new parent
-            if let Some(new_parent) = self.nodes.get_mut(&NewParent){
-                node.parent = Some(NewParent);
-                new_parent.push_child(index);
+            if let Some(p_node) = self.nodes.get_mut(&new_parent){
+                node.parent = Some(new_parent);
+                p_node.push_child(n_index);
             }
 
-            self.nodes.insert(index, node);
+            self.nodes.insert(n_index, node);
         }
     }
     /// Change a Node's position within it's Parent's Children list
     /// 
     /// Typically used to reorder Child Nodes for organization purposes
-    pub fn change_order_position(&mut self, Index: &usize, NewPosition: usize){
-        if let Some((index, node)) = self.nodes.remove_entry(Index){
+    pub fn change_order_position(&mut self, index: &usize, new_position: usize){
+        if let Some((n_index, node)) = self.nodes.remove_entry(index){
                 match node.parent{
                     Some(p_index) => {
-                        self.nodes.get_mut(&p_index).unwrap().change_child_order(Index, NewPosition);
+                        self.nodes.get_mut(&p_index).unwrap().change_child_order(index, new_position);
                     },
                     None => {
-                        self.root.change_child_order(Index, NewPosition);
+                        self.root.change_child_order(index, new_position);
                     },
                 }
-            self.nodes.insert(index, node);
+            self.nodes.insert(n_index, node);
         }
     }
 
@@ -401,11 +401,11 @@ impl<T> ArenaTree<T>{
     /// Returns `(TraverseLevel, &ArenaNode)` tuple on every iteration
     /// 
     /// If the Node doesn't exist, the Iterator is empty and doesn't do anything
-    pub fn traverse_df_from(&self, StartNode: &usize) -> DFTraverse<'_, T>{
-        if !self.nodes.contains_key(StartNode){
+    pub fn traverse_df_from(&self, start: &usize) -> DFTraverse<'_, T>{
+        if !self.nodes.contains_key(start){
             DFTraverse::new(self, &[])
         }else{
-            DFTraverse::new(self, &[*StartNode])
+            DFTraverse::new(self, &[*start])
         }
     }
     /// Traverse the Tree using Iterator with Breadth-First Traversal, starting from the Tree's Root
@@ -419,11 +419,11 @@ impl<T> ArenaTree<T>{
     /// Layers increment going downwards, with Layer 0 being the starting Node's Layer, topmost Layer
     /// 
     /// If the Node doesn't exist, the Iterator is empty and doesn't do anything
-    pub fn traverse_bf_from(&self, StartNode: &usize) -> BFTraverse<'_, T>{
-        if !self.nodes.contains_key(StartNode){
+    pub fn traverse_bf_from(&self, start: &usize) -> BFTraverse<'_, T>{
+        if !self.nodes.contains_key(start){
             BFTraverse::new(self, &[])
         }else{
-            BFTraverse::new(self, &[*StartNode])
+            BFTraverse::new(self, &[*start])
         }
     }
     /// Traverse the Tree using Iterator with Reverse Breadth-First Traversal, coming upwards to the Root
@@ -437,11 +437,11 @@ impl<T> ArenaTree<T>{
     /// Layers decrement going upwards, with Layer 0 being the start Node's Layer, topmost layer
     /// 
     /// If the Node doesn't exist, the Iterator is empty and doesn't do anything
-    pub fn traverse_rev_bf_to(&self, EndNode: &usize) -> RevBFTraverse<'_, T>{
-        if !self.nodes.contains_key(EndNode){
+    pub fn traverse_rev_bf_to(&self, end: &usize) -> RevBFTraverse<'_, T>{
+        if !self.nodes.contains_key(end){
             RevBFTraverse::new(self, &[])
         }else{
-            RevBFTraverse::new(self, &[*EndNode])
+            RevBFTraverse::new(self, &[*end])
         }
     }
 
@@ -452,8 +452,8 @@ impl<T> ArenaTree<T>{
     /// Traverse the Tree using a controllable Cursor, starting from a specific node
     /// 
     /// If the Node doesn't exist, the Cursor defaults to the Root level
-    pub fn cursor_from(&mut self, StartNode: &usize) -> Cursor<'_, T>{
-        Cursor::new_from_node(self, *StartNode)
+    pub fn cursor_from(&mut self, start: &usize) -> Cursor<'_, T>{
+        Cursor::new_from_node(self, *start)
     }
 
 
@@ -473,10 +473,10 @@ pub struct Handle<'a, T>{
     node: usize,
 }
 impl<'a, T> Handle<'a, T>{
-    fn new(TreeRef: &'a mut ArenaTree<T>, Node: usize) -> Self{
+    fn new(tree_ref: &'a mut ArenaTree<T>, node: usize) -> Self{
         Self{
-            tree_ref: TreeRef,
-            node: Node,
+            tree_ref,
+            node,
         }
     }
     /// Get a token for the current Node
@@ -484,21 +484,21 @@ impl<'a, T> Handle<'a, T>{
         Token::new(self.node, self.tree_ref.get_node(&self.node).unwrap().hash)
     }
     /// Add a Subnode to the current Node
-    pub fn add_child(&mut self, Val: T) -> Handle<'_, T>{
-        self.tree_ref.insert(Val, Some(self.node))
+    pub fn add_child(&mut self, val: T) -> Handle<'_, T>{
+        self.tree_ref.insert(val, Some(self.node))
     }
     /// Add a Subnode to the current Node at n-th position
-    pub fn add_child_nth(&mut self, Val: T, Position: usize) -> Handle<'_, T>{
-        self.tree_ref.insert_nth(Val, Some(self.node), Position)
+    pub fn add_child_nth(&mut self, val: T, position: usize) -> Handle<'_, T>{
+        self.tree_ref.insert_nth(val, Some(self.node), position)
     }
     /// Remove a Subnode from the current Node
     /// 
     /// Equivalent to the Tree's `remove` method, but checks if the Node is a Subnode of the current Node
     /// 
     /// Searches for the given Node's Index and removes it from the Tree
-    pub fn remove_child(&mut self, Index: &usize){
-        if self.tree_ref.get_node(&self.node).unwrap().has_child(Index){
-            self.tree_ref.remove(Index);
+    pub fn remove_child(&mut self, index: &usize){
+        if self.tree_ref.get_node(&self.node).unwrap().has_child(index){
+            self.tree_ref.remove(index);
         }
     }
     /// Soft Remove a Subnode from the current Node
@@ -506,9 +506,9 @@ impl<'a, T> Handle<'a, T>{
     /// Equivalent to the Tree's `soft_remove` method, but checks if the Node is a Subnode of the current Node
     /// 
     /// Searches for the given Node's Index and soft removes it from the Tree
-    pub fn soft_remove_child(&mut self, Index: &usize){
-        if self.tree_ref.get_node(&self.node).unwrap().has_child(Index){
-            self.tree_ref.soft_remove(Index);
+    pub fn soft_remove_child(&mut self, index: &usize){
+        if self.tree_ref.get_node(&self.node).unwrap().has_child(index){
+            self.tree_ref.soft_remove(index);
         }
     }
     /// Dissolve a Subnode of the current Node
@@ -516,15 +516,15 @@ impl<'a, T> Handle<'a, T>{
     /// Equivalent to the Tree's `dissolve` method, but checks if the Node is a Subnode of the current Node
     /// 
     /// Searches for the given Node's Index and dissolves it from the Tree
-    pub fn dissolve_child(&mut self, Index: &usize){
-        if self.tree_ref.get_node(&self.node).unwrap().has_child(Index){
-            self.tree_ref.dissolve(Index);
+    pub fn dissolve_child(&mut self, index: &usize){
+        if self.tree_ref.get_node(&self.node).unwrap().has_child(index){
+            self.tree_ref.dissolve(index);
         }
     }
     /// Change a Subnode's position within the current Node
-    pub fn reorder_child(&mut self, Child: &usize, NewPosition: usize){
-        if self.tree_ref.get_node(&self.node).unwrap().has_child(Child){
-            self.tree_ref.get_node_mut(&self.node).unwrap().change_child_order(Child, NewPosition);
+    pub fn reorder_child(&mut self, child: &usize, new_position: usize){
+        if self.tree_ref.get_node(&self.node).unwrap().has_child(child){
+            self.tree_ref.get_node_mut(&self.node).unwrap().change_child_order(child, new_position);
         }
     }
 
@@ -542,8 +542,8 @@ impl<'a, T> Handle<'a, T>{
     }
 
     /// Change order of current Node within it's Parent
-    pub fn reorder_self(&mut self, NewPosition: usize){
-        self.tree_ref.change_order_position(&self.node, NewPosition);
+    pub fn reorder_self(&mut self, new_position: usize){
+        self.tree_ref.change_order_position(&self.node, new_position);
     }
     /// Perform operations using the current Node
     /// 
@@ -588,17 +588,17 @@ pub struct Token{
     valid: bool
 }
 impl Token{
-    fn new(Index: usize, Hash: u32) -> Self{
+    fn new(index: usize, hash: u32) -> Self{
         Self{
-            node: Index,
-            hash: Hash,
+            node: index,
+            hash,
             valid: true
         }
     }
-    fn new_from_node<T>(Node: &Node<T>) -> Self{
+    fn new_from_node<T>(node: &Node<T>) -> Self{
         Self{
-            node: Node.id,
-            hash: Node.hash,
+            node: node.id,
+            hash: node.hash,
             valid: true,
         }
     }
@@ -646,33 +646,33 @@ impl<T> std::ops::DerefMut for Node<T>{
 }
 
 impl<T> Node<T>{
-    fn new(Val: T, Id: usize, Parent: Option<usize>) -> Self{
+    fn new(val: T, id: usize, parent: Option<usize>) -> Self{
         Self{
-            val: Val,
-            id: Id,
+            val,
+            id,
             hash: rand::random(),
-            parent: Parent,
+            parent,
             children: Vec::new(),
         }
     }
 
     /// Append a Child Node at the end of the Node
-    fn push_child(&mut self, Child: usize){
-        self.children.push(Child);
+    fn push_child(&mut self, child: usize){
+        self.children.push(child);
     }
     /// Insert a Child Node at position within the Node
-    fn insert_child(&mut self, Child: usize, Position: usize){
-        if Position < self.children.len(){
-            self.children.insert(Position, Child);
+    fn insert_child(&mut self, child: usize, position: usize){
+        if position < self.children.len(){
+            self.children.insert(position, child);
         }else{
             // Failsafe to avoid panic
-            self.children.push(Child);
+            self.children.push(child);
         }
     }
     /// Change the order of a child within the Node
-    fn change_child_order(&mut self, Child: &usize, NewPosition: usize){
-        if self.remove_child(Child){
-            self.insert_child(*Child, NewPosition);
+    fn change_child_order(&mut self, child: &usize, new_position: usize){
+        if self.remove_child(child){
+            self.insert_child(*child, new_position);
         }
     }
     /// Remove an Index from the Node's children
@@ -680,8 +680,8 @@ impl<T> Node<T>{
     /// This method searches for the Index and removes it from the list
     ///
     /// Returns True if it had the node
-    fn remove_child(&mut self, Child: &usize) -> bool{
-        if let Some(index) = self.children.iter().position(|x| x == Child){
+    fn remove_child(&mut self, child: &usize) -> bool{
+        if let Some(index) = self.children.iter().position(|x| x == child){
             self.children.remove(index);
             true
         }else{
@@ -691,28 +691,29 @@ impl<T> Node<T>{
     /// Remove a Child Node at a position
     ///
     /// Returns True if it had the node
-    fn remove_nth_child(&mut self, Index: &usize) -> bool{
-        if Index < &self.children.len(){
-            self.children.remove(*Index);
+    #[allow(unused)]
+    fn remove_nth_child(&mut self, index: &usize) -> bool{
+        if index < &self.children.len(){
+            self.children.remove(*index);
             true
         }else{
             false
         }
     }
     /// Check if the Node contains the Child index
-    fn has_child(&self, Child: &usize) -> bool{
-        self.children.iter().position(|x| x == Child).is_some()
+    fn has_child(&self, child: &usize) -> bool{
+        self.children.iter().position(|x| x == child).is_some()
     }
     /// Get the index of the left Sibling of a Child
-    fn child_before(&self, Child: &usize) -> Option<usize>{
-        match self.children.iter().position(|x| x == Child){
+    fn child_before(&self, child: &usize) -> Option<usize>{
+        match self.children.iter().position(|x| x == child){
             Some(index) if index > 0 => Some(self.children[index - 1]),
             _ => None,
         }
     }
     /// Get the index of the Right Sibling of a Child
-    fn child_after(&self, Child: &usize) -> Option<usize>{
-        match self.children.iter().position(|x| x == Child){
+    fn child_after(&self, child: &usize) -> Option<usize>{
+        match self.children.iter().position(|x| x == child){
             Some(index) => self.children.get(index + 1).copied(),
             _ => None,
         }
@@ -759,10 +760,10 @@ pub struct DFTraverse<'a, T>{
     depth: usize
 }
 impl<'a, T> DFTraverse<'a, T>{
-    fn new(TreeRef: &'a ArenaTree<T>, StartNodes: &[usize]) -> Self{
+    fn new(tree_ref: &'a ArenaTree<T>, start_nodes: &[usize]) -> Self{
         Self{
-            tree_ref: TreeRef,
-            stack: StartNodes.iter().map(|x| (*x, false)).collect(),
+            tree_ref,
+            stack: start_nodes.iter().map(|x| (*x, false)).collect(),
             depth: 0
         }
     }
@@ -805,10 +806,10 @@ pub struct DFTraverseEnterLeave<'a, T>{
     stack: Vec<(usize, bool)>
 }
 impl<'a, T> DFTraverseEnterLeave<'a, T> {
-    pub fn new(TreeRef: &'a ArenaTree<T>, Nodes: &[usize]) -> Self {
+    pub fn new(tree_ref: &'a ArenaTree<T>, nodes: &[usize]) -> Self {
         Self {
-            tree_ref: TreeRef,
-            stack: Nodes.iter().map(|x| (*x, false)).collect()
+            tree_ref,
+            stack: nodes.iter().map(|x| (*x, false)).collect()
         }
     }
 }
@@ -851,12 +852,12 @@ pub struct BFTraverse<'a, T>{
     queue: VecDeque<(usize, usize)> // (Layer, Node ID)
 }
 impl <'a, T> BFTraverse<'a, T>{
-    fn new(TreeRef: &'a ArenaTree<T>, StartNodes: &[usize]) -> Self{
+    fn new(tree_ref: &'a ArenaTree<T>, start_nodes: &[usize]) -> Self{
         Self{
-            tree_ref: TreeRef,
+            tree_ref,
             queue: {
                 let mut idkfa = VecDeque::new();
-                for index in StartNodes.iter(){
+                for index in start_nodes.iter(){
                     idkfa.push_back((0, *index));
                 };
                 idkfa
@@ -891,12 +892,12 @@ pub struct RevBFTraverse<'a, T>{
     stack: Vec<VecDeque<usize>> // A stack of layer queues, we don't need to specify layers
 }
 impl<'a, T> RevBFTraverse<'a, T>{
-    fn new(TreeRef: &'a ArenaTree<T>, StartNodes: &[usize]) -> Self{
+    fn new(tree_ref: &'a ArenaTree<T>, start_nodes: &[usize]) -> Self{
         Self{
-            tree_ref: TreeRef,
+            tree_ref,
             stack: {
                 let mut idkfa: Vec<VecDeque<usize>> = Vec::from([VecDeque::new()]);
-                for node in StartNodes.iter(){
+                for node in start_nodes.iter(){
                     idkfa.last_mut().unwrap().push_back(*node);
                 }
 
@@ -905,7 +906,7 @@ impl<'a, T> RevBFTraverse<'a, T>{
                 loop{
                     // This is a mess
                     for index in idkfa.last().unwrap().iter(){
-                        let node = TreeRef.get_node(index).unwrap();
+                        let node = tree_ref.get_node(index).unwrap();
                         for child in node.children.iter(){
                             next_queue.push_back(*child);
                         }
@@ -958,16 +959,16 @@ pub struct Cursor<'a, T>{
     node: Option<usize>, // Option because the Root is a None
 }
 impl<'a, T> Cursor<'a, T>{
-    fn new(TreeRef: &'a mut ArenaTree<T>) -> Self{
+    fn new(tree_ref: &'a mut ArenaTree<T>) -> Self{
         Self{
-            tree_ref: TreeRef,
+            tree_ref,
             node: None,
         }
     }
-    fn new_from_node(TreeRef: &'a mut ArenaTree<T>, StartNode: usize) -> Self{
+    fn new_from_node(tree_ref: &'a mut ArenaTree<T>, start_node: usize) -> Self{
         Self{
-            tree_ref: TreeRef,
-            node: Some(StartNode),
+            tree_ref,
+            node: Some(start_node),
         }
     }
     /// Move up a level to the Node's parent
@@ -1025,9 +1026,9 @@ impl<'a, T> Cursor<'a, T>{
     /// Move to a specific Node within the tree
     /// 
     /// It will remain on the current Node if the requested Node doesn't exist
-    pub fn move_to_node(&mut self, Node: &usize) -> &mut Self{
-        if self.tree_ref.get_node(Node).is_some(){
-            self.node = Some(*Node)
+    pub fn move_to_node(&mut self, node: &usize) -> &mut Self{
+        if self.tree_ref.get_node(node).is_some(){
+            self.node = Some(*node)
         }
         self
     }
