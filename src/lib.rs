@@ -12,6 +12,7 @@ pub mod events;
 pub mod constants;
 pub mod utils;
 pub mod sprites;
+pub mod prefabs;
 
 /// Initialize the plugin
 /// 
@@ -33,4 +34,11 @@ pub fn init_plugin(world: &mut World, disp_build: &mut DispatcherBuilder){
 
     // -- Sprites --
     sprites::init(world);
+
+
+    // -- Entities --
+    let mut cmd_writer = world.get_command_writer();
+    cmd_writer.send(SpawnPrefab(prefabs::Player{loc: Vector2 { x: 0.0, y: 0.0 }}));
+    cmd_writer.send(SpawnPrefab(prefabs::Crafter{ loc: Vector2 { x: 0.0, y: 0.0 } }));
+    cmd_writer.send(SpawnPrefab(prefabs::Storage{ loc: Vector2 { x: 3.0, y: 1.0 } }));
 }
