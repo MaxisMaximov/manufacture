@@ -29,6 +29,7 @@ pub fn init_plugin(world: &mut World, disp_build: &mut DispatcherBuilder){
 
     // -- Systems --
     disp_build.add::<systems::Move2D>();
+    disp_build.add::<systems::DrawScheduler>();
 
     // -- Sprites --
     sprites::init(world);

@@ -1,4 +1,3 @@
-use manufacture_core::prelude::*;
 use manufacture_engine::prelude::*;
 
 use manufacture::init_plugin;
